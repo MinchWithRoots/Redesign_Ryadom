@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+// Метод для сброса фильтров
+const resetFilters = () => {
+  filters.value.gender = 'all'
+  filters.value.ageMin = 18
+  filters.value.ageMax = 65
+  filters.value.experience = 'all'
+  filters.value.topic = 'all'
+}
+
 const companions = ref([
   {
     id: 1,
@@ -177,18 +186,9 @@ const topics = ['Все', 'Отношения', 'Карьера', 'Тревож�
             </div>
 
             <!-- Reset Button -->
-            <button
-              @click="
-                filters.gender = 'all'
-                filters.ageMin = 18
-                filters.ageMax = 65
-                filters.experience = 'all'
-                filters.topic = 'all'
-              "
-              class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all"
-            >
-              Сбросить фильтры
-            </button>
+           <button @click="resetFilters" class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all">
+  Сбросить фильтры
+</button>
           </div>
         </div>
 
