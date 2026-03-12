@@ -14,21 +14,21 @@ const reviews = [
     name: 'Мария К.',
     title: 'Менеджер проектов',
     text: 'Платформа помогла мне найти поддержку в сложный период. Очень благодарна за возможность конфиденциального общения.',
-    avatar: '👩',
+    avatar: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
   },
   {
     id: 2,
     name: 'Алексей М.',
     title: 'Психолог',
     text: 'Отличный сервис для тех, кто ищет профессиональную поддержку. Удобный интерфейс и надежная система безопасности.',
-    avatar: '👨',
+    avatar: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
   },
   {
     id: 3,
     name: 'Елена В.',
     title: 'Студентка',
     text: 'Наконец-то нашла место, где можно открыто поговорить о своих переживаниях. Спасибо за создание такого важного сервиса!',
-    avatar: '👩‍🦰',
+    avatar: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
   },
 ]
 </script>
@@ -86,52 +86,20 @@ const reviews = [
           </div>
 
           <!-- Right - Modern Illustration Area -->
-          <div class="relative h-full min-h-[500px] lg:min-h-[600px]">
+          <div class="relative h-full min-h-[500px] lg:min-h-[600px] flex items-center justify-center">
             <!-- Decorative blobs -->
             <div class="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-3xl opacity-60"></div>
             <div class="absolute bottom-0 left-10 w-96 h-96 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-full blur-3xl opacity-40"></div>
 
-            <!-- Main visual element -->
-            <div class="relative h-full flex items-center justify-center">
-              <div class="w-full max-w-sm aspect-square">
-                <!-- Outer ring -->
-                <div class="absolute inset-0 border-2 border-primary/20 rounded-full"></div>
-
-                <!-- Inner circle with gradient -->
-                <div class="absolute inset-8 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent rounded-full border border-primary/10"></div>
-
-                <!-- Icons arranged in circle -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="relative w-48 h-48">
-                    <!-- Center icon -->
-                    <div class="absolute inset-0 flex items-center justify-center">
-                      <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center text-5xl shadow-card">
-                        💬
-                      </div>
-                    </div>
-
-                    <!-- Floating icons -->
-                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0s">
-                      👂
-                    </div>
-                    <div class="absolute top-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.2s">
-                      💝
-                    </div>
-                    <div class="absolute bottom-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.4s">
-                      🤝
-                    </div>
-                    <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.6s">
-                      ✨
-                    </div>
-                    <div class="absolute bottom-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.8s">
-                      💪
-                    </div>
-                    <div class="absolute top-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 1s">
-                      🌟
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <!-- Main image -->
+            <div class="relative w-full max-w-sm lg:max-w-md h-96 lg:h-[500px] rounded-3xl overflow-hidden shadow-hover">
+              <img
+                src="https://images.pexels.com/photos/2420585/pexels-photo-2420585.jpeg"
+                alt="People talking and supporting each other"
+                class="w-full h-full object-cover"
+              />
+              <!-- Gradient overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent"></div>
             </div>
           </div>
         </div>
@@ -152,10 +120,14 @@ const reviews = [
             <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-secondary/10 rounded-full blur-3xl"></div>
 
             <div class="relative w-full max-w-md lg:max-w-lg">
-              <div class="aspect-square bg-gradient-to-br from-primary/20 via-secondary/5 to-primary/10 rounded-3xl flex items-center justify-center text-8xl lg:text-9xl p-8 relative overflow-hidden group">
-                <!-- Animated background -->
-                <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span class="relative group-hover:scale-110 transition-transform duration-300">💝</span>
+              <div class="aspect-square rounded-3xl overflow-hidden shadow-hover relative group">
+                <img
+                  src="https://images.pexels.com/photos/13704359/pexels-photo-13704359.jpeg"
+                  alt="Supporting hands care compassion"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <!-- Gradient overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent"></div>
               </div>
               <!-- Decorative cards -->
               <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-card border border-border/50 max-w-xs">
@@ -176,8 +148,10 @@ const reviews = [
 
             <div class="space-y-6">
               <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xl flex-shrink-0">
-                  🎯
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                 </div>
                 <div>
                   <h3 class="font-semibold text-secondary mb-2">Наша миссия</h3>
@@ -188,8 +162,10 @@ const reviews = [
               </div>
 
               <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xl flex-shrink-0">
-                  💪
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-2m0 0H10m2 0v2m0-2v-2m7 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
                 <div>
                   <h3 class="font-semibold text-secondary mb-2">Наши ценности</h3>
@@ -200,8 +176,10 @@ const reviews = [
               </div>
 
               <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xl flex-shrink-0">
-                  🌱
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
                 </div>
                 <div>
                   <h3 class="font-semibold text-secondary mb-2">Развитие</h3>
@@ -269,9 +247,11 @@ const reviews = [
               <div class="border-t border-border/50 pt-6">
                 <!-- Avatar and Info -->
                 <div class="flex items-center gap-4">
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl flex-shrink-0 text-white shadow-soft">
-                    {{ review.avatar }}
-                  </div>
+                  <img
+                    :src="review.avatar"
+                    :alt="review.name"
+                    class="w-14 h-14 rounded-full object-cover flex-shrink-0 shadow-soft border-2 border-primary/20"
+                  />
                   <div class="flex-1">
                     <h4 class="font-bold text-secondary text-lg">{{ review.name }}</h4>
                     <p class="text-sm text-secondary/60">{{ review.title }}</p>
@@ -320,16 +300,18 @@ const reviews = [
         </div>
 
         <!-- Trust badges -->
-        <div class="mt-16 flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <div class="flex items-center gap-2 text-secondary/70">
+        <div class="mt-16 flex flex-col sm:flex-row gap-6 justify-center items-center text-sm">
+          <div class="flex items-center gap-2 text-secondary/70 font-medium">
             <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
             <span>Проверенный контент</span>
           </div>
-          <div class="flex items-center gap-2 text-secondary/70">
+          <div class="hidden sm:block text-secondary/30">•</div>
+          <div class="flex items-center gap-2 text-secondary/70 font-medium">
             <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" /></svg>
             <span>Защита данных</span>
           </div>
-          <div class="flex items-center gap-2 text-secondary/70">
+          <div class="hidden sm:block text-secondary/30">•</div>
+          <div class="flex items-center gap-2 text-secondary/70 font-medium">
             <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
             <span>500+ отзывов 5★</span>
           </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import logo from '../assets/logo.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -26,9 +27,7 @@ const navItems = [
     <div class="container mx-auto px-4 lg:px-8 w-full flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" @click="navigate('/')">
-        <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-soft">
-          ❤️
-        </div>
+        <img :src="logo" alt="Рядом" class="w-12 h-12" />
         <span class="text-2xl font-bold text-secondary">Рядом</span>
       </div>
 
