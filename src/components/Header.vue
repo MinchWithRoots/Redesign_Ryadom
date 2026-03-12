@@ -22,11 +22,11 @@ const navItems = [
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 bg-white shadow-soft z-50 h-[118px] flex items-center">
+  <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-card z-50 h-[118px] flex items-center border-b border-border/30">
     <div class="container mx-auto px-4 lg:px-8 w-full flex items-center justify-between">
       <!-- Logo -->
-      <div class="flex items-center gap-2 cursor-pointer" @click="navigate('/')">
-        <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg">
+      <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" @click="navigate('/')">
+        <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-soft">
           ❤️
         </div>
         <span class="text-2xl font-bold text-secondary">Рядом</span>
@@ -77,13 +77,13 @@ const navItems = [
       <div class="hidden lg:flex items-center gap-4">
         <button
           @click="navigate('/auth')"
-          class="px-6 py-2 text-secondary font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
+          class="px-6 py-2 text-secondary font-medium border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
         >
           Логин
         </button>
         <button
           @click="navigate('/auth')"
-          class="px-8 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
+          class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
         >
           Регистрация
         </button>
