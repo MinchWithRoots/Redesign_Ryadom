@@ -86,20 +86,52 @@ const reviews = [
           </div>
 
           <!-- Right - Modern Illustration Area -->
-          <div class="relative h-full min-h-[500px] lg:min-h-[600px] flex items-center justify-center">
+          <div class="relative h-full min-h-[500px] lg:min-h-[600px]">
             <!-- Decorative blobs -->
             <div class="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-3xl opacity-60"></div>
             <div class="absolute bottom-0 left-10 w-96 h-96 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-full blur-3xl opacity-40"></div>
 
-            <!-- Main image -->
-            <div class="relative w-full max-w-sm lg:max-w-md h-96 lg:h-[500px] rounded-3xl overflow-hidden shadow-hover">
-              <img
-                src="https://images.pexels.com/photos/2420585/pexels-photo-2420585.jpeg"
-                alt="People talking and supporting each other"
-                class="w-full h-full object-cover"
-              />
-              <!-- Gradient overlay -->
-              <div class="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent"></div>
+            <!-- Main visual element -->
+            <div class="relative h-full flex items-center justify-center">
+              <div class="w-full max-w-sm aspect-square">
+                <!-- Outer ring -->
+                <div class="absolute inset-0 border-2 border-primary/20 rounded-full"></div>
+
+                <!-- Inner circle with gradient -->
+                <div class="absolute inset-8 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent rounded-full border border-primary/10"></div>
+
+                <!-- Icons arranged in circle -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="relative w-48 h-48">
+                    <!-- Center icon -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center text-5xl shadow-card">
+                        💬
+                      </div>
+                    </div>
+
+                    <!-- Floating icons -->
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0s">
+                      👂
+                    </div>
+                    <div class="absolute top-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.2s">
+                      💝
+                    </div>
+                    <div class="absolute bottom-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.4s">
+                      🤝
+                    </div>
+                    <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.6s">
+                      ✨
+                    </div>
+                    <div class="absolute bottom-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 0.8s">
+                      💪
+                    </div>
+                    <div class="absolute top-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center text-2xl shadow-card animate-bounce" style="animation-delay: 1s">
+                      🌟
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -122,12 +154,12 @@ const reviews = [
             <div class="relative w-full max-w-md lg:max-w-lg">
               <div class="aspect-square rounded-3xl overflow-hidden shadow-hover relative group">
                 <img
-                  src="https://images.pexels.com/photos/13704359/pexels-photo-13704359.jpeg"
-                  alt="Supporting hands care compassion"
+                  src="https://images.pexels.com/photos/14904695/pexels-photo-14904695.jpeg"
+                  alt="Two people hugging with care and support"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <!-- Gradient overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent"></div>
               </div>
               <!-- Decorative cards -->
               <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-card border border-border/50 max-w-xs">
