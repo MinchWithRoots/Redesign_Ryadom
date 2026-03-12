@@ -1,0 +1,168 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
+const isMobileMenuOpen = ref(false)
+
+const isActive = (path: string) => route.path === path
+
+const navigate = (path: string) => {
+  router.push(path)
+  isMobileMenuOpen.value = false
+}
+
+const navItems = [
+  { name: 'Главная', path: '/' },
+  { name: 'О нас', path: '/#about' },
+  { name: 'Отзывы', path: '/#reviews' },
+  { name: 'Контакты', path: '/#contacts' },
+]
+</script>
+
+<template>
+  <header class="fixed top-0 left-0 right-0 bg-white shadow-soft z-50 h-[118px] flex items-center">
+    <div class="container mx-auto px-4 lg:px-8 w-full flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center gap-2 cursor-pointer" @click="navigate('/')">
+        <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg">
+          ❤️
+        </div>
+        <span class="text-2xl font-bold text-secondary">Рядом</span>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden lg:flex items-center gap-8">
+        <a
+          href="/"
+          @click.prevent="navigate('/')"
+          :class="[
+            'text-lg font-medium transition-colors',
+            isActive('/') ? 'text-primary' : 'text-secondary hover:text-primary'
+          ]"
+        >
+          Главная
+        </a>
+        <a
+          href="/#about"
+          @click.prevent="navigate('/')"
+          :class="[
+            'text-lg font-medium transition-colors text-secondary hover:text-primary'
+          ]"
+        >
+          О нас
+        </a>
+        <a
+          href="/#reviews"
+          @click.prevent="navigate('/')"
+          :class="[
+            'text-lg font-medium transition-colors text-secondary hover:text-primary'
+          ]"
+        >
+          Отзывы
+        </a>
+        <a
+          href="/#contacts"
+          @click.prevent="navigate('/')"
+          :class="[
+            'text-lg font-medium transition-colors text-secondary hover:text-primary'
+          ]"
+        >
+          Контакты
+        </a>
+      </nav>
+
+      <!-- Desktop Buttons -->
+      <div class="hidden lg:flex items-center gap-4">
+        <button
+          @click="navigate('/auth')"
+          class="px-6 py-2 text-secondary font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
+        >
+          Логин
+        </button>
+        <button
+          @click="navigate('/auth')"
+          class="px-8 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
+        >
+          Регистрация
+        </button>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        @click="isMobileMenuOpen = !isMobileMenuOpen"
+        class="lg:hidden flex flex-col gap-1.5 w-10 h-10 items-center justify-center"
+      >
+        <span
+          :class="[
+            'w-6 h-0.5 bg-secondary transition-all',
+            isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+          ]"
+        ></span>
+        <span
+          :class="[
+            'w-6 h-0.5 bg-secondary transition-all',
+            isMobileMenuOpen ? 'opacity-0' : ''
+          ]"
+        ></span>
+        <span
+          :class="[
+            'w-6 h-0.5 bg-secondary transition-all',
+            isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+          ]"
+        ></span>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div
+      v-if="isMobileMenuOpen"
+      class="lg:hidden absolute top-[118px] left-0 right-0 bg-white border-t border-border shadow-card"
+    >
+      <nav class="flex flex-col p-4 gap-3">
+        <a
+          href="/"
+          @click.prevent="navigate('/')"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        >
+          Главная
+        </a>
+        <a
+          href="/#about"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        >
+          О нас
+        </a>
+        <a
+          href="/#reviews"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        >
+          Отзывы
+        </a>
+        <a
+          href="/#contacts"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        >
+          Контакты
+        </a>
+        <div class="flex flex-col gap-2 pt-2 border-t border-border">
+          <button
+            @click="navigate('/auth')"
+            class="w-full px-6 py-2 text-secondary font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
+          >
+            Логин
+          </button>
+          <button
+            @click="navigate('/auth')"
+            class="w-full px-6 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover transition-all"
+          >
+            Регистрация
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+</template>
+
+<style scoped></style>
