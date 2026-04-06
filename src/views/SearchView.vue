@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { companions, filterCompanions, sendConnectionRequest, chats, currentUser } from '../composables/useAppState'
+import { companions, filterCompanions, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -12,21 +12,29 @@ const filters = ref({
   ageMin: 18,
   ageMax: 65,
   experience: 'all',
-  topic: 'all',
+  topic: 'Все',
 })
 
 const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
 
 const filteredCompanions = computed(() => {
-  return filterCompanions({
+  return companions.value
+})
+
+onMounted(async () => {
+  await loadCompanions()
+})
+
+const applyFilters = async () => {
+  await filterCompanions({
     ageMin: filters.value.ageMin,
     ageMax: filters.value.ageMax,
     experience: filters.value.experience,
     topic: filters.value.topic === 'Все' ? undefined : filters.value.topic,
   })
-})
+}
 
-const resetFilters = () => {
+const resetFilters = async () => {
   filters.value = {
     gender: 'all',
     ageMin: 18,
@@ -34,6 +42,7 @@ const resetFilters = () => {
     experience: 'all',
     topic: 'Все',
   }
+  await loadCompanions()
 }
 
 const handleConnectionRequest = (companionId: number) => {
@@ -188,7 +197,7 @@ const navigateToProfile = (companionId: number) => {
             <button
               v-for="topic in topics"
               :key="topic"
-              @click="filters.topic = topic"
+              @click="filters.topic = topic; applyFilters()"
               :class="[
                 'px-4 py-2 rounded-full text-sm font-medium transition-all',
                 filters.topic === topic

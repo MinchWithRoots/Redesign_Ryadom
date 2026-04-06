@@ -1,11 +1,11 @@
 import { ref, reactive } from 'vue'
+import { authAPI, companionsAPI, chatsAPI, usersAPI, setAuthToken, getAuthToken, clearAuthToken } from '../services/api'
 
 // Types
 export interface User {
   id: number
   name: string
   email: string
-  password: string
   age: number
   bio: string
   image: string
@@ -29,202 +29,88 @@ export interface Chat {
   name: string
   lastMessage: string
   time: string
-  unread: number
+  unread_count: number
   image: string
   status: 'active' | 'offline'
-  companionId: number
+  companion_id: number
 }
 
 export interface Message {
   id: number
-  chatId: number
-  author: string
+  sender_id: number
   text: string
-  time: string
+  created_at: string
+  author: string
   isMine: boolean
 }
 
 // Global state
-export const currentUser = ref<User | null>({
-  id: 1,
-  name: 'Александр К.',
-  email: 'alexander@example.com',
-  password: 'password123',
-  age: 29,
-  bio: 'Ищу поддержку и помощь в развитии',
-  image: 'https://images.pexels.com/photos/31422830/pexels-photo-31422830.png',
-})
-
-export const companions = ref<Companion[]>([
-  {
-    id: 1,
-    name: 'Мария К.',
-    age: 28,
-    specialization: 'Психолог',
-    experience: 'Опытный специалист',
-    topics: ['Отношения', 'Тревожность', 'Стресс'],
-    image: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-    rating: 4.9,
-    reviews: 127,
-    bio: 'Специализируюсь на работе с молодежью и вопросами личных отношений',
-  },
-  {
-    id: 2,
-    name: 'Алексей М.',
-    age: 32,
-    specialization: 'Counselor',
-    experience: 'Опытный специалист',
-    topics: ['Карьера', 'Развитие', 'Мотивация'],
-    image: 'https://images.pexels.com/photos/31422830/pexels-photo-31422830.png',
-    rating: 4.8,
-    reviews: 95,
-    bio: 'Помогу разобраться в карьерных целях и найти свой путь',
-  },
-  {
-    id: 3,
-    name: 'Елена В.',
-    age: 35,
-    specialization: 'Терапевт',
-    experience: 'Опытный специалист',
-    topics: ['Горе', 'Потеря', 'Восстановление'],
-    image: 'https://images.pexels.com/photos/20860595/pexels-photo-20860595.jpeg',
-    rating: 5.0,
-    reviews: 156,
-    bio: 'Специалист по работе с жизненными кризисами и горем',
-  },
-  {
-    id: 4,
-    name: 'Игорь С.',
-    age: 26,
-    specialization: 'Слушатель',
-    experience: 'Начинающий',
-    topics: ['Личные проблемы', 'Поддержка', 'Общение'],
-    image: 'https://images.pexels.com/photos/966067/pexels-photo-966067.jpeg',
-    rating: 4.7,
-    reviews: 43,
-    bio: 'Готов выслушать и поддержать в любой жизненной ситуации',
-  },
-])
-
-export const chats = ref<Chat[]>([
-  {
-    id: 1,
-    name: 'Мария К.',
-    lastMessage: 'Спасибо за помощь!',
-    time: '2 часа назад',
-    unread: 2,
-    image: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-    status: 'active',
-    companionId: 1,
-  },
-  {
-    id: 2,
-    name: 'Алексей М.',
-    lastMessage: 'Давайте попробуем завтра',
-    time: '5 часов назад',
-    unread: 0,
-    image: 'https://images.pexels.com/photos/31422830/pexels-photo-31422830.png',
-    status: 'active',
-    companionId: 2,
-  },
-  {
-    id: 3,
-    name: 'Елена В.',
-    lastMessage: 'Сессия завершена',
-    time: 'вчера',
-    unread: 0,
-    image: 'https://images.pexels.com/photos/20860595/pexels-photo-20860595.jpeg',
-    status: 'offline',
-    companionId: 3,
-  },
-])
-
-export const messages = ref<Message[]>([
-  {
-    id: 1,
-    chatId: 1,
-    author: 'Мария К.',
-    text: 'Привет! Как дела? Я хотела обсудить свои проблемы с доверием в отношениях.',
-    time: '14:30',
-    isMine: false,
-  },
-  {
-    id: 2,
-    chatId: 1,
-    author: 'Ты',
-    text: 'Привет! Я слушаю, расскажи подробнее.',
-    time: '14:32',
-    isMine: true,
-  },
-  {
-    id: 3,
-    chatId: 1,
-    author: 'Мария К.',
-    text: 'Спасибо. Мне кажется, я часто беспокоюсь без причины и это портит мои отношения.',
-    time: '14:35',
-    isMine: false,
-  },
-  {
-    id: 4,
-    chatId: 1,
-    author: 'Мария К.',
-    text: 'Я не знаю, как научиться доверять.',
-    time: '14:36',
-    isMine: false,
-  },
-  {
-    id: 5,
-    chatId: 1,
-    author: 'Ты',
-    text: 'Это очень распространённая проблема. Давайте поговорим о корнях этого беспокойства. Когда оно началось?',
-    time: '14:38',
-    isMine: true,
-  },
-  {
-    id: 6,
-    chatId: 1,
-    author: 'Мария К.',
-    text: 'Спасибо за помощь! Это действительно помогает разговаривать об этом.',
-    time: '14:45',
-    isMine: false,
-  },
-])
-
+export const currentUser = ref<User | null>(null)
+export const companions = ref<Companion[]>([])
+export const chats = ref<Chat[]>([])
+export const messages = ref<Message[]>([])
 export const currentChatId = ref<number | null>(null)
+export const isLoading = ref(false)
+export const error = ref('')
+
+// Check if user is logged in
+export const isLoggedIn = () => {
+  return !!getAuthToken()
+}
 
 // User operations
-export const loginUser = (email: string, password: string) => {
-  // Simple mock login
-  if (email && password) {
-    console.log('User logged in:', email)
+export const loginUser = async (email: string, password: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    const response = await authAPI.login(email, password)
+    setAuthToken(response.token)
+    currentUser.value = response.user
     return true
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при входе'
+    return false
+  } finally {
+    isLoading.value = false
   }
-  return false
 }
 
-export const registerUser = (data: { fullName: string; email: string; password: string }) => {
-  const newUser: User = {
-    id: (currentUser.value?.id || 0) + 1,
-    name: data.fullName,
-    email: data.email,
-    password: data.password,
-    age: 25,
-    bio: '',
-    image: 'https://images.pexels.com/photos/31422830/pexels-photo-31422830.png',
+export const registerUser = async (data: { fullName: string; email: string; password: string }) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    const response = await authAPI.register(data.fullName, data.email, data.password)
+    setAuthToken(response.token)
+    currentUser.value = response.user
+    return response.user
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при регистрации'
+    return null
+  } finally {
+    isLoading.value = false
   }
-  currentUser.value = newUser
-  return newUser
 }
 
-export const updateUserProfile = (updates: Partial<User>) => {
-  if (currentUser.value) {
-    currentUser.value = { ...currentUser.value, ...updates }
-    return currentUser.value
+export const updateUserProfile = async (updates: { bio: string; image?: string }) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    const response = await usersAPI.updateProfile(updates.bio, updates.image)
+    currentUser.value = response.user
+    return response.user
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при обновлении профиля'
+    return null
+  } finally {
+    isLoading.value = false
   }
 }
 
 export const logoutUser = () => {
+  clearAuthToken()
   currentUser.value = null
+  chats.value = []
+  messages.value = []
 }
 
 // Companion operations
@@ -232,116 +118,180 @@ export const getCompanionById = (id: number) => {
   return companions.value.find(c => c.id === id)
 }
 
-export const filterCompanions = (filters: {
-  gender?: string
+export const filterCompanions = async (filters: {
   ageMin?: number
   ageMax?: number
   experience?: string
   topic?: string
 }) => {
-  return companions.value.filter(c => {
-    if (filters.ageMin && c.age < filters.ageMin) return false
-    if (filters.ageMax && c.age > filters.ageMax) return false
-    if (filters.experience && filters.experience !== 'all') {
-      const isExperienced = c.experience === 'Опытный специалист'
-      const filterIsExperienced = filters.experience === 'experienced'
-      if (isExperienced !== filterIsExperienced) return false
-    }
-    if (filters.topic && filters.topic !== 'Все' && !c.topics.includes(filters.topic)) {
-      return false
-    }
-    return true
-  })
+  try {
+    isLoading.value = true
+    error.value = ''
+    const result = await companionsAPI.getAll(filters)
+    companions.value = result
+    return result
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при фильтрации'
+    return []
+  } finally {
+    isLoading.value = false
+  }
 }
 
-export const sendConnectionRequest = (companionId: number) => {
-  const companion = getCompanionById(companionId)
-  if (companion) {
-    // Create or update chat
-    let chat = chats.value.find(c => c.companionId === companionId)
-    if (!chat) {
-      chat = {
-        id: chats.value.length + 1,
-        name: companion.name,
+export const loadCompanions = async () => {
+  try {
+    isLoading.value = true
+    const result = await companionsAPI.getAll({})
+    companions.value = result
+    return result
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при загрузке собеседников'
+    return []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const sendConnectionRequest = async (companionId: number) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    const response = await chatsAPI.create(companionId)
+    
+    // Add to chats list if new
+    if (!chats.value.find(c => c.id === response.chat.id)) {
+      const companion = companions.value.find(c => c.id === companionId)
+      chats.value.push({
+        id: response.chat.id,
+        name: companion?.name || '',
         lastMessage: 'Новое соединение',
         time: 'только что',
-        unread: 0,
-        image: companion.image,
-        status: 'active',
-        companionId: companionId,
-      }
-      chats.value.push(chat)
+        unread_count: 0,
+        image: companion?.image || '',
+        status: 'active' as const,
+        companion_id: companionId,
+      })
     }
-    return chat
+    
+    return response.chat
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при отправке запроса'
+    return null
+  } finally {
+    isLoading.value = false
   }
 }
 
 // Chat operations
+export const loadChats = async () => {
+  try {
+    isLoading.value = true
+    const result = await chatsAPI.getAll()
+    chats.value = result
+    return result
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при загрузке чатов'
+    return []
+  } finally {
+    isLoading.value = false
+  }
+}
+
 export const getChatById = (id: number) => {
   return chats.value.find(c => c.id === id)
 }
 
-export const getChatMessages = (chatId: number) => {
-  return messages.value.filter(m => m.chatId === chatId)
+export const getChatMessages = async (chatId: number) => {
+  try {
+    isLoading.value = true
+    const result = await chatsAPI.getMessages(chatId)
+    messages.value = result
+    return result
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при загрузке сообщений'
+    return []
+  } finally {
+    isLoading.value = false
+  }
 }
 
-export const sendMessage = (chatId: number, text: string) => {
-  const newMessage: Message = {
-    id: messages.value.length + 1,
-    chatId,
-    author: 'Ты',
-    text,
-    time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-    isMine: true,
+export const sendMessage = async (chatId: number, text: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    const response = await chatsAPI.sendMessage(chatId, text)
+    messages.value.push(response.message)
+    
+    // Update chat last message
+    const chat = getChatById(chatId)
+    if (chat) {
+      chat.lastMessage = text
+      chat.time = 'только что'
+    }
+    
+    return response.message
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при отправке сообщения'
+    return null
+  } finally {
+    isLoading.value = false
   }
-  messages.value.push(newMessage)
-
-  // Update last message in chat
-  const chat = getChatById(chatId)
-  if (chat) {
-    chat.lastMessage = text
-    chat.time = 'только что'
-  }
-
-  return newMessage
 }
 
-export const deleteChat = (chatId: number) => {
-  const index = chats.value.findIndex(c => c.id === chatId)
-  if (index > -1) {
-    chats.value.splice(index, 1)
-    // Also delete messages from this chat
-    const messageIndices = messages.value
-      .map((m, i) => m.chatId === chatId ? i : -1)
-      .filter(i => i > -1)
-    messageIndices.reverse().forEach(i => messages.value.splice(i, 1))
+export const deleteChat = async (chatId: number) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    await chatsAPI.delete(chatId)
+    const index = chats.value.findIndex(c => c.id === chatId)
+    if (index > -1) {
+      chats.value.splice(index, 1)
+    }
     return true
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при удалении чата'
+    return false
+  } finally {
+    isLoading.value = false
   }
-  return false
 }
 
 export const markChatAsRead = (chatId: number) => {
   const chat = getChatById(chatId)
   if (chat) {
-    chat.unread = 0
+    chat.unread_count = 0
   }
 }
 
-export const endSession = (chatId: number) => {
-  const chat = getChatById(chatId)
-  if (chat) {
-    chat.status = 'offline'
-    chat.lastMessage = 'Сессия завершена'
-    const endMessage: Message = {
-      id: messages.value.length + 1,
-      chatId,
-      author: 'Система',
-      text: 'Сессия завершена. Спасибо за использование нашего сервиса!',
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      isMine: false,
+export const endSession = async (chatId: number) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+    await chatsAPI.endSession(chatId)
+    const chat = getChatById(chatId)
+    if (chat) {
+      chat.status = 'offline'
+      chat.lastMessage = 'Сессия завершена'
     }
-    messages.value.push(endMessage)
     return true
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Ошибка при завершении сессии'
+    return false
+  } finally {
+    isLoading.value = false
   }
-  return false
+}
+
+// Load current user on app start
+export const loadCurrentUser = async () => {
+  if (!isLoggedIn()) return null
+  
+  try {
+    const response = await authAPI.getCurrentUser()
+    currentUser.value = response.user
+    return response.user
+  } catch (err) {
+    logoutUser()
+    return null
+  }
 }
