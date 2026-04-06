@@ -173,13 +173,7 @@ const navigateToProfile = (companionId: number) => {
 
             <!-- Reset Button -->
             <button
-              @click="
-                filters.gender = 'all'
-                filters.ageMin = 18
-                filters.ageMax = 65
-                filters.experience = 'all'
-                filters.topic = 'all'
-              "
+              @click="resetFilters"
               class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all"
             >
               Сбросить фильтры
