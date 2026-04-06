@@ -1,70 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages } from '../composables/useAppState'
 
-const messages = ref([
-  {
-    id: 1,
-    author: 'Мария К.',
-    text: 'Привет! Как дела? Я хотела обсудить свои проблемы с доверием в отношениях.',
-    time: '14:30',
-    isMine: false,
-  },
-  {
-    id: 2,
-    author: 'Ты',
-    text: 'Привет! Я слушаю, расскажи подробнее.',
-    time: '14:32',
-    isMine: true,
-  },
-  {
-    id: 3,
-    author: 'Мария К.',
-    text: 'Спасибо. Мне кажется, я часто беспокоюсь без причины и это портит мои отношения.',
-    time: '14:35',
-    isMine: false,
-  },
-  {
-    id: 4,
-    author: 'Мария К.',
-    text: 'Я не знаю, как научиться доверять.',
-    time: '14:36',
-    isMine: false,
-  },
-  {
-    id: 5,
-    author: 'Ты',
-    text: 'Это очень распространённая проблема. Давайте поговорим о корнях этого беспокойства. Когда оно началось?',
-    time: '14:38',
-    isMine: true,
-  },
-  {
-    id: 6,
-    author: 'Мария К.',
-    text: 'Спасибо за помощь! Это действительно помогает разговаривать об этом.',
-    time: '14:45',
-    isMine: false,
-  },
-])
-
+const router = useRouter()
+const route = useRoute()
 const messageInput = ref('')
+const isEndingSession = ref(false)
+const sessionEnded = ref(false)
 
-const currentCompanion = {
-  name: 'Мария К.',
-  specialization: 'Психолог',
-  status: 'online',
-  image: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-}
+const chatId = computed(() => parseInt(route.query.id as string) || 1)
+
+const chat = computed(() => getChatById(chatId.value))
+
+const chatMessages = computed(() => getChatMessages(chatId.value))
+
+const currentCompanion = computed(() => {
+  if (chat.value) {
+    return {
+      name: chat.value.name,
+      specialization: 'Психолог',
+      status: chat.value.status,
+      image: chat.value.image,
+    }
+  }
+  return null
+})
 
 const sendMessage = () => {
-  if (messageInput.value.trim()) {
-    messages.value.push({
-      id: messages.value.length + 1,
-      author: 'Ты',
-      text: messageInput.value,
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      isMine: true,
-    })
+  if (messageInput.value.trim() && chatId.value) {
+    sendChatMessage(chatId.value, messageInput.value)
     messageInput.value = ''
+  }
+}
+
+const handleEndSession = async () => {
+  isEndingSession.value = true
+  try {
+    endSession(chatId.value)
+    sessionEnded.value = true
+    setTimeout(() => {
+      router.push('/profile')
+    }, 2000)
+  } finally {
+    isEndingSession.value = false
   }
 }
 </script>
@@ -104,7 +83,12 @@ const sendMessage = () => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </button>
-          <button class="p-2 hover:bg-light-bg rounded-lg transition-colors text-red-500 hover:text-red-600">
+          <button
+            @click="handleEndSession"
+            :disabled="isEndingSession"
+            class="p-2 hover:bg-light-bg rounded-lg transition-colors text-red-500 hover:text-red-600 disabled:opacity-50"
+            title="Завершить сессию"
+          >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -112,10 +96,20 @@ const sendMessage = () => {
         </div>
       </div>
 
+      <!-- Session Ended Message -->
+      <transition name="fade">
+        <div v-if="sessionEnded" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
+          <div class="bg-white rounded-2xl p-8 text-center">
+            <h2 class="text-2xl font-bold text-secondary mb-2">Сессия завершена</h2>
+            <p class="text-secondary/60">Спасибо за использование нашего сервиса!</p>
+          </div>
+        </div>
+      </transition>
+
       <!-- Messages Container -->
       <div class="flex-1 overflow-y-auto mb-6 space-y-4 px-2">
         <div
-          v-for="message in messages"
+          v-for="message in chatMessages"
           :key="message.id"
           :class="[
             'flex gap-3',
@@ -209,5 +203,15 @@ div::-webkit-scrollbar-thumb {
 
 div::-webkit-scrollbar-thumb:hover {
   background: #d4846a;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

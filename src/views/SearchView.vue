@@ -1,65 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { companions, filterCompanions, sendConnectionRequest, chats, currentUser } from '../composables/useAppState'
 
-// Метод для сброса фильтров
-const resetFilters = () => {
-  filters.value.gender = 'all'
-  filters.value.ageMin = 18
-  filters.value.ageMax = 65
-  filters.value.experience = 'all'
-  filters.value.topic = 'all'
-}
-
-const companions = ref([
-  {
-    id: 1,
-    name: 'Мария К.',
-    age: 28,
-    specialization: 'Психолог',
-    experience: 'Опытный специалист',
-    topics: ['Отношения', 'Тревожность', 'Стресс'],
-    image: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-    rating: 4.9,
-    reviews: 127,
-    bio: 'Специализируюсь на работе с молодежью и вопросами личных отношений',
-  },
-  {
-    id: 2,
-    name: 'Алексей М.',
-    age: 32,
-    specialization: 'Counselor',
-    experience: 'Опытный специалист',
-    topics: ['Карьера', 'Развитие', 'Мотивация'],
-    image: 'https://images.pexels.com/photos/31422830/pexels-photo-31422830.png',
-    rating: 4.8,
-    reviews: 95,
-    bio: 'Помогу разобраться в карьерных целях и найти свой путь',
-  },
-  {
-    id: 3,
-    name: 'Елена В.',
-    age: 35,
-    specialization: 'Терапевт',
-    experience: 'Опытный специалист',
-    topics: ['Горе', 'Потеря', 'Восстановление'],
-    image: 'https://images.pexels.com/photos/20860595/pexels-photo-20860595.jpeg',
-    rating: 5.0,
-    reviews: 156,
-    bio: 'Специалист по работе с жизненными кризисами и горем',
-  },
-  {
-    id: 4,
-    name: 'Игорь С.',
-    age: 26,
-    specialization: 'Слушатель',
-    experience: 'Начинающий',
-    topics: ['Личные проблемы', 'Поддержка', 'Общение'],
-    image: 'https://images.pexels.com/photos/966067/pexels-photo-966067.jpeg',
-    rating: 4.7,
-    reviews: 43,
-    bio: 'Готов выслушать и поддержать в любой жизненной ситуации',
-  },
-])
+const router = useRouter()
+const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
+const showNotification = ref('')
 
 const filters = ref({
   gender: 'all',
@@ -69,9 +15,49 @@ const filters = ref({
   topic: 'all',
 })
 
-const selectedCompanion = ref<typeof companions.value[0] | null>(null)
-
 const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
+
+const filteredCompanions = computed(() => {
+  return filterCompanions({
+    ageMin: filters.value.ageMin,
+    ageMax: filters.value.ageMax,
+    experience: filters.value.experience,
+    topic: filters.value.topic === 'Все' ? undefined : filters.value.topic,
+  })
+})
+
+const resetFilters = () => {
+  filters.value = {
+    gender: 'all',
+    ageMin: 18,
+    ageMax: 65,
+    experience: 'all',
+    topic: 'Все',
+  }
+}
+
+const handleConnectionRequest = (companionId: number) => {
+  const newChat = sendConnectionRequest(companionId)
+  if (newChat) {
+    showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
+    setTimeout(() => {
+      showNotification.value = ''
+      selectedCompanion.value = null
+    }, 2000)
+  }
+}
+
+const navigateToChat = (companionId: number) => {
+  const chat = chats.value.find(c => c.companionId === companionId)
+  if (chat) {
+    router.push(`/chat?id=${chat.id}`)
+  }
+}
+
+const navigateToProfile = (companionId: number) => {
+  // Could navigate to companion's profile page
+  console.log('View profile for companion:', companionId)
+}
 </script>
 
 <template>
@@ -186,9 +172,18 @@ const topics = ['Все', 'Отношения', 'Карьера', 'Тревож�
             </div>
 
             <!-- Reset Button -->
-           <button @click="resetFilters" class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all">
-  Сбросить фильтры
-</button>
+            <button
+              @click="
+                filters.gender = 'all'
+                filters.ageMin = 18
+                filters.ageMax = 65
+                filters.experience = 'all'
+                filters.topic = 'all'
+              "
+              class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all"
+            >
+              Сбросить фильтры
+            </button>
           </div>
         </div>
 
@@ -211,10 +206,17 @@ const topics = ['Все', 'Отношения', 'Карьера', 'Тревож�
             </button>
           </div>
 
+          <!-- Notification -->
+          <transition name="slide">
+            <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
+              {{ showNotification }}
+            </div>
+          </transition>
+
           <!-- Companions Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-6">
             <div
-              v-for="companion in companions"
+              v-for="companion in filteredCompanions"
               :key="companion.id"
               class="group bg-white border border-border/50 rounded-3xl overflow-hidden shadow-card hover:shadow-hover hover:translate-y-[-4px] transition-all cursor-pointer"
               @click="selectedCompanion = companion"
@@ -266,6 +268,7 @@ const topics = ['Все', 'Отношения', 'Карьера', 'Тревож�
 
                 <!-- Button -->
                 <button
+                  @click.stop="selectedCompanion = companion"
                   class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
                 >
                   Предложить связь
@@ -309,11 +312,13 @@ const topics = ['Все', 'Отношения', 'Карьера', 'Тревож�
 
           <div class="space-y-3 mb-6">
             <button
+              @click="handleConnectionRequest(selectedCompanion.id)"
               class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
             >
-              Написать сообщение
+              Предложить связь
             </button>
             <button
+              @click="navigateToProfile(selectedCompanion.id)"
               class="w-full py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
             >
               Посмотреть профиль
@@ -338,5 +343,16 @@ const topics = ['Все', 'Отношения', 'Карьера', 'Тревож�
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>

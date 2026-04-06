@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { loginUser, registerUser, currentUser } from '../composables/useAppState'
 
 const router = useRouter()
 const isLogin = ref(true)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
 
 const loginForm = ref({
   email: '',
@@ -20,14 +24,71 @@ const registerForm = ref({
   acceptTerms: false,
 })
 
-const handleLogin = () => {
-  console.log('Login:', loginForm.value)
-  // Handle login logic here
+const handleLogin = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  if (!loginForm.value.email || !loginForm.value.password) {
+    errorMessage.value = 'Пожалуйста, заполните все поля'
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const success = loginUser(loginForm.value.email, loginForm.value.password)
+    if (success) {
+      successMessage.value = 'Вы успешно вошли!'
+      setTimeout(() => {
+        router.push('/search')
+      }, 1000)
+    } else {
+      errorMessage.value = 'Неверный email или пароль'
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 
-const handleRegister = () => {
-  console.log('Register:', registerForm.value)
-  // Handle registration logic here
+const handleRegister = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  if (!registerForm.value.fullName || !registerForm.value.email || !registerForm.value.password) {
+    errorMessage.value = 'Пожалуйста, заполните все поля'
+    return
+  }
+
+  if (registerForm.value.password !== registerForm.value.confirmPassword) {
+    errorMessage.value = 'Пароли не совпадают'
+    return
+  }
+
+  if (registerForm.value.password.length < 6) {
+    errorMessage.value = 'Пароль должен быть не менее 6 символов'
+    return
+  }
+
+  if (!registerForm.value.acceptTerms) {
+    errorMessage.value = 'Вы должны согласиться с условиями использования'
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const newUser = registerUser({
+      fullName: registerForm.value.fullName,
+      email: registerForm.value.email,
+      password: registerForm.value.password,
+    })
+    if (newUser) {
+      successMessage.value = 'Аккаунт создан успешно!'
+      setTimeout(() => {
+        router.push('/search')
+      }, 1000)
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const navigate = (path: string) => {
@@ -51,6 +112,20 @@ const navigate = (path: string) => {
 
       <!-- Form Container -->
       <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+        <!-- Error Message -->
+        <transition name="fade">
+          <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+            {{ errorMessage }}
+          </div>
+        </transition>
+
+        <!-- Success Message -->
+        <transition name="fade">
+          <div v-if="successMessage" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
+            {{ successMessage }}
+          </div>
+        </transition>
+
         <!-- Login Form -->
         <form v-if="isLogin" @submit.prevent="handleLogin" class="space-y-6">
           <!-- Email -->
@@ -105,9 +180,11 @@ const navigate = (path: string) => {
           <!-- Login Button -->
           <button
             type="submit"
-            class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+            :disabled="isLoading"
+            class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Войти
+            <span v-if="!isLoading">Войти</span>
+            <span v-else>Загрузка...</span>
           </button>
 
           <!-- Divider -->
@@ -237,9 +314,11 @@ const navigate = (path: string) => {
           <!-- Register Button -->
           <button
             type="submit"
-            class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all mt-6"
+            :disabled="isLoading"
+            class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Создать аккаунт
+            <span v-if="!isLoading">Создать аккаунт</span>
+            <span v-else>Загрузка...</span>
           </button>
 
           <!-- Login Link -->
@@ -281,4 +360,15 @@ const navigate = (path: string) => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>
