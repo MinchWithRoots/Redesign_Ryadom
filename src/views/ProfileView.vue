@@ -311,8 +311,8 @@ onMounted(async () => {
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                       <h3 class="font-bold text-secondary">{{ chat.name }}</h3>
-                      <span v-if="chat.unread > 0" class="ml-auto px-2 py-1 bg-primary text-white text-xs font-bold rounded-full">
-                        {{ chat.unread }}
+                      <span v-if="chat.unread_count > 0" class="ml-auto px-2 py-1 bg-primary text-white text-xs font-bold rounded-full">
+                        {{ chat.unread_count }}
                       </span>
                     </div>
                     <p class="text-sm text-secondary/60 truncate">{{ chat.lastMessage }}</p>

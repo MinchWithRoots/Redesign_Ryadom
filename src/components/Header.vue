@@ -85,18 +85,36 @@ const navItems = [
 
       <!-- Desktop Buttons -->
       <div class="hidden lg:flex items-center gap-4">
-        <button
-          @click="navigate('/auth')"
-          class="px-6 py-2 text-secondary font-medium border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
-        >
-          Логин
-        </button>
-        <button
-          @click="navigate('/auth')"
-          class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
-        >
-          Регистрация
-        </button>
+        <!-- Not logged in -->
+        <template v-if="!currentUser">
+          <button
+            @click="navigate('/auth')"
+            class="px-6 py-2 text-secondary font-medium border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+          >
+            Логин
+          </button>
+          <button
+            @click="navigate('/auth')"
+            class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
+          >
+            Регистрация
+          </button>
+        </template>
+        <!-- Logged in -->
+        <template v-else>
+          <button
+            @click="navigate('/profile')"
+            class="px-6 py-2 text-secondary font-medium border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+          >
+            {{ currentUser.name }}
+          </button>
+          <button
+            @click="handleLogout"
+            class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
+          >
+            Выйти
+          </button>
+        </template>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -157,18 +175,36 @@ const navItems = [
           Контакты
         </a>
         <div class="flex flex-col gap-2 pt-2 border-t border-border">
-          <button
-            @click="navigate('/auth')"
-            class="w-full px-6 py-2 text-secondary font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
-          >
-            Логин
-          </button>
-          <button
-            @click="navigate('/auth')"
-            class="w-full px-6 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover transition-all"
-          >
-            Регистрация
-          </button>
+          <!-- Not logged in -->
+          <template v-if="!currentUser">
+            <button
+              @click="navigate('/auth')"
+              class="w-full px-6 py-2 text-secondary font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
+            >
+              Логин
+            </button>
+            <button
+              @click="navigate('/auth')"
+              class="w-full px-6 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover transition-all"
+            >
+              Регистрация
+            </button>
+          </template>
+          <!-- Logged in -->
+          <template v-else>
+            <button
+              @click="navigate('/profile')"
+              class="w-full px-6 py-2 text-secondary font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
+            >
+              {{ currentUser.name }}
+            </button>
+            <button
+              @click="handleLogout"
+              class="w-full px-6 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover transition-all"
+            >
+              Выйти
+            </button>
+          </template>
         </div>
       </nav>
     </div>
