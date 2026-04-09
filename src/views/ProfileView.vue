@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats } from '../composables/useAppState'
 
 const router = useRouter()
 const activeTab = ref('chats')
@@ -101,6 +101,11 @@ const handleSaveSettings = async () => {
     isSavingSettings.value = false
   }
 }
+
+// Load chats on mount
+onMounted(async () => {
+  await loadChats()
+})
 </script>
 
 <template>
