@@ -8,6 +8,11 @@ const route = useRoute()
 const messageInput = ref('')
 const isEndingSession = ref(false)
 const sessionEnded = ref(false)
+const showReportModal = ref(false)
+const reportReason = ref('')
+const reportMessage = ref('')
+const isReporting = ref(false)
+const reportSuccess = ref('')
 
 const chatId = computed(() => parseInt(route.query.id as string) || 1)
 
@@ -19,7 +24,6 @@ const currentCompanion = computed(() => {
   if (chat.value) {
     return {
       name: chat.value.name,
-      specialization: 'Психолог',
       status: chat.value.status,
       image: chat.value.image,
     }
@@ -44,6 +48,34 @@ const handleEndSession = async () => {
     }, 2000)
   } finally {
     isEndingSession.value = false
+  }
+}
+
+const handleReportUser = async () => {
+  if (!reportReason.value || !reportMessage.value) {
+    alert('Пожалуйста, выберите причину и опишите ситуацию')
+    return
+  }
+
+  isReporting.value = true
+  try {
+    // In a real app, this would send to backend
+    console.log('Report submitted:', {
+      chatId: chatId.value,
+      reason: reportReason.value,
+      message: reportMessage.value,
+      timestamp: new Date().toISOString(),
+    })
+
+    reportSuccess.value = 'Спасибо за отчёт. Наша команда проверит это.'
+    setTimeout(() => {
+      showReportModal.value = false
+      reportSuccess.value = ''
+      reportReason.value = ''
+      reportMessage.value = ''
+    }, 2000)
+  } finally {
+    isReporting.value = false
   }
 }
 </script>
@@ -84,9 +116,18 @@ const handleEndSession = async () => {
             </svg>
           </button>
           <button
+            @click="showReportModal = true"
+            class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500 hover:text-red-600"
+            title="SOS/Пожаловаться"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 6H2a1 1 0 00-1 1v1a6 6 0 006 6h8a6 6 0 006-6v-1a1 1 0 00-1-1h-1m-6-15a6 6 0 100 12 6 6 0 000-12z" />
+            </svg>
+          </button>
+          <button
             @click="handleEndSession"
             :disabled="isEndingSession"
-            class="p-2 hover:bg-light-bg rounded-lg transition-colors text-red-500 hover:text-red-600 disabled:opacity-50"
+            class="p-2 hover:bg-light-bg rounded-lg transition-colors text-secondary/60 hover:text-secondary disabled:opacity-50"
             title="Завершить сессию"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,6 +143,75 @@ const handleEndSession = async () => {
           <div class="bg-white rounded-2xl p-8 text-center">
             <h2 class="text-2xl font-bold text-secondary mb-2">Сессия завершена</h2>
             <p class="text-secondary/60">Спасибо за использование нашего сервиса!</p>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Report Modal -->
+      <transition name="fade">
+        <div v-if="showReportModal" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
+          <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-hover">
+            <button
+              @click="showReportModal = false"
+              class="ml-auto block text-secondary/50 hover:text-secondary transition-colors mb-4"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h2 class="text-2xl font-bold text-secondary mb-2">SOS/Пожаловаться</h2>
+            <p class="text-sm text-secondary/60 mb-6">Если вы чувствуете себя в опасности или встретили неадекватное поведение, расскажите нам.</p>
+
+            <!-- Success Message -->
+            <transition name="fade">
+              <div v-if="reportSuccess" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
+                {{ reportSuccess }}
+              </div>
+            </transition>
+
+            <div class="space-y-4">
+              <!-- Reason Select -->
+              <div>
+                <label class="text-sm font-semibold text-secondary block mb-2">Причина</label>
+                <select
+                  v-model="reportReason"
+                  class="w-full px-4 py-2 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  <option value="">Выберите причину...</option>
+                  <option value="harassment">Оскорбления/Harassing</option>
+                  <option value="inappropriate">Неадекватное поведение</option>
+                  <option value="explicit">Оскорбительный контент</option>
+                  <option value="danger">Ощущение опасности</option>
+                  <option value="other">Другое</option>
+                </select>
+              </div>
+
+              <!-- Message -->
+              <div>
+                <label class="text-sm font-semibold text-secondary block mb-2">Описание</label>
+                <textarea
+                  v-model="reportMessage"
+                  rows="3"
+                  placeholder="Опишите, что произошло..."
+                  class="w-full px-4 py-2 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Submit Button -->
+              <button
+                @click="handleReportUser"
+                :disabled="isReporting"
+                class="w-full py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span v-if="!isReporting">Отправить отчёт</span>
+                <span v-else>Отправка...</span>
+              </button>
+
+              <p class="text-xs text-secondary/60 text-center">
+                Ваши сообщения остаются конфиденциальными. Мы проверим все отчёты.
+              </p>
+            </div>
           </div>
         </div>
       </transition>

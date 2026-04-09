@@ -78,7 +78,7 @@ const navigateToProfile = (companionId: number) => {
           Найди своего <span class="text-primary">собеседника</span>
         </h1>
         <p class="text-xl text-secondary/60">
-          Профессионалы и волонтёры, готовые помочь и поддержать
+          Люди в терапии, готовые слушать и поддерживать друг друга
         </p>
       </div>
 
@@ -146,9 +146,9 @@ const navigateToProfile = (companionId: number) => {
               </p>
             </div>
 
-            <!-- Experience -->
+            <!-- Experience in Therapy -->
             <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Опыт</p>
+              <p class="text-sm font-semibold text-secondary mb-3">Опыт в терапии</p>
               <div class="flex flex-col gap-2">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -166,7 +166,7 @@ const navigateToProfile = (companionId: number) => {
                     value="beginner"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Начинающий</span>
+                  <span class="text-sm text-secondary/70">Начало пути</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -175,7 +175,7 @@ const navigateToProfile = (companionId: number) => {
                     value="experienced"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Опытный</span>
+                  <span class="text-sm text-secondary/70">На пути уже некоторое время</span>
                 </label>
               </div>
             </div>
@@ -248,10 +248,10 @@ const navigateToProfile = (companionId: number) => {
                   <div class="flex items-start justify-between mb-2">
                     <div>
                       <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
-                      <p class="text-sm text-secondary/60">{{ companion.age }} лет • {{ companion.specialization }}</p>
+                      <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
                     </div>
                   </div>
-                  <p class="text-xs text-primary font-semibold mb-3">{{ companion.experience }}</p>
+                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ companion.experience }}</p>
                   <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
                 </div>
 
@@ -310,7 +310,7 @@ const navigateToProfile = (companionId: number) => {
               class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
             />
             <h2 class="text-2xl font-bold text-secondary mb-2">{{ selectedCompanion.name }}</h2>
-            <p class="text-secondary/60">{{ selectedCompanion.specialization }}</p>
+            <p class="text-secondary/60">{{ selectedCompanion.age }} лет</p>
           </div>
 
           <div class="space-y-3 mb-6">
