@@ -1,17 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { currentUser, logoutUser, loadCurrentUser } from '../composables/useAppState'
 import logo from '../assets/logo.svg'
 
 const router = useRouter()
 const route = useRoute()
 const isMobileMenuOpen = ref(false)
 
+// Проверить, залогинен ли пользователь
+onMounted(async () => {
+  await loadCurrentUser()
+})
+
 const isActive = (path: string) => route.path === path
 
 const navigate = (path: string) => {
   router.push(path)
   isMobileMenuOpen.value = false
+}
+
+const handleLogout = () => {
+  logoutUser()
+  router.push('/auth')
 }
 
 const navItems = [

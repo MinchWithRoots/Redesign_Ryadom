@@ -35,11 +35,11 @@ const handleLogin = async () => {
 
   isLoading.value = true
   try {
-    const success = loginUser(loginForm.value.email, loginForm.value.password)
+    const success = await loginUser(loginForm.value.email, loginForm.value.password)
     if (success) {
       successMessage.value = 'Вы успешно вошли!'
       setTimeout(() => {
-        router.push('/search')
+        router.push('/profile')
       }, 1000)
     } else {
       errorMessage.value = 'Неверный email или пароль'
@@ -75,7 +75,7 @@ const handleRegister = async () => {
 
   isLoading.value = true
   try {
-    const newUser = registerUser({
+    const newUser = await registerUser({
       fullName: registerForm.value.fullName,
       email: registerForm.value.email,
       password: registerForm.value.password,
@@ -83,7 +83,7 @@ const handleRegister = async () => {
     if (newUser) {
       successMessage.value = 'Аккаунт создан успешно!'
       setTimeout(() => {
-        router.push('/search')
+        router.push('/profile')
       }, 1000)
     }
   } finally {
