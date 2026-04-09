@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { loginUser, registerUser, currentUser } from '../composables/useAppState'
+import { loginUser, registerUser, currentUser, error as appError } from '../composables/useAppState'
 
 const router = useRouter()
 const isLogin = ref(true)
@@ -10,6 +10,13 @@ const showConfirmPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+// Watch for errors from useAppState
+watch(appError, (newError) => {
+  if (newError) {
+    errorMessage.value = newError
+  }
+})
 
 const loginForm = ref({
   email: '',

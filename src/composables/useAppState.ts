@@ -211,8 +211,10 @@ export const loginUser = async (email: string, password: string) => {
     currentUser.value = response.user
     return true
   } catch (err) {
-    console.warn('API login failed, using mock login:', err)
-    // Mock login - accept any email/password
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+    console.warn('API login failed, using mock login for development:', errorMessage)
+
+    // Mock login - accept any email/password for development
     if (email && password) {
       const mockToken = 'mock-token-' + Math.random().toString(36).substr(2, 9)
       setAuthToken(mockToken)
@@ -221,6 +223,9 @@ export const loginUser = async (email: string, password: string) => {
         email: email,
         name: email.split('@')[0],
       }
+      // Show warning about mock mode
+      console.warn('⚠️ ВНИМАНИЕ: Используется режим разработки (mock auth). Данные не сохраняются в БД. Для настройки реального backend смотри DATABASE_SETUP.md')
+      error.value = 'Режим разработки: данные не сохраняются. ' + errorMessage
       return true
     }
     error.value = 'Пожалуйста, заполните все поля'
@@ -239,8 +244,10 @@ export const registerUser = async (data: { fullName: string; email: string; pass
     currentUser.value = response.user
     return response.user
   } catch (err) {
-    console.warn('API register failed, using mock registration:', err)
-    // Mock registration
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+    console.warn('API register failed, using mock registration for development:', errorMessage)
+
+    // Mock registration for development
     const mockToken = 'mock-token-' + Math.random().toString(36).substr(2, 9)
     setAuthToken(mockToken)
     const newUser = {
@@ -249,6 +256,9 @@ export const registerUser = async (data: { fullName: string; email: string; pass
       email: data.email,
     }
     currentUser.value = newUser
+    // Show warning about mock mode
+    console.warn('⚠️ ВНИМАНИЕ: Используется режим разработки (mock registration). Данные не сохраняются в БД. Для настройки реального backend смотри DATABASE_SETUP.md')
+    error.value = 'Режим разработки: данные не сохраняются. ' + errorMessage
     return newUser
   } finally {
     isLoading.value = false
