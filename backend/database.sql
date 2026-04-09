@@ -1,9 +1,3 @@
--- Create database
-CREATE DATABASE IF NOT EXISTS ryadom;
-
--- Connect to the database
-\c ryadom
-
 -- Users table (основная таблица пользователей)
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
