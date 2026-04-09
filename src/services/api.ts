@@ -31,17 +31,30 @@ const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  })
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'API Error')
+    if (!response.ok) {
+      try {
+        const error = await response.json()
+        throw new Error(error.error || 'API Error')
+      } catch (parseError) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`)
+      }
+    }
+
+    return response.json()
+  } catch (error) {
+    // Network error or fetch failed
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.error(`Network error: Cannot connect to backend at ${API_BASE_URL}`, error)
+      throw new Error(`Cannot connect to backend. Make sure the server is running at ${API_BASE_URL}`)
+    }
+    throw error
   }
-
-  return response.json()
 }
 
 // Auth API
