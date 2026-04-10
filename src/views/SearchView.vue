@@ -42,7 +42,11 @@ const filteredCompanions = computed(() => {
 })
 
 onMounted(async () => {
-  await loadCompanions()
+  try {
+    await loadCompanions()
+  } catch (err) {
+    console.error('Failed to load companions:', err)
+  }
 })
 
 const resetFilters = async () => {
@@ -53,17 +57,24 @@ const resetFilters = async () => {
     experience: 'all',
     topic: 'Все',
   }
-  await loadCompanions()
+  try {
+    await loadCompanions()
+  } catch (err) {
+    console.error('Failed to load companions:', err)
+  }
 }
 
-const handleConnectionRequest = (companionId: number) => {
-  const newChat = sendConnectionRequest(companionId)
-  if (newChat) {
+const handleConnectionRequest = async (companionId: number) => {
+  try {
+    await sendConnectionRequest(companionId)
     showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
     setTimeout(() => {
       showNotification.value = ''
       selectedCompanion.value = null
     }, 2000)
+  } catch (err) {
+    console.error('Failed to send connection request:', err)
+    showNotification.value = 'Ошибка при отправке запроса'
   }
 }
 
