@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { companions, filterCompanions, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import { companions, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -18,21 +18,31 @@ const filters = ref({
 const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
 
 const filteredCompanions = computed(() => {
-  return companions.value
+  let filtered = [...companions.value]
+
+  // Filter by age
+  filtered = filtered.filter(c => c.age >= filters.value.ageMin && c.age <= filters.value.ageMax)
+
+  // Filter by experience
+  if (filters.value.experience !== 'all') {
+    filtered = filtered.filter(c => {
+      const companionExp = c.experience.toLowerCase()
+      const filterExp = filters.value.experience.toLowerCase()
+      return companionExp.includes(filterExp)
+    })
+  }
+
+  // Filter by topic
+  if (filters.value.topic !== 'Все') {
+    filtered = filtered.filter(c => c.topics.includes(filters.value.topic))
+  }
+
+  return filtered
 })
 
 onMounted(async () => {
   await loadCompanions()
 })
-
-const applyFilters = async () => {
-  await filterCompanions({
-    ageMin: filters.value.ageMin,
-    ageMax: filters.value.ageMax,
-    experience: filters.value.experience,
-    topic: filters.value.topic === 'Все' ? undefined : filters.value.topic,
-  })
-}
 
 const resetFilters = async () => {
   filters.value = {
@@ -196,7 +206,7 @@ const navigateToProfile = (companionId: number) => {
             <button
               v-for="topic in topics"
               :key="topic"
-              @click="filters.topic = topic; applyFilters()"
+              @click="filters.topic = topic"
               :class="[
                 'px-4 py-2 rounded-full text-sm font-medium transition-all',
                 filters.topic === topic
