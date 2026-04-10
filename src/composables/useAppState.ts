@@ -7,8 +7,9 @@ const MOCK_COMPANIONS: Companion[] = [
     id: 1,
     name: 'Анна М.',
     age: 28,
+    gender: 'female',
     specialization: 'В процессе личной терапии',
-    experience: 'На пути 1.5 года',
+    experience: 'experienced',
     topics: ['Отношения', 'Тревожность'],
     image: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
     rating: 4.9,
@@ -19,8 +20,9 @@ const MOCK_COMPANIONS: Companion[] = [
     id: 2,
     name: 'Виктор П.',
     age: 35,
+    gender: 'male',
     specialization: 'На пути выздоровления',
-    experience: 'На пути 3 года',
+    experience: 'experienced',
     topics: ['Карьера', 'Депрессия'],
     image: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
     rating: 4.8,
@@ -31,8 +33,9 @@ const MOCK_COMPANIONS: Companion[] = [
     id: 3,
     name: 'Елена К.',
     age: 32,
+    gender: 'female',
     specialization: 'Путь выздоровления',
-    experience: 'На пути 2 года',
+    experience: 'experienced',
     topics: ['Отношения', 'Горе', 'Развитие'],
     image: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
     rating: 5.0,
@@ -43,8 +46,9 @@ const MOCK_COMPANIONS: Companion[] = [
     id: 4,
     name: 'Мария С.',
     age: 26,
+    gender: 'female',
     specialization: 'В процессе терапии',
-    experience: 'Начало пути',
+    experience: 'beginner',
     topics: ['Тревожность', 'Карьера'],
     image: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
     rating: 4.7,
@@ -55,8 +59,9 @@ const MOCK_COMPANIONS: Companion[] = [
     id: 5,
     name: 'Дмитрий О.',
     age: 38,
+    gender: 'male',
     specialization: 'Опытный в терапии',
-    experience: 'На пути 5 лет',
+    experience: 'experienced',
     topics: ['Горе', 'Депрессия', 'Развитие'],
     image: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
     rating: 4.9,
@@ -67,8 +72,9 @@ const MOCK_COMPANIONS: Companion[] = [
     id: 6,
     name: 'Софья Л.',
     age: 29,
+    gender: 'female',
     specialization: 'На пути выздоровления',
-    experience: 'На пути 2.5 года',
+    experience: 'beginner',
     topics: ['Отношения', 'Развитие', 'Тревожность'],
     image: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
     rating: 4.8,
@@ -158,8 +164,9 @@ export interface Companion {
   id: number
   name: string
   age: number
+  gender: 'female' | 'male'
   specialization: string
-  experience: string
+  experience: 'beginner' | 'experienced'
   topics: string[]
   image: string
   rating: number
@@ -301,6 +308,7 @@ export const getCompanionById = (id: number) => {
 }
 
 export const filterCompanions = async (filters: {
+  gender?: string
   ageMin?: number
   ageMax?: number
   experience?: string
@@ -317,6 +325,9 @@ export const filterCompanions = async (filters: {
     // Filter mock data when backend is not available
     let filtered = [...MOCK_COMPANIONS]
 
+    if (filters.gender && filters.gender !== 'all') {
+      filtered = filtered.filter(c => c.gender === filters.gender)
+    }
     if (filters.ageMin) {
       filtered = filtered.filter(c => c.age >= filters.ageMin!)
     }
@@ -324,7 +335,7 @@ export const filterCompanions = async (filters: {
       filtered = filtered.filter(c => c.age <= filters.ageMax!)
     }
     if (filters.experience && filters.experience !== 'all') {
-      filtered = filtered.filter(c => c.experience.toLowerCase().includes(filters.experience!.toLowerCase()))
+      filtered = filtered.filter(c => c.experience === filters.experience)
     }
     if (filters.topic) {
       filtered = filtered.filter(c => c.topics.includes(filters.topic!))
