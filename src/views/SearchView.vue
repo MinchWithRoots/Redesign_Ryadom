@@ -64,8 +64,7 @@ const navigateToChat = (companionId: number) => {
 }
 
 const navigateToProfile = (companionId: number) => {
-  // Could navigate to companion's profile page
-  console.log('View profile for companion:', companionId)
+  router.push(`/user/${companionId}`)
 }
 </script>
 
