@@ -9,6 +9,7 @@ export interface User {
   age?: number
   bio: string
   image?: string
+  role?: string // 'user' or 'admin'
 }
 
 export interface CompanionTopic {
@@ -73,6 +74,11 @@ export const isLoggedIn = () => {
   return !!currentUser.value
 }
 
+// Check if user is admin
+export const isAdmin = () => {
+  return currentUser.value?.role === 'admin'
+}
+
 // Load current user
 export const loadCurrentUser = async () => {
   try {
@@ -113,6 +119,7 @@ export const loadCurrentUser = async () => {
         name: data.user.user_metadata?.full_name || 'User',
         email: userEmail,
         bio: '',
+        role: 'user',
       }
       return currentUser.value
     }
@@ -124,6 +131,7 @@ export const loadCurrentUser = async () => {
       age: profile.age,
       bio: profile.bio || '',
       image: profile.image,
+      role: profile.role || 'user',
     }
 
     return profile
