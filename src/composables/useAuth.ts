@@ -16,6 +16,15 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 const isLoggedIn = computed(() => !!currentUser.value)
 
+// Helper function to extract error message
+const getErrorMessage = (err: any): string => {
+  if (typeof err === 'string') return err
+  if (err?.message) return err.message
+  if (err?.error_description) return err.error_description
+  if (err?.msg) return err.msg
+  return 'An unknown error occurred'
+}
+
 // Sign up with email and password
 export const signUp = async (email: string, password: string, name: string) => {
   try {
@@ -34,12 +43,13 @@ export const signUp = async (email: string, password: string, name: string) => {
     })
 
     if (signUpError) {
+      const errorMessage = getErrorMessage(signUpError)
       console.error('Sign up error:', {
-        message: signUpError.message,
+        message: errorMessage,
         code: signUpError.code,
         status: signUpError.status,
       })
-      throw signUpError
+      throw new Error(errorMessage)
     }
     if (!data.user) throw new Error('Failed to create user')
 
@@ -58,11 +68,12 @@ export const signUp = async (email: string, password: string, name: string) => {
       ])
 
     if (profileError) {
+      const errorMessage = getErrorMessage(profileError)
       console.error('Error creating user profile:', {
-        message: profileError.message,
+        message: errorMessage,
         code: profileError.code,
       })
-      throw profileError
+      throw new Error(errorMessage)
     }
 
     currentUser.value = {
@@ -73,10 +84,10 @@ export const signUp = async (email: string, password: string, name: string) => {
 
     return data.user
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to sign up'
+    const message = getErrorMessage(err)
     error.value = message
     console.error('Sign up error:', message)
-    throw err
+    throw new Error(message)
   } finally {
     isLoading.value = false
   }
@@ -94,12 +105,13 @@ export const login = async (email: string, password: string) => {
     })
 
     if (signInError) {
+      const errorMessage = getErrorMessage(signInError)
       console.error('Sign in error:', {
-        message: signInError.message,
+        message: errorMessage,
         code: signInError.code,
         status: signInError.status,
       })
-      throw signInError
+      throw new Error(errorMessage)
     }
     if (!data.user) throw new Error('Failed to login')
 
@@ -111,8 +123,9 @@ export const login = async (email: string, password: string) => {
       .single()
 
     if (profileError) {
+      const errorMessage = getErrorMessage(profileError)
       console.error('Error fetching user profile:', {
-        message: profileError.message,
+        message: errorMessage,
         code: profileError.code,
       })
       // Profile might not exist yet, use auth data
@@ -135,10 +148,10 @@ export const login = async (email: string, password: string) => {
 
     return data.user
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to login'
+    const message = getErrorMessage(err)
     error.value = message
     console.error('Login error:', message)
-    throw err
+    throw new Error(message)
   } finally {
     isLoading.value = false
   }
@@ -151,13 +164,14 @@ export const logout = async () => {
     error.value = null
 
     const { error: signOutError } = await supabase.auth.signOut()
-    if (signOutError) throw signOutError
+    if (signOutError) throw new Error(getErrorMessage(signOutError))
 
     currentUser.value = null
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to logout'
+    const message = getErrorMessage(err)
     error.value = message
-    throw err
+    console.error('Logout error:', message)
+    throw new Error(message)
   } finally {
     isLoading.value = false
   }
@@ -184,6 +198,7 @@ export const getCurrentUser = async () => {
       .single()
 
     if (profileError) {
+      console.error('Error fetching user profile:', getErrorMessage(profileError))
       currentUser.value = null
       return null
     }
@@ -199,8 +214,9 @@ export const getCurrentUser = async () => {
 
     return profile
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get current user'
+    const message = getErrorMessage(err)
     error.value = message
+    console.error('Get current user error:', message)
     currentUser.value = null
     return null
   } finally {
@@ -223,7 +239,7 @@ export const updateProfile = async (updates: Partial<UserProfile>) => {
       .select()
       .single()
 
-    if (updateError) throw updateError
+    if (updateError) throw new Error(getErrorMessage(updateError))
 
     currentUser.value = {
       ...currentUser.value,
@@ -232,9 +248,10 @@ export const updateProfile = async (updates: Partial<UserProfile>) => {
 
     return data
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to update profile'
+    const message = getErrorMessage(err)
     error.value = message
-    throw err
+    console.error('Update profile error:', message)
+    throw new Error(message)
   } finally {
     isLoading.value = false
   }

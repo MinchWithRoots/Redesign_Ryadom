@@ -46,11 +46,18 @@ const handleLogin = async () => {
   try {
     await login(loginForm.value.email, loginForm.value.password)
     successMessage.value = 'Вы успешно вошли!'
+    // Clear form
+    loginForm.value = {
+      email: '',
+      password: '',
+    }
     setTimeout(() => {
       router.push('/profile')
     }, 1000)
   } catch (err) {
-    errorMessage.value = err instanceof Error ? err.message : 'Ошибка входа'
+    const message = err instanceof Error ? err.message : 'Ошибка входа'
+    errorMessage.value = message
+    console.error('Login error:', message)
   } finally {
     isLoading.value = false
   }
@@ -84,11 +91,21 @@ const handleRegister = async () => {
   try {
     await signUp(registerForm.value.email, registerForm.value.password, registerForm.value.fullName)
     successMessage.value = 'Аккаунт создан успешно!'
+    // Clear form
+    registerForm.value = {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      fullName: '',
+      acceptTerms: false,
+    }
     setTimeout(() => {
       router.push('/profile')
     }, 1000)
   } catch (err) {
-    errorMessage.value = err instanceof Error ? err.message : 'Ошибка регистрации'
+    const message = err instanceof Error ? err.message : 'Ошибка регистрации'
+    errorMessage.value = message
+    console.error('Registration error:', message)
   } finally {
     isLoading.value = false
   }
