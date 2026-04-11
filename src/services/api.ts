@@ -1,126 +1,283 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { supabase } from '@/utils/supabase'
+import * as supabaseService from './supabaseService'
 
-let authToken: string | null = localStorage.getItem('authToken')
+// Note: This API layer now delegates to Supabase directly
+// The local backend is no longer used
 
-// Set token
-export const setAuthToken = (token: string) => {
-  authToken = token
-  localStorage.setItem('authToken', token)
-}
-
-// Get token
-export const getAuthToken = () => {
-  return authToken || localStorage.getItem('authToken')
-}
-
-// Clear token
-export const clearAuthToken = () => {
-  authToken = null
-  localStorage.removeItem('authToken')
-}
-
-// Helper function for API calls
-const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  }
-
-  const token = getAuthToken()
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    })
-
-    if (!response.ok) {
-      try {
-        const error = await response.json()
-        throw new Error(error.error || 'API Error')
-      } catch (parseError) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`)
-      }
-    }
-
-    return response.json()
-  } catch (error) {
-    // Network error or fetch failed
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      console.error(`Network error: Cannot connect to backend at ${API_BASE_URL}`, error)
-      throw new Error(`Cannot connect to backend. Make sure the server is running at ${API_BASE_URL}`)
-    }
-    throw error
-  }
-}
-
-// Auth API
+// ============ AUTH ============
 export const authAPI = {
-  register: (fullName: string, email: string, password: string) =>
-    fetchAPI('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ fullName, email, password }),
-    }),
+  register: async (fullName: string, email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      })
 
-  login: (email: string, password: string) =>
-    fetchAPI('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+      if (error) throw error
+      if (!data.user) throw new Error('Failed to create user')
 
-  getCurrentUser: () => fetchAPI('/auth/me'),
-}
+      // Create user profile
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: data.user.id,
+            email,
+            name: fullName,
+            bio: '',
+          },
+        ])
 
-// Companions API
-export const companionsAPI = {
-  getAll: (filters: { ageMin?: number; ageMax?: number; experience?: string; topic?: string }) => {
-    const params = new URLSearchParams()
-    if (filters.ageMin) params.append('ageMin', filters.ageMin.toString())
-    if (filters.ageMax) params.append('ageMax', filters.ageMax.toString())
-    if (filters.experience) params.append('experience', filters.experience)
-    if (filters.topic) params.append('topic', filters.topic)
+      if (profileError) throw profileError
 
-    return fetchAPI(`/companions?${params.toString()}`)
+      return {
+        user: {
+          id: data.user.id,
+          name: fullName,
+          email,
+        },
+        token: data.session?.access_token || '',
+      }
+    } catch (error) {
+      throw error
+    }
   },
 
-  getById: (id: number) => fetchAPI(`/companions/${id}`),
+  login: async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+      if (!data.user) throw new Error('Failed to login')
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
+
+      if (profileError) throw profileError
+
+      return {
+        user: {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          age: profile.age,
+          bio: profile.bio,
+          image: profile.image,
+        },
+        token: data.session?.access_token || '',
+      }
+    } catch (error) {
+      throw error
+    }
+  },
+
+  getCurrentUser: async () => {
+    try {
+      const { data } = await supabase.auth.getUser()
+
+      if (!data.user) {
+        throw new Error('No user logged in')
+      }
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
+
+      if (profileError) throw profileError
+
+      return {
+        user: {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          age: profile.age,
+          bio: profile.bio,
+          image: profile.image,
+        },
+      }
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
-// Chats API
+// ============ COMPANIONS ============
+export const companionsAPI = {
+  getAll: async (filters: { ageMin?: number; ageMax?: number; experience?: string; topic?: string }) => {
+    try {
+      let query = supabase
+        .from('companions')
+        .select(
+          `
+          *,
+          companion_topics (topic),
+          reviews (rating)
+        `
+        )
+        .eq('is_available', true)
+
+      if (filters.ageMin) {
+        query = query.gte('age', filters.ageMin)
+      }
+      if (filters.ageMax) {
+        query = query.lte('age', filters.ageMax)
+      }
+      if (filters.experience) {
+        query = query.eq('experience', filters.experience)
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      throw error
+    }
+  },
+
+  getById: async (id: string) => {
+    return supabaseService.getCompanionById(id)
+  },
+}
+
+// ============ CHATS ============
 export const chatsAPI = {
-  getAll: () => fetchAPI('/chats'),
+  getAll: async () => {
+    try {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) throw new Error('No user logged in')
 
-  create: (companionId: number) =>
-    fetchAPI('/chats/create', {
-      method: 'POST',
-      body: JSON.stringify({ companionId }),
-    }),
+      const result = await supabaseService.getUserChats(data.user.id)
+      return result || []
+    } catch (error) {
+      throw error
+    }
+  },
 
-  getMessages: (chatId: number) => fetchAPI(`/chats/${chatId}/messages`),
+  create: async (companionId: string) => {
+    try {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) throw new Error('No user logged in')
 
-  sendMessage: (chatId: number, text: string) =>
-    fetchAPI(`/chats/${chatId}/messages`, {
-      method: 'POST',
-      body: JSON.stringify({ text }),
-    }),
+      const result = await supabaseService.createChat(data.user.id, companionId)
 
-  delete: (chatId: number) =>
-    fetchAPI(`/chats/${chatId}`, { method: 'DELETE' }),
+      return {
+        chat: result,
+      }
+    } catch (error) {
+      throw error
+    }
+  },
 
-  endSession: (chatId: number) =>
-    fetchAPI(`/chats/${chatId}/end-session`, { method: 'POST' }),
+  getMessages: async (chatId: string) => {
+    try {
+      const result = await supabaseService.getChatMessages(chatId)
+      return result || []
+    } catch (error) {
+      throw error
+    }
+  },
+
+  sendMessage: async (chatId: string, text: string) => {
+    try {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) throw new Error('No user logged in')
+
+      const result = await supabaseService.sendMessage(chatId, data.user.id, text)
+
+      return {
+        message: result,
+      }
+    } catch (error) {
+      throw error
+    }
+  },
+
+  delete: async (chatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chats')
+        .delete()
+        .eq('id', chatId)
+
+      if (error) throw error
+    } catch (error) {
+      throw error
+    }
+  },
+
+  endSession: async (chatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chats')
+        .update({ status: 'offline' })
+        .eq('id', chatId)
+
+      if (error) throw error
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
-// Users API
+// ============ USERS ============
 export const usersAPI = {
-  getProfile: () => fetchAPI('/users/profile'),
+  getProfile: async () => {
+    try {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) throw new Error('No user logged in')
 
-  updateProfile: (bio: string, image?: string) =>
-    fetchAPI('/users/profile', {
-      method: 'PUT',
-      body: JSON.stringify({ bio, image }),
-    }),
+      return supabaseService.getUserProfile(data.user.id)
+    } catch (error) {
+      throw error
+    }
+  },
+
+  updateProfile: async (bio: string, image?: string) => {
+    try {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) throw new Error('No user logged in')
+
+      const result = await supabaseService.updateUserProfile(data.user.id, {
+        bio,
+        image,
+      })
+
+      return {
+        user: result,
+      }
+    } catch (error) {
+      throw error
+    }
+  },
+}
+
+// Auth token helpers (for backward compatibility)
+let authToken: string | null = null
+
+export const setAuthToken = (token: string) => {
+  authToken = token
+}
+
+export const getAuthToken = () => {
+  return authToken
+}
+
+export const clearAuthToken = () => {
+  authToken = null
 }
