@@ -12,6 +12,7 @@ const reviews = ref<any[]>([])
 const chats = ref<any[]>([])
 const isLoading = ref(false)
 const successMessage = ref('')
+const errorMessage = ref('')
 
 // Check admin access
 onMounted(async () => {
@@ -87,43 +88,77 @@ const stats = computed(() => ({
 const handleDeleteUser = async (userId: string | number) => {
   if (!confirm('Вы уверены? Это удалит пользователя и все его данные.')) return
 
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', userId)
+  try {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId)
 
-  if (!error) {
-    successMessage.value = 'Пользователь удален'
+    if (error) throw error
+
+    successMessage.value = 'Пользователь удален ✓'
     await loadUsers()
     setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
 
 const handleToggleCompanionStatus = async (companionId: string | number, isAvailable: boolean) => {
-  const { error } = await supabase
-    .from('companions')
-    .update({ is_available: !isAvailable })
-    .eq('id', companionId)
+  try {
+    const { error } = await supabase
+      .from('companions')
+      .update({ is_available: !isAvailable })
+      .eq('id', companionId)
 
-  if (!error) {
-    successMessage.value = 'Статус обновлен'
+    if (error) throw error
+
+    successMessage.value = `Статус изменен на "${!isAvailable ? 'Доступен' : 'Недоступен'}" ✓`
     await loadCompanions()
     setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при обновлении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
+}
+
+const handleToggleAdminStatus = async (userId: string | number, currentRole: string) => {
+  try {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin'
+    const { error } = await supabase
+      .from('users')
+      .update({ role: newRole })
+      .eq('id', userId)
+
+    if (error) throw error
+
+    successMessage.value = `Роль изменена на "${newRole === 'admin' ? 'Администратор' : 'Пользователь'}" ✓`
+    await loadUsers()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при изменении роли: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
 
 const handleDeleteReview = async (reviewId: string | number) => {
   if (!confirm('Удалить этот отзыв?')) return
 
-  const { error } = await supabase
-    .from('reviews')
-    .delete()
-    .eq('id', reviewId)
+  try {
+    const { error } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('id', reviewId)
 
-  if (!error) {
-    successMessage.value = 'Отзыв удален'
+    if (error) throw error
+
+    successMessage.value = 'Отзыв удален ✓'
     await loadReviews()
     setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
 
@@ -136,56 +171,86 @@ const navigate = (path: string) => {
   <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16">
     <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <h1 class="text-4xl font-bold text-secondary">🛡️ Админ Панель</h1>
-        <button
-          @click="navigate('/profile')"
-          class="px-6 py-2 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
-        >
-          Вернуться
-        </button>
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-4xl font-bold text-secondary mb-2">🛡️ Админ Панель</h1>
+            <p class="text-secondary/60">Управление платформой и данными пользователей</p>
+          </div>
+          <button
+            @click="navigate('/profile')"
+            class="px-6 py-2 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+          >
+            ← Вернуться
+          </button>
+        </div>
       </div>
 
-      <!-- Success Message -->
+      <!-- Messages -->
       <transition name="fade">
         <div
           v-if="successMessage"
-          class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm"
+          class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm flex items-center gap-3"
         >
-          {{ successMessage }}
+          <span>✅</span>
+          <span>{{ successMessage }}</span>
+        </div>
+      </transition>
+      <transition name="fade">
+        <div
+          v-if="errorMessage"
+          class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3"
+        >
+          <span>❌</span>
+          <span>{{ errorMessage }}</span>
         </div>
       </transition>
 
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Пользователей</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
+            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">👥</span>
+          </div>
+          <p class="text-secondary/60 text-sm">Пользователей</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Консультантов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
+            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">🎯</span>
+          </div>
+          <p class="text-secondary/60 text-sm">Консультантов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Всего чатов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
+            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">💬</span>
+          </div>
+          <p class="text-secondary/60 text-sm">Всего чатов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.activeChats }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Активных чатов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-green-600">{{ stats.activeChats }}</div>
+            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">✨</span>
+          </div>
+          <p class="text-secondary/60 text-sm">Активных чатов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Отзывов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
+            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">⭐</span>
+          </div>
+          <p class="text-secondary/60 text-sm">Отзывов</p>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-2 mb-6 border-b border-border">
+      <div class="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-border">
         <button
           @click="activeTab = 'overview'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'overview'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
@@ -196,46 +261,46 @@ const navigate = (path: string) => {
         <button
           @click="activeTab = 'users'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'users'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          👥 Пользователи
+          👥 Пользователи ({{ users.length }})
         </button>
         <button
           @click="activeTab = 'companions'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'companions'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          🎯 Консультанты
+          🎯 Консультанты ({{ companions.length }})
         </button>
         <button
           @click="activeTab = 'reviews'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'reviews'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          ⭐ Отзывы
+          ⭐ Отзывы ({{ reviews.length }})
         </button>
         <button
           @click="activeTab = 'chats'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'chats'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          💬 Чаты
+          💬 Чаты ({{ chats.length }})
         </button>
       </div>
 
@@ -266,51 +331,63 @@ const navigate = (path: string) => {
           Загрузка...
         </div>
 
-        <div v-else-if="users.length > 0" class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left px-4 py-3 font-semibold text-secondary">ID</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Имя</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Email</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Роль</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Дата</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id" class="border-b border-border/50 hover:bg-light-bg">
-                <td class="px-4 py-3 text-secondary text-sm">{{ user.id }}</td>
-                <td class="px-4 py-3 text-secondary font-medium">{{ user.name }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ user.email }}</td>
-                <td class="px-4 py-3">
-                  <span
-                    :class="[
-                      'px-3 py-1 rounded-full text-xs font-semibold',
-                      user.role === 'admin'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-secondary/10 text-secondary'
-                    ]"
-                  >
-                    {{ user.role === 'admin' ? '🛡️ Админ' : '👤 Пользователь' }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-secondary text-sm">
-                  {{ new Date(user.created_at).toLocaleDateString('ru-RU') }}
-                </td>
-                <td class="px-4 py-3">
-                  <button
-                    v-if="user.role !== 'admin'"
-                    @click="handleDeleteUser(user.id)"
-                    class="px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors"
-                  >
-                    Удалить
-                  </button>
-                  <span v-else class="text-secondary/50 text-xs">Защищен</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else-if="users.length > 0" class="bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-light-bg">
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">ID</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Имя</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Email</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Роль</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Дата</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="user in users" :key="user.id" class="border-b border-border/50 hover:bg-light-bg/50 transition-colors">
+                  <td class="px-4 py-4 text-secondary text-sm">{{ user.id }}</td>
+                  <td class="px-4 py-4 text-secondary font-medium">{{ user.name }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ user.email }}</td>
+                  <td class="px-4 py-4">
+                    <span
+                      :class="[
+                        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+                        user.role === 'admin'
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-secondary/10 text-secondary'
+                      ]"
+                    >
+                      {{ user.role === 'admin' ? '🛡️ Админ' : '👤 Пользователь' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 text-secondary text-sm">
+                    {{ new Date(user.created_at).toLocaleDateString('ru-RU') }}
+                  </td>
+                  <td class="px-4 py-4 space-x-2">
+                    <button
+                      @click="handleToggleAdminStatus(user.id, user.role)"
+                      :class="[
+                        'px-3 py-1.5 text-xs font-semibold rounded transition-colors',
+                        user.role === 'admin'
+                          ? 'text-orange-600 hover:bg-orange-50'
+                          : 'text-green-600 hover:bg-green-50'
+                      ]"
+                    >
+                      {{ user.role === 'admin' ? 'Убрать' : 'Админ' }}
+                    </button>
+                    <button
+                      v-if="user.role !== 'admin'"
+                      @click="handleDeleteUser(user.id)"
+                      class="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      Удалить
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div v-else class="text-center py-12 text-secondary/60">
@@ -422,42 +499,44 @@ const navigate = (path: string) => {
           Загрузка...
         </div>
 
-        <div v-else-if="chats.length > 0" class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left px-4 py-3 font-semibold text-secondary">ID</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Пользователь</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Консультант</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Статус</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Сообщений</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Дата</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="chat in chats" :key="chat.id" class="border-b border-border/50 hover:bg-light-bg">
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.id }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.user_id }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.companion_id }}</td>
-                <td class="px-4 py-3">
-                  <span
-                    :class="[
-                      'px-3 py-1 rounded-full text-xs font-semibold',
-                      chat.status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-secondary/10 text-secondary'
-                    ]"
-                  >
-                    {{ chat.status === 'active' ? '✓ Активен' : 'Завершен' }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.total_messages }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">
-                  {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else-if="chats.length > 0" class="bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-light-bg">
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">ID</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Пользователь</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Консультант</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Статус</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Сообщений</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Дата</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="chat in chats" :key="chat.id" class="border-b border-border/50 hover:bg-light-bg/50 transition-colors">
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.id }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.user_id }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion_id }}</td>
+                  <td class="px-4 py-4">
+                    <span
+                      :class="[
+                        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+                        chat.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-secondary/10 text-secondary'
+                      ]"
+                    >
+                      {{ chat.status === 'active' ? '✓ Активен' : '✗ Завершен' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.total_messages || 0 }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">
+                    {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div v-else class="text-center py-12 text-secondary/60">

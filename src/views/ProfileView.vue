@@ -197,6 +197,16 @@ onMounted(async () => {
               >
                 ⚙️ Настройки
               </button>
+              <template v-if="userProfile.role === 'admin'">
+                <div class="border-t border-border/50 my-2 pt-2">
+                  <button
+                    @click="navigate('/admin')"
+                    class="w-full text-left px-4 py-3 rounded-xl font-medium transition-all bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10"
+                  >
+                    🛡️ Админ панель
+                  </button>
+                </div>
+              </template>
             </nav>
 
             <!-- Logout -->
