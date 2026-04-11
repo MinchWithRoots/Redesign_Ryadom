@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { currentUser, logoutUser, loadCurrentUser } from '../composables/useAppState'
+import { currentUser, loadCurrentUser, logoutUser } from '../composables/useAppState'
+import { useAuth } from '../composables/useAuth'
 import logo from '../assets/logo.svg'
 
 const router = useRouter()
 const route = useRoute()
 const isMobileMenuOpen = ref(false)
+const { logout } = useAuth()
 
 // Проверить, залогинен ли пользователь
 onMounted(async () => {
@@ -20,9 +22,16 @@ const navigate = (path: string) => {
   isMobileMenuOpen.value = false
 }
 
-const handleLogout = () => {
-  logoutUser()
-  router.push('/auth')
+const handleLogout = async () => {
+  try {
+    await logout()
+    await logoutUser()
+    router.push('/auth')
+  } catch (err) {
+    console.error('Logout error:', err)
+    logoutUser()
+    router.push('/auth')
+  }
 }
 
 const navItems = [

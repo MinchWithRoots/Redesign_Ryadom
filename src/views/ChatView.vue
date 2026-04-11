@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages } from '../composables/useAppState'
+import * as supabaseService from '../services/supabaseService'
 
 const router = useRouter()
 const route = useRoute()
@@ -14,7 +15,7 @@ const reportMessage = ref('')
 const isReporting = ref(false)
 const reportSuccess = ref('')
 
-const chatId = computed(() => parseInt(route.query.id as string) || 1)
+const chatId = computed(() => (route.query.id as string) || null)
 
 const chat = computed(() => getChatById(chatId.value))
 
@@ -52,20 +53,27 @@ const handleEndSession = async () => {
 }
 
 const handleReportUser = async () => {
-  if (!reportReason.value || !reportMessage.value) {
+  if (!reportReason.value || !reportMessage.value || !chatId.value) {
     alert('Пожалуйста, выберите причину и опишите ситуацию')
     return
   }
 
   isReporting.value = true
   try {
-    // In a real app, this would send to backend
-    console.log('Report submitted:', {
-      chatId: chatId.value,
-      reason: reportReason.value,
-      message: reportMessage.value,
-      timestamp: new Date().toISOString(),
-    })
+    const chat = getChatById(chatId.value)
+    if (!chat) {
+      alert('Chat not found')
+      return
+    }
+
+    // Submit report to Supabase
+    await supabaseService.submitReport(
+      chatId.value,
+      chat.user_id,
+      chat.companion_id,
+      reportReason.value,
+      reportMessage.value
+    )
 
     reportSuccess.value = 'Спасибо за отчёт. Наша команда проверит это.'
     setTimeout(() => {
@@ -74,6 +82,9 @@ const handleReportUser = async () => {
       reportReason.value = ''
       reportMessage.value = ''
     }, 2000)
+  } catch (err) {
+    console.error('Error submitting report:', err)
+    alert('Ошибка при отправке отчёта')
   } finally {
     isReporting.value = false
   }

@@ -13,6 +13,7 @@ export async function getCompanions() {
       `
       )
       .eq('is_available', true)
+      .order('created_at', { ascending: false })
 
     if (error) throw error
     return data
@@ -22,7 +23,7 @@ export async function getCompanions() {
   }
 }
 
-export async function getCompanionById(id: number) {
+export async function getCompanionById(id: string) {
   try {
     const { data, error } = await supabase
       .from('companions')
@@ -30,7 +31,7 @@ export async function getCompanionById(id: number) {
         `
         *,
         companion_topics (topic),
-        reviews (rating, comment, title)
+        reviews (rating, comment, title, users (name, image))
       `
       )
       .eq('id', id)
@@ -57,6 +58,7 @@ export async function searchCompanions(query: string) {
       .or(
         `name.ilike.%${query}%,specialization.ilike.%${query}%,bio.ilike.%${query}%`
       )
+      .eq('is_available', true)
 
     if (error) throw error
     return data
@@ -67,16 +69,11 @@ export async function searchCompanions(query: string) {
 }
 
 // ============ USERS (Пользователи) ============
-export async function getUserProfile(userId: number) {
+export async function getUserProfile(userId: string) {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select(
-        `
-        *,
-        user_preferences (*)
-      `
-      )
+      .select('*')
       .eq('id', userId)
       .single()
 
@@ -88,7 +85,7 @@ export async function getUserProfile(userId: number) {
   }
 }
 
-export async function updateUserProfile(userId: number, updates: any) {
+export async function updateUserProfile(userId: string, updates: any) {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -106,16 +103,14 @@ export async function updateUserProfile(userId: number, updates: any) {
 }
 
 // ============ CHATS (Переписки) ============
-export async function getUserChats(userId: number) {
+export async function getUserChats(userId: string) {
   try {
     const { data, error } = await supabase
       .from('chats')
       .select(
         `
         *,
-        companions (*),
-        messages (count),
-        chat_read_status (unread_count)
+        companions (name, image, specialization)
       `
       )
       .eq('user_id', userId)
@@ -129,7 +124,7 @@ export async function getUserChats(userId: number) {
   }
 }
 
-export async function getChatMessages(chatId: number) {
+export async function getChatMessages(chatId: string) {
   try {
     const { data, error } = await supabase
       .from('messages')
@@ -146,8 +141,8 @@ export async function getChatMessages(chatId: number) {
 }
 
 export async function sendMessage(
-  chatId: number,
-  senderId: number,
+  chatId: string,
+  senderId: string,
   text: string
 ) {
   try {
@@ -165,7 +160,7 @@ export async function sendMessage(
   }
 }
 
-export async function createChat(userId: number, companionId: number) {
+export async function createChat(userId: string, companionId: string) {
   try {
     const { data, error } = await supabase
       .from('chats')
@@ -182,7 +177,7 @@ export async function createChat(userId: number, companionId: number) {
 }
 
 // ============ FAVORITES (Избранное) ============
-export async function addToFavorites(userId: number, companionId: number) {
+export async function addToFavorites(userId: string, companionId: string) {
   try {
     const { data, error } = await supabase
       .from('favorites')
@@ -196,7 +191,7 @@ export async function addToFavorites(userId: number, companionId: number) {
   }
 }
 
-export async function removeFromFavorites(userId: number, companionId: number) {
+export async function removeFromFavorites(userId: string, companionId: string) {
   try {
     const { error } = await supabase
       .from('favorites')
@@ -210,7 +205,7 @@ export async function removeFromFavorites(userId: number, companionId: number) {
   }
 }
 
-export async function getUserFavorites(userId: number) {
+export async function getUserFavorites(userId: string) {
   try {
     const { data, error } = await supabase
       .from('favorites')
@@ -227,8 +222,8 @@ export async function getUserFavorites(userId: number) {
 
 // ============ REVIEWS (Отзывы) ============
 export async function addReview(
-  companionId: number,
-  userId: number,
+  companionId: string,
+  userId: string,
   rating: number,
   title: string,
   comment: string
@@ -242,7 +237,8 @@ export async function addReview(
           user_id: userId,
           rating,
           title,
-          comment
+          comment,
+          published: true,
         }
       ])
       .select()
@@ -256,18 +252,51 @@ export async function addReview(
   }
 }
 
-export async function getCompanionReviews(companionId: number) {
+export async function getCompanionReviews(companionId: string) {
   try {
     const { data, error } = await supabase
       .from('reviews')
       .select('*, users (name, image)')
       .eq('companion_id', companionId)
+      .eq('published', true)
       .order('created_at', { ascending: false })
 
     if (error) throw error
     return data
   } catch (error) {
     console.error('Error fetching reviews:', error)
+    return null
+  }
+}
+
+// ============ REPORTS (Отчеты о нарушениях) ============
+export async function submitReport(
+  chatId: string,
+  userId: string,
+  companionId: string,
+  reason: string,
+  message: string
+) {
+  try {
+    const { data, error } = await supabase
+      .from('reports')
+      .insert([
+        {
+          chat_id: chatId,
+          user_id: userId,
+          companion_id: companionId,
+          reason,
+          message,
+          status: 'pending',
+        }
+      ])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error submitting report:', error)
     return null
   }
 }

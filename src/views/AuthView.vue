@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { loginUser, registerUser, currentUser, error as appError } from '../composables/useAppState'
+import { useAuth } from '../composables/useAuth'
 
 const router = useRouter()
+const { login, signUp, error } = useAuth()
+
 const isLogin = ref(true)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -11,8 +13,8 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
-// Watch for errors from useAppState
-watch(appError, (newError) => {
+// Watch for errors from useAuth
+watch(error, (newError) => {
   if (newError) {
     errorMessage.value = newError
   }
@@ -42,15 +44,13 @@ const handleLogin = async () => {
 
   isLoading.value = true
   try {
-    const success = await loginUser(loginForm.value.email, loginForm.value.password)
-    if (success) {
-      successMessage.value = 'Вы успешно вошли!'
-      setTimeout(() => {
-        router.push('/profile')
-      }, 1000)
-    } else {
-      errorMessage.value = 'Неверный email или пароль'
-    }
+    await login(loginForm.value.email, loginForm.value.password)
+    successMessage.value = 'Вы успешно вошли!'
+    setTimeout(() => {
+      router.push('/profile')
+    }, 1000)
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Ошибка входа'
   } finally {
     isLoading.value = false
   }
@@ -82,17 +82,13 @@ const handleRegister = async () => {
 
   isLoading.value = true
   try {
-    const newUser = await registerUser({
-      fullName: registerForm.value.fullName,
-      email: registerForm.value.email,
-      password: registerForm.value.password,
-    })
-    if (newUser) {
-      successMessage.value = 'Аккаунт создан успешно!'
-      setTimeout(() => {
-        router.push('/profile')
-      }, 1000)
-    }
+    await signUp(registerForm.value.email, registerForm.value.password, registerForm.value.fullName)
+    successMessage.value = 'Аккаунт создан успешно!'
+    setTimeout(() => {
+      router.push('/profile')
+    }, 1000)
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Ошибка регистрации'
   } finally {
     isLoading.value = false
   }

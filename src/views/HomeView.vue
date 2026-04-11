@@ -1,36 +1,71 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { supabase } from '@/utils/supabase'
 
 const router = useRouter()
+const reviews = ref<any[]>([])
+const isLoadingReviews = ref(false)
 
 const navigate = (path: string) => {
   router.push(path)
   window.scrollTo(0, 0)
 }
 
-const reviews = [
-  {
-    id: 1,
-    name: 'Мария К.',
-    title: 'В процессе терапии',
-    text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
-    avatar: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-  },
-  {
-    id: 2,
-    name: 'Алексей М.',
-    title: 'Рос свой опыт в терапии',
-    text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
-    avatar: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
-  },
-  {
-    id: 3,
-    name: 'Елена В.',
-    title: 'Путь выздоровления',
-    text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
-    avatar: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
-  },
-]
+// Fetch reviews from Supabase
+const fetchReviews = async () => {
+  try {
+    isLoadingReviews.value = true
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*, users (name, image)')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .limit(3)
+
+    if (error) throw error
+
+    reviews.value = (data || []).map((review: any) => ({
+      id: review.id,
+      name: review.users?.name || 'Анонимно',
+      title: review.title || 'Пользователь платформы',
+      text: review.comment,
+      avatar: review.users?.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
+    }))
+  } catch (err) {
+    console.error('Error fetching reviews:', err)
+    // Fallback to default reviews if fetch fails
+    reviews.value = [
+      {
+        id: 1,
+        name: 'Мария К.',
+        title: 'В процессе терапии',
+        text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
+        avatar: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
+      },
+      {
+        id: 2,
+        name: 'Алексей М.',
+        title: 'Рос свой опыт в терапии',
+        text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
+        avatar: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
+      },
+      {
+        id: 3,
+        name: 'Елена В.',
+        title: 'Путь выздоровления',
+        text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
+        avatar: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
+      },
+    ]
+  } finally {
+    isLoadingReviews.value = false
+  }
+}
+
+onMounted(() => {
+  fetchReviews()
+})
 </script>
 
 <template>
