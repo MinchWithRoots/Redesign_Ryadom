@@ -86,11 +86,18 @@ export const loadCurrentUser = async () => {
       return null
     }
 
-    // Fetch user profile
+    // Get user email from auth
+    const userEmail = data.user.email
+    if (!userEmail) {
+      currentUser.value = null
+      return null
+    }
+
+    // Fetch user profile by email (not by UUID id)
     const { data: profile, error: err } = await supabase
       .from('users')
       .select('*')
-      .eq('id', data.user.id)
+      .eq('email', userEmail)
       .single()
 
     if (err) {
@@ -102,9 +109,9 @@ export const loadCurrentUser = async () => {
       // User is authenticated but profile doesn't exist yet (new user)
       // This is normal for newly created users
       currentUser.value = {
-        id: data.user.id,
+        id: userEmail, // Use email as fallback
         name: data.user.user_metadata?.full_name || 'User',
-        email: data.user.email || '',
+        email: userEmail,
         bio: '',
       }
       return currentUser.value
@@ -138,10 +145,11 @@ export const updateUserProfile = async (updates: { bio: string; image?: string }
 
     if (!currentUser.value) throw new Error('No user logged in')
 
+    // Update by email (not by id) to match our user lookup strategy
     const { data: profile, error: err } = await supabase
       .from('users')
       .update(updates)
-      .eq('id', currentUser.value.id)
+      .eq('email', currentUser.value.email)
       .select()
       .single()
 
