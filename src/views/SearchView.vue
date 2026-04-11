@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { companions, filterCompanions, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import { companions, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -18,21 +18,36 @@ const filters = ref({
 const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
 
 const filteredCompanions = computed(() => {
-  return companions.value
+  let filtered = [...companions.value]
+
+  // Filter by gender
+  if (filters.value.gender !== 'all') {
+    filtered = filtered.filter(c => c.gender === filters.value.gender)
+  }
+
+  // Filter by age
+  filtered = filtered.filter(c => c.age >= filters.value.ageMin && c.age <= filters.value.ageMax)
+
+  // Filter by experience
+  if (filters.value.experience !== 'all') {
+    filtered = filtered.filter(c => c.experience === filters.value.experience)
+  }
+
+  // Filter by topic
+  if (filters.value.topic !== 'Все') {
+    filtered = filtered.filter(c => c.topics.includes(filters.value.topic))
+  }
+
+  return filtered
 })
 
 onMounted(async () => {
-  await loadCompanions()
+  try {
+    await loadCompanions()
+  } catch (err) {
+    console.error('Failed to load companions:', err)
+  }
 })
-
-const applyFilters = async () => {
-  await filterCompanions({
-    ageMin: filters.value.ageMin,
-    ageMax: filters.value.ageMax,
-    experience: filters.value.experience,
-    topic: filters.value.topic === 'Все' ? undefined : filters.value.topic,
-  })
-}
 
 const resetFilters = async () => {
   filters.value = {
@@ -42,17 +57,24 @@ const resetFilters = async () => {
     experience: 'all',
     topic: 'Все',
   }
-  await loadCompanions()
+  try {
+    await loadCompanions()
+  } catch (err) {
+    console.error('Failed to load companions:', err)
+  }
 }
 
-const handleConnectionRequest = (companionId: number) => {
-  const newChat = sendConnectionRequest(companionId)
-  if (newChat) {
+const handleConnectionRequest = async (companionId: number) => {
+  try {
+    await sendConnectionRequest(companionId)
     showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
     setTimeout(() => {
       showNotification.value = ''
       selectedCompanion.value = null
     }, 2000)
+  } catch (err) {
+    console.error('Failed to send connection request:', err)
+    showNotification.value = 'Ошибка при отправке запроса'
   }
 }
 
@@ -64,8 +86,7 @@ const navigateToChat = (companionId: number) => {
 }
 
 const navigateToProfile = (companionId: number) => {
-  // Could navigate to companion's profile page
-  console.log('View profile for companion:', companionId)
+  router.push(`/user/${companionId}`)
 }
 </script>
 
@@ -197,7 +218,7 @@ const navigateToProfile = (companionId: number) => {
             <button
               v-for="topic in topics"
               :key="topic"
-              @click="filters.topic = topic; applyFilters()"
+              @click="filters.topic = topic"
               :class="[
                 'px-4 py-2 rounded-full text-sm font-medium transition-all',
                 filters.topic === topic
