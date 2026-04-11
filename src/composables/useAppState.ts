@@ -9,6 +9,7 @@ export interface User {
   age?: number
   bio: string
   image?: string
+  role?: string // 'user' or 'admin'
 }
 
 export interface CompanionTopic {
@@ -73,6 +74,11 @@ export const isLoggedIn = () => {
   return !!currentUser.value
 }
 
+// Check if user is admin
+export const isAdmin = () => {
+  return currentUser.value?.role === 'admin'
+}
+
 // Load current user
 export const loadCurrentUser = async () => {
   try {
@@ -86,11 +92,18 @@ export const loadCurrentUser = async () => {
       return null
     }
 
-    // Fetch user profile
+    // Get user email from auth
+    const userEmail = data.user.email
+    if (!userEmail) {
+      currentUser.value = null
+      return null
+    }
+
+    // Fetch user profile by email (not by UUID id)
     const { data: profile, error: err } = await supabase
       .from('users')
       .select('*')
-      .eq('id', data.user.id)
+      .eq('email', userEmail)
       .single()
 
     if (err) {
@@ -102,10 +115,11 @@ export const loadCurrentUser = async () => {
       // User is authenticated but profile doesn't exist yet (new user)
       // This is normal for newly created users
       currentUser.value = {
-        id: data.user.id,
+        id: userEmail, // Use email as fallback
         name: data.user.user_metadata?.full_name || 'User',
-        email: data.user.email || '',
+        email: userEmail,
         bio: '',
+        role: 'user',
       }
       return currentUser.value
     }
@@ -117,6 +131,7 @@ export const loadCurrentUser = async () => {
       age: profile.age,
       bio: profile.bio || '',
       image: profile.image,
+      role: profile.role || 'user',
     }
 
     return profile
@@ -138,10 +153,11 @@ export const updateUserProfile = async (updates: { bio: string; image?: string }
 
     if (!currentUser.value) throw new Error('No user logged in')
 
+    // Update by email (not by id) to match our user lookup strategy
     const { data: profile, error: err } = await supabase
       .from('users')
       .update(updates)
-      .eq('id', currentUser.value.id)
+      .eq('email', currentUser.value.email)
       .select()
       .single()
 

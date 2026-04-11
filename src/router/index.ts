@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import { isLoggedIn } from '../composables/useAppState'
+import { isLoggedIn, isAdmin } from '../composables/useAppState'
 
 const routes = [
   {
@@ -35,6 +35,12 @@ const routes = [
     name: 'Auth',
     component: () => import('../views/AuthView.vue'),
   },
+  {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: () => import('../views/AdminDashboardView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
 ]
 
 const router = createRouter({
@@ -42,13 +48,17 @@ const router = createRouter({
   routes,
 })
 
-// Navigation guard to check authentication
+// Navigation guard to check authentication and authorization
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
   const userIsLoggedIn = isLoggedIn()
+  const userIsAdmin = isAdmin()
 
   if (requiresAuth && !userIsLoggedIn) {
     next('/auth')
+  } else if (requiresAdmin && !userIsAdmin) {
+    next('/profile')
   } else if (to.path === '/auth' && userIsLoggedIn) {
     next('/profile')
   } else {

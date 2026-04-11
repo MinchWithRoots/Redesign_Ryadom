@@ -11,6 +11,7 @@ export interface UserProfile {
   phone?: string | null
   city?: string | null
   created_at?: string
+  role?: string // 'user' or 'admin'
 }
 
 const currentUser = ref<UserProfile | null>(null)

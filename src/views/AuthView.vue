@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
+import { loadCurrentUser } from '../composables/useAppState'
 
 const router = useRouter()
 const { login, signUp, error } = useAuth()
@@ -51,9 +52,11 @@ const handleLogin = async () => {
       email: '',
       password: '',
     }
+    // Load current user from database
+    await loadCurrentUser()
     setTimeout(() => {
       router.push('/profile')
-    }, 1000)
+    }, 500)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка входа'
     errorMessage.value = message
@@ -99,9 +102,11 @@ const handleRegister = async () => {
       fullName: '',
       acceptTerms: false,
     }
+    // Load current user from database
+    await loadCurrentUser()
     setTimeout(() => {
       router.push('/profile')
-    }, 1000)
+    }, 500)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка регистрации'
     errorMessage.value = message
