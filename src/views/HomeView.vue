@@ -16,6 +16,16 @@ const navigate = (path: string) => {
 const fetchReviews = async () => {
   try {
     isLoadingReviews.value = true
+
+    // Check if Supabase is configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.warn('⚠️ Supabase not configured. Using default reviews.')
+      throw new Error('Supabase credentials missing - see .env.local')
+    }
+
     const { data, error } = await supabase
       .from('reviews')
       .select('*, users (name, image)')
@@ -23,7 +33,14 @@ const fetchReviews = async () => {
       .order('created_at', { ascending: false })
       .limit(3)
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error details:', {
+        message: error.message,
+        code: error.code,
+        hint: error.hint,
+      })
+      throw error
+    }
 
     reviews.value = (data || []).map((review: any) => ({
       id: review.id,
@@ -33,7 +50,7 @@ const fetchReviews = async () => {
       avatar: review.users?.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
     }))
   } catch (err) {
-    console.error('Error fetching reviews:', err)
+    console.warn('Failed to fetch reviews from Supabase, using defaults:', err instanceof Error ? err.message : err)
     // Fallback to default reviews if fetch fails
     reviews.value = [
       {

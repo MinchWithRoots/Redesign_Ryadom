@@ -93,7 +93,22 @@ export const loadCurrentUser = async () => {
       .eq('id', data.user.id)
       .single()
 
-    if (err) throw err
+    if (err) {
+      console.error('Error loading user profile:', {
+        message: err.message,
+        code: err.code,
+        hint: err.hint,
+      })
+      // User is authenticated but profile doesn't exist yet (new user)
+      // This is normal for newly created users
+      currentUser.value = {
+        id: data.user.id,
+        name: data.user.user_metadata?.full_name || 'User',
+        email: data.user.email || '',
+        bio: '',
+      }
+      return currentUser.value
+    }
 
     currentUser.value = {
       id: profile.id,
@@ -256,7 +271,14 @@ export const loadCompanions = async () => {
       .eq('is_available', true)
       .order('created_at', { ascending: false })
 
-    if (err) throw err
+    if (err) {
+      console.error('Supabase error loading companions:', {
+        message: err.message,
+        code: err.code,
+        hint: err.hint,
+      })
+      throw err
+    }
 
     // Transform to include topics array
     const transformed = (result || []).map((c: any) => ({
@@ -271,7 +293,7 @@ export const loadCompanions = async () => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage
-    console.error('Error loading companions:', err)
+    console.error('Error loading companions:', errorMessage)
     companions.value = []
     throw err
   } finally {
@@ -351,7 +373,14 @@ export const loadChats = async () => {
       .eq('user_id', currentUser.value.id)
       .order('updated_at', { ascending: false })
 
-    if (err) throw err
+    if (err) {
+      console.error('Supabase error loading chats:', {
+        message: err.message,
+        code: err.code,
+        hint: err.hint,
+      })
+      throw err
+    }
 
     // Transform chats with companion info
     chats.value = (result || []).map((chat: any) => ({
@@ -372,7 +401,7 @@ export const loadChats = async () => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load chats'
     error.value = errorMessage
-    console.error('Load chats error:', err)
+    console.error('Load chats error:', errorMessage)
     chats.value = []
     throw err
   } finally {
@@ -395,7 +424,15 @@ export const getChatMessages = async (chatId: string) => {
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true })
 
-    if (err) throw err
+    if (err) {
+      console.error('Supabase error loading messages:', {
+        message: err.message,
+        code: err.code,
+        hint: err.hint,
+        chatId,
+      })
+      throw err
+    }
 
     messages.value = (result || []).map((msg: any) => ({
       id: msg.id,
@@ -411,7 +448,7 @@ export const getChatMessages = async (chatId: string) => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load messages'
     error.value = errorMessage
-    console.error('Load messages error:', err)
+    console.error('Load messages error:', errorMessage)
     messages.value = []
     throw err
   } finally {
@@ -439,7 +476,15 @@ export const sendMessage = async (chatId: string, text: string) => {
       .select('*, users (name, image)')
       .single()
 
-    if (err) throw err
+    if (err) {
+      console.error('Supabase error sending message:', {
+        message: err.message,
+        code: err.code,
+        hint: err.hint,
+        chatId,
+      })
+      throw err
+    }
 
     // Update chat last_message
     const { error: updateErr } = await supabase
@@ -450,7 +495,13 @@ export const sendMessage = async (chatId: string, text: string) => {
       })
       .eq('id', chatId)
 
-    if (updateErr) throw updateErr
+    if (updateErr) {
+      console.error('Error updating chat last message:', {
+        message: updateErr.message,
+        code: updateErr.code,
+      })
+      // Don't throw - message was saved, just chat update failed
+    }
 
     const message: Message = {
       id: messageData.id,
@@ -475,7 +526,7 @@ export const sendMessage = async (chatId: string, text: string) => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to send message'
     error.value = errorMessage
-    console.error('Send message error:', err)
+    console.error('Send message error:', errorMessage)
     throw err
   } finally {
     isLoading.value = false

@@ -33,7 +33,14 @@ export const signUp = async (email: string, password: string, name: string) => {
       },
     })
 
-    if (signUpError) throw signUpError
+    if (signUpError) {
+      console.error('Sign up error:', {
+        message: signUpError.message,
+        code: signUpError.code,
+        status: signUpError.status,
+      })
+      throw signUpError
+    }
     if (!data.user) throw new Error('Failed to create user')
 
     // Create user profile in database
@@ -50,7 +57,13 @@ export const signUp = async (email: string, password: string, name: string) => {
         },
       ])
 
-    if (profileError) throw profileError
+    if (profileError) {
+      console.error('Error creating user profile:', {
+        message: profileError.message,
+        code: profileError.code,
+      })
+      throw profileError
+    }
 
     currentUser.value = {
       id: data.user.id,
@@ -62,6 +75,7 @@ export const signUp = async (email: string, password: string, name: string) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to sign up'
     error.value = message
+    console.error('Sign up error:', message)
     throw err
   } finally {
     isLoading.value = false
@@ -79,7 +93,14 @@ export const login = async (email: string, password: string) => {
       password,
     })
 
-    if (signInError) throw signInError
+    if (signInError) {
+      console.error('Sign in error:', {
+        message: signInError.message,
+        code: signInError.code,
+        status: signInError.status,
+      })
+      throw signInError
+    }
     if (!data.user) throw new Error('Failed to login')
 
     // Fetch user profile from database
@@ -89,7 +110,19 @@ export const login = async (email: string, password: string) => {
       .eq('id', data.user.id)
       .single()
 
-    if (profileError) throw profileError
+    if (profileError) {
+      console.error('Error fetching user profile:', {
+        message: profileError.message,
+        code: profileError.code,
+      })
+      // Profile might not exist yet, use auth data
+      currentUser.value = {
+        id: data.user.id,
+        email: data.user.email || '',
+        name: data.user.user_metadata?.full_name || 'User',
+      }
+      return data.user
+    }
 
     currentUser.value = {
       id: profile.id,
@@ -104,6 +137,7 @@ export const login = async (email: string, password: string) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to login'
     error.value = message
+    console.error('Login error:', message)
     throw err
   } finally {
     isLoading.value = false
