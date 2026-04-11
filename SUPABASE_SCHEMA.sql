@@ -1,220 +1,277 @@
--- ============ USERS TABLE ============
+-- ============================================
+-- Supabase Schema for Ryadom Application
+-- ============================================
+
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================
+-- USERS TABLE (Пользователи)
+-- ============================================
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
-  age INTEGER,
-  bio TEXT DEFAULT '',
-  image VARCHAR(500),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_created_at ON users(created_at);
-
--- ============ COMPANIONS TABLE ============
-CREATE TABLE IF NOT EXISTS companions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(255) NOT NULL,
-  age INTEGER NOT NULL,
-  gender VARCHAR(20),
-  specialization VARCHAR(255) NOT NULL,
-  experience VARCHAR(100) NOT NULL,
-  image VARCHAR(500),
-  rating DECIMAL(3, 1) DEFAULT 0,
-  reviews INTEGER DEFAULT 0,
+  age INT,
   bio TEXT,
-  is_available BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  image VARCHAR(500),
+  phone VARCHAR(20),
+  city VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
 );
 
-CREATE INDEX idx_companions_specialization ON companions(specialization);
-CREATE INDEX idx_companions_is_available ON companions(is_available);
-CREATE INDEX idx_companions_created_at ON companions(created_at);
+-- ============================================
+-- COMPANIONS TABLE (Спутники/Консультанты)
+-- ============================================
+CREATE TABLE IF NOT EXISTS companions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(255) NOT NULL,
+  age INT NOT NULL,
+  specialization VARCHAR(255),
+  experience VARCHAR(50),
+  image VARCHAR(500),
+  rating DECIMAL(3,1) DEFAULT 5.0,
+  reviews INT DEFAULT 0,
+  bio TEXT,
+  price_per_hour DECIMAL(10,2),
+  is_available BOOLEAN DEFAULT true,
+  response_time_minutes INT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
+);
 
--- ============ COMPANION TOPICS TABLE ============
+-- ============================================
+-- COMPANION TOPICS (Темы консультаций)
+-- ============================================
 CREATE TABLE IF NOT EXISTS companion_topics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
   topic VARCHAR(100) NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
 );
 
-CREATE INDEX idx_companion_topics_companion_id ON companion_topics(companion_id);
-CREATE INDEX idx_companion_topics_topic ON companion_topics(topic);
-
--- ============ CHATS TABLE ============
-CREATE TABLE IF NOT EXISTS chats (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
-  last_message TEXT,
-  status VARCHAR(20) DEFAULT 'active',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_chats_user_id ON chats(user_id);
-CREATE INDEX idx_chats_companion_id ON chats(companion_id);
-CREATE INDEX idx_chats_status ON chats(status);
-CREATE INDEX idx_chats_updated_at ON chats(updated_at);
-
--- ============ MESSAGES TABLE ============
-CREATE TABLE IF NOT EXISTS messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
-  sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  text TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_messages_chat_id ON messages(chat_id);
-CREATE INDEX idx_messages_sender_id ON messages(sender_id);
-CREATE INDEX idx_messages_created_at ON messages(created_at);
-
--- ============ FAVORITES TABLE ============
-CREATE TABLE IF NOT EXISTS favorites (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, companion_id)
-);
-
-CREATE INDEX idx_favorites_user_id ON favorites(user_id);
-CREATE INDEX idx_favorites_companion_id ON favorites(companion_id);
-
--- ============ REVIEWS TABLE ============
+-- ============================================
+-- REVIEWS (Отзывы и оценки)
+-- ============================================
 CREATE TABLE IF NOT EXISTS reviews (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title VARCHAR(255),
   comment TEXT,
   published BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  UNIQUE(companion_id, user_id)
 );
 
-CREATE INDEX idx_reviews_companion_id ON reviews(companion_id);
-CREATE INDEX idx_reviews_user_id ON reviews(user_id);
-CREATE INDEX idx_reviews_published ON reviews(published);
-CREATE INDEX idx_reviews_created_at ON reviews(created_at);
+-- ============================================
+-- CHATS TABLE (Переписки)
+-- ============================================
+CREATE TABLE IF NOT EXISTS chats (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
+  status VARCHAR(20) DEFAULT 'active', -- 'active', 'closed', 'archived'
+  total_messages INT DEFAULT 0,
+  last_message_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
+);
 
--- ============ REPORTS TABLE (для SOS/жалоб) ============
+-- ============================================
+-- MESSAGES TABLE (Сообщения)
+-- ============================================
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  text TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT false,
+  read_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
+);
+
+-- ============================================
+-- CHAT READ STATUS (Статус прочтения)
+-- ============================================
+CREATE TABLE IF NOT EXISTS chat_read_status (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  last_read_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  unread_count INT DEFAULT 0,
+  UNIQUE(chat_id, user_id)
+);
+
+-- ============================================
+-- USER PREFERENCES (Настройки пользователя)
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_preferences (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  notifications_enabled BOOLEAN DEFAULT true,
+  email_notifications BOOLEAN DEFAULT true,
+  language VARCHAR(10) DEFAULT 'ru',
+  theme VARCHAR(20) DEFAULT 'light', -- 'light' or 'dark'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
+);
+
+-- ============================================
+-- FAVORITES (Избранные спутники)
+-- ============================================
+CREATE TABLE IF NOT EXISTS favorites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  UNIQUE(user_id, companion_id)
+);
+
+-- ============================================
+-- REPORTS (Отчеты о нарушениях)
+-- ============================================
 CREATE TABLE IF NOT EXISTS reports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   companion_id UUID NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
-  reason VARCHAR(100) NOT NULL,
-  message TEXT NOT NULL,
-  status VARCHAR(20) DEFAULT 'pending',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  reason VARCHAR(255) NOT NULL,
+  message TEXT,
+  status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'reviewed', 'resolved'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
 );
 
-CREATE INDEX idx_reports_status ON reports(status);
-CREATE INDEX idx_reports_chat_id ON reports(chat_id);
-CREATE INDEX idx_reports_user_id ON reports(user_id);
-CREATE INDEX idx_reports_companion_id ON reports(companion_id);
+-- ============================================
+-- INDEXES (Индексы для производительности)
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+CREATE INDEX IF NOT EXISTS idx_companions_specialization ON companions(specialization);
+CREATE INDEX IF NOT EXISTS idx_companions_is_available ON companions(is_available);
+CREATE INDEX IF NOT EXISTS idx_chats_user_id ON chats(user_id);
+CREATE INDEX IF NOT EXISTS idx_chats_companion_id ON chats(companion_id);
+CREATE INDEX IF NOT EXISTS idx_chats_status ON chats(status);
+CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_is_read ON messages(is_read);
+CREATE INDEX IF NOT EXISTS idx_companion_topics_companion_id ON companion_topics(companion_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_companion_id ON reviews(companion_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 
--- ============ ENABLE ROW LEVEL SECURITY ============
+-- ============================================
+-- ROW LEVEL SECURITY (RLS)
+-- ============================================
+
+-- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE companions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE companion_topics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 
--- ============ RLS POLICIES ============
-
--- Users can view their own profile
-CREATE POLICY "Users can view own profile" ON users
+-- Users: Users can only read their own profile
+CREATE POLICY "Users can view their own profile" ON users
   FOR SELECT USING (auth.uid() = id);
 
--- Users can update their own profile
-CREATE POLICY "Users can update own profile" ON users
-  FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can update their own profile" ON users
+  FOR UPDATE USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
--- Companions are publicly readable
-CREATE POLICY "Companions are publicly readable" ON companions
+-- Allow inserting new user profiles during signup
+CREATE POLICY "Users can insert their own profile" ON users
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Companions: Anyone can read available companions
+CREATE POLICY "Anyone can view available companions" ON companions
   FOR SELECT USING (true);
 
--- Users can view their own chats
-CREATE POLICY "Users can view own chats" ON chats
+-- Chats: Users can only view their own chats
+CREATE POLICY "Users can view their own chats" ON chats
   FOR SELECT USING (auth.uid() = user_id);
 
--- Users can insert their own chats
 CREATE POLICY "Users can create chats" ON chats
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Users can update their own chats
-CREATE POLICY "Users can update own chats" ON chats
-  FOR UPDATE USING (auth.uid() = user_id);
-
--- Users can delete their own chats
-CREATE POLICY "Users can delete own chats" ON chats
-  FOR DELETE USING (auth.uid() = user_id);
-
--- Users can view messages from their chats
-CREATE POLICY "Users can view chat messages" ON messages
+-- Messages: Users can view messages in their chats
+CREATE POLICY "Users can view messages in their chats" ON messages
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM chats WHERE id = chat_id AND user_id = auth.uid()
-    ) OR
-    sender_id = auth.uid()
-  );
-
--- Users can insert messages to their chats
-CREATE POLICY "Users can insert messages" ON messages
-  FOR INSERT WITH CHECK (
-    sender_id = auth.uid() AND
-    EXISTS (
-      SELECT 1 FROM chats WHERE id = chat_id AND user_id = auth.uid()
+    chat_id IN (
+      SELECT id FROM chats WHERE user_id = auth.uid()
+      UNION
+      SELECT id FROM chats WHERE companion_id IN (SELECT id FROM companions)
     )
   );
 
--- Users can manage their own favorites
-CREATE POLICY "Users can manage own favorites" ON favorites
-  FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can send messages in their chats" ON messages
+  FOR INSERT WITH CHECK (
+    sender_id = auth.uid() AND
+    chat_id IN (SELECT id FROM chats WHERE user_id = auth.uid())
+  );
 
--- Users can view and create reviews
-CREATE POLICY "Users can view published reviews" ON reviews
-  FOR SELECT USING (published = true OR user_id = auth.uid());
+-- Reviews: Users can view all published reviews
+CREATE POLICY "Anyone can view published reviews" ON reviews
+  FOR SELECT USING (published = true);
 
-CREATE POLICY "Users can create own reviews" ON reviews
+CREATE POLICY "Users can create their own reviews" ON reviews
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own reviews" ON reviews
-  FOR UPDATE USING (auth.uid() = user_id);
-
--- Users can submit reports
-CREATE POLICY "Users can submit reports" ON reports
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can view own reports" ON reports
+-- Favorites: Users can manage their own favorites
+CREATE POLICY "Users can view their own favorites" ON favorites
   FOR SELECT USING (auth.uid() = user_id);
 
--- ============ SAMPLE DATA (OPTIONAL) ============
--- Uncomment to add sample companions for testing
+CREATE POLICY "Users can add favorites" ON favorites
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- INSERT INTO companions (name, age, gender, specialization, experience, image, bio, is_available, rating)
--- VALUES
---   ('Елена Петрова', 32, 'female', 'Психолог', 'Опытный специалист', 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg', 'Специализируюсь на личностном развитии', true, 4.8),
---   ('Иван Смирнов', 45, 'male', 'Психотерапевт', 'Опытный специалист', 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg', 'Работаю с травмой и стрессом', true, 4.9),
---   ('Анна Волкова', 28, 'female', 'Консультант', 'Начинающий', 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg', 'Помогаю с отношениями и коммуникацией', true, 4.5);
+CREATE POLICY "Users can remove favorites" ON favorites
+  FOR DELETE USING (auth.uid() = user_id);
 
--- INSERT INTO companion_topics (companion_id, topic)
--- SELECT id, 'Отношения' FROM companions WHERE name = 'Елена Петрова'
--- UNION ALL
--- SELECT id, 'Самооценка' FROM companions WHERE name = 'Елена Петрова'
--- UNION ALL
--- SELECT id, 'Тревожность' FROM companions WHERE name = 'Иван Смирнов'
--- UNION ALL
--- SELECT id, 'Стресс' FROM companions WHERE name = 'Иван Смирнов'
--- UNION ALL
--- SELECT id, 'Отношения' FROM companions WHERE name = 'Анна Волкова';
+-- Reports: Users can create reports for their chats
+CREATE POLICY "Users can create reports for their chats" ON reports
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND
+    chat_id IN (SELECT id FROM chats WHERE user_id = auth.uid())
+  );
+
+-- ============================================
+-- SAMPLE DATA (Опционально)
+-- ============================================
+
+-- Insert sample companions
+INSERT INTO companions (name, age, specialization, experience, image, rating, reviews, bio, price_per_hour, is_available, response_time_minutes)
+VALUES 
+  ('Мария К.', 28, 'Психолог', 'Опытный специалист', 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg', 4.9, 127, 'Специализируюсь на работе с молодежью и вопросами личных отношений', 50.00, true, 15),
+  ('Алексей М.', 32, 'Counselor', 'Опытный специалист', 'https://images.pexels.com/photos/31422830/pexels-photo-31422830.png', 4.8, 95, 'Помогу разобраться в карьерных целях и найти свой путь', 45.00, true, 20),
+  ('Елена В.', 35, 'Терапевт', 'Опытный специалист', 'https://images.pexels.com/photos/20860595/pexels-photo-20860595.jpeg', 5.0, 156, 'Специалист по работе с жизненными кризисами и горем', 60.00, true, 10)
+ON CONFLICT DO NOTHING;
+
+-- Insert companion topics
+INSERT INTO companion_topics (companion_id, topic)
+SELECT id, topic FROM (
+  SELECT companion_topics.id, 'Отношения' as topic FROM companions WHERE name = 'Мария К.' LIMIT 1
+) AS t
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Мария К.' LIMIT 1), 'Тревожность'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Мария К.' LIMIT 1), 'Стресс'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Алексей М.' LIMIT 1), 'Карьера'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Алексей М.' LIMIT 1), 'Развитие'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Алексей М.' LIMIT 1), 'Мотивация'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Елена В.' LIMIT 1), 'Горе'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Елена В.' LIMIT 1), 'Потеря'
+UNION ALL
+SELECT (SELECT id FROM companions WHERE name = 'Елена В.' LIMIT 1), 'Восстановление'
+ON CONFLICT DO NOTHING;
