@@ -220,7 +220,7 @@ const navigate = (path: string) => {
             <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
             <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">🎯</span>
           </div>
-          <p class="text-secondary/60 text-sm">Консультантов</p>
+          <p class="text-secondary/60 text-sm">Спутников</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
@@ -278,7 +278,7 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          🎯 Консультанты ({{ companions.length }})
+          🎯 Спутники ({{ companions.length }})
         </button>
         <button
           @click="activeTab = 'reviews'"
@@ -312,7 +312,7 @@ const navigate = (path: string) => {
             <p>📊 На этой панели вы можете управлять:</p>
             <ul class="list-disc list-inside space-y-2">
               <li><strong>Пользователи</strong> - просмотр, управление и удаление профилей</li>
-              <li><strong>Консультанты</strong> - управление статусом доступности и информацией</li>
+              <li><strong>Спутники</strong> - управление статусом доступности и информацией</li>
               <li><strong>Отзывы</strong> - модерация отзывов пользователей</li>
               <li><strong>Чаты</strong> - просмотр истории коммуникации</li>
             </ul>
@@ -397,7 +397,7 @@ const navigate = (path: string) => {
 
       <!-- Companions Tab -->
       <div v-if="activeTab === 'companions'" class="space-y-4">
-        <h2 class="text-2xl font-bold text-secondary mb-6">Консультанты ({{ companions.length }})</h2>
+        <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companions.length }})</h2>
 
         <div v-if="isLoading" class="text-center py-12 text-secondary/60">
           Загрузка...
@@ -412,11 +412,9 @@ const navigate = (path: string) => {
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1">
                 <h3 class="text-lg font-bold text-secondary mb-2">{{ companion.name }}</h3>
-                <p class="text-secondary/60 text-sm mb-3">{{ companion.specialization }}</p>
+                <p class="text-secondary/60 text-sm mb-3">{{ companion.experience }} в терапии</p>
                 <div class="flex items-center gap-4 text-sm text-secondary/60">
-                  <span>⭐ {{ companion.rating }}/5</span>
-                  <span>📝 {{ companion.reviews }} отзывов</span>
-                  <span>💰 {{ companion.price_per_hour }}₽/час</span>
+                  <span>💝 {{ companion.reviews }} благодарностей</span>
                 </div>
               </div>
               <button
@@ -435,7 +433,7 @@ const navigate = (path: string) => {
         </div>
 
         <div v-else class="text-center py-12 text-secondary/60">
-          Консультантов не найдено
+          Спутников не найдено
         </div>
       </div>
 
