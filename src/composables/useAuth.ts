@@ -2,12 +2,14 @@ import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 
 export interface UserProfile {
-  id: string
+  id: string | number
   email: string
   name: string
-  age?: number
-  bio?: string
-  image?: string
+  age?: number | null
+  bio?: string | null
+  image?: string | null
+  phone?: string | null
+  city?: string | null
   created_at?: string
 }
 
@@ -53,17 +55,14 @@ export const signUp = async (email: string, password: string, name: string) => {
     }
     if (!data.user) throw new Error('Failed to create user')
 
-    // Create user profile in database
+    // Note: For Supabase, the user ID is auto-generated (BIGSERIAL)
+    // We only store the email and name, other fields use defaults
     const { error: profileError } = await supabase
       .from('users')
       .insert([
         {
-          id: data.user.id,
           email,
           name,
-          age: null,
-          bio: '',
-          image: null,
         },
       ])
 
@@ -76,10 +75,24 @@ export const signUp = async (email: string, password: string, name: string) => {
       throw new Error(errorMessage)
     }
 
+    // Fetch the created user profile to get the correct ID
+    const { data: profile, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (fetchError || !profile) {
+      throw new Error('Failed to fetch created user profile')
+    }
+
     currentUser.value = {
-      id: data.user.id,
-      email,
-      name,
+      id: profile.id,
+      email: profile.email,
+      name: profile.name,
+      age: profile.age,
+      bio: profile.bio,
+      image: profile.image,
     }
 
     return data.user
@@ -115,11 +128,14 @@ export const login = async (email: string, password: string) => {
     }
     if (!data.user) throw new Error('Failed to login')
 
-    // Fetch user profile from database
+    // Fetch user profile from database by email
+    const userEmail = data.user.email
+    if (!userEmail) throw new Error('User email not found')
+
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
-      .eq('id', data.user.id)
+      .eq('email', userEmail)
       .single()
 
     if (profileError) {
@@ -130,8 +146,8 @@ export const login = async (email: string, password: string) => {
       })
       // Profile might not exist yet, use auth data
       currentUser.value = {
-        id: data.user.id,
-        email: data.user.email || '',
+        id: userEmail, // Use email as fallback ID
+        email: userEmail,
         name: data.user.user_metadata?.full_name || 'User',
       }
       return data.user
@@ -190,11 +206,17 @@ export const getCurrentUser = async () => {
       return null
     }
 
-    // Fetch user profile from database
+    // Fetch user profile from database by email
+    const userEmail = data.user.email
+    if (!userEmail) {
+      currentUser.value = null
+      return null
+    }
+
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
-      .eq('id', data.user.id)
+      .eq('email', userEmail)
       .single()
 
     if (profileError) {
@@ -232,10 +254,11 @@ export const updateProfile = async (updates: Partial<UserProfile>) => {
 
     if (!currentUser.value) throw new Error('No user logged in')
 
+    // Update by email to ensure we're updating the right user
     const { data, error: updateError } = await supabase
       .from('users')
       .update(updates)
-      .eq('id', currentUser.value.id)
+      .eq('email', currentUser.value.email)
       .select()
       .single()
 
