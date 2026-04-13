@@ -48,15 +48,13 @@
             </p>
             <p class="mt-2 text-slate-300">{{ companion.bio }}</p>
 
-            <!-- Рейтинг -->
+            <!-- Testimonials -->
             <div class="mt-4 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="text-yellow-400">⭐</span>
-                <span class="font-bold text-white">{{ companion.rating }}</span>
-                <span class="text-sm text-slate-400">({{ companion.reviews }})</span>
+                <span class="text-sm text-slate-400">{{ companion.reviews }} благодарностей</span>
               </div>
-              <span class="text-lg font-bold text-green-400">
-                ${{ companion.price_per_hour }}/ч
+              <span class="text-sm font-semibold text-blue-400">
+                {{ companion.experience }}
               </span>
             </div>
 

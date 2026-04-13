@@ -174,7 +174,12 @@ const navigate = (path: string) => {
       <div class="mb-8">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h1 class="text-4xl font-bold text-secondary mb-2">🛡️ Админ Панель</h1>
+            <div class="flex items-center gap-3 mb-2">
+              <svg class="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+              </svg>
+              <h1 class="text-4xl font-bold text-secondary">Админ Панель</h1>
+            </div>
             <p class="text-secondary/60">Управление платформой и данными пользователей</p>
           </div>
           <button
@@ -211,35 +216,35 @@ const navigate = (path: string) => {
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
-            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">👥</span>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           </div>
           <p class="text-secondary/60 text-sm">Пользователей</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
-            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">🎯</span>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm4-5h5v3h-5z"/></svg>
           </div>
           <p class="text-secondary/60 text-sm">Спутников</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
-            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">💬</span>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
           </div>
           <p class="text-secondary/60 text-sm">Всего чатов</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-green-600">{{ stats.activeChats }}</div>
-            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">✨</span>
+            <svg class="w-6 h-6 text-green-600 opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </div>
           <p class="text-secondary/60 text-sm">Активных чатов</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
-            <span class="text-3xl opacity-30 group-hover:opacity-100 transition-opacity">⭐</span>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
           </div>
           <p class="text-secondary/60 text-sm">Отзывов</p>
         </div>
@@ -256,7 +261,8 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          📊 Обзор
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+          Обзор
         </button>
         <button
           @click="activeTab = 'users'"
@@ -267,7 +273,8 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          👥 Пользователи ({{ users.length }})
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Пользователи ({{ users.length }})
         </button>
         <button
           @click="activeTab = 'companions'"
@@ -278,7 +285,8 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          🎯 Спутники ({{ companions.length }})
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm4 2h5v3h-5z"/></svg>
+          Спутники ({{ companions.length }})
         </button>
         <button
           @click="activeTab = 'reviews'"
@@ -289,7 +297,8 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          ⭐ Отзывы ({{ reviews.length }})
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
+          Отзывы ({{ reviews.length }})
         </button>
         <button
           @click="activeTab = 'chats'"
@@ -300,7 +309,8 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          💬 Чаты ({{ chats.length }})
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          Чаты ({{ chats.length }})
         </button>
       </div>
 
@@ -309,7 +319,7 @@ const navigate = (path: string) => {
         <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
           <h2 class="text-2xl font-bold text-secondary mb-6">Добро пожаловать, Администратор!</h2>
           <div class="space-y-4 text-secondary/70">
-            <p>📊 На этой панели вы можете управлять:</p>
+            <p><svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>На этой панели вы можете управлять:</p>
             <ul class="list-disc list-inside space-y-2">
               <li><strong>Пользователи</strong> - просмотр, управление и удаление профилей</li>
               <li><strong>Спутники</strong> - управление статусом доступности и информацией</li>
@@ -358,7 +368,7 @@ const navigate = (path: string) => {
                           : 'bg-secondary/10 text-secondary'
                       ]"
                     >
-                      {{ user.role === 'admin' ? '🛡️ Админ' : '👤 Пользователь' }}
+                      {{ user.role === 'admin' ? 'Администратор' : 'Пользователь' }}
                     </span>
                   </td>
                   <td class="px-4 py-4 text-secondary text-sm">
