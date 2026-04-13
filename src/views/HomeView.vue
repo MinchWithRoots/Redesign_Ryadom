@@ -170,28 +170,28 @@ onMounted(() => {
                     <!-- Center icon -->
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card">
-                        <IconMenu class="w-12 h-12" />
+                        <IconMenu class="w-14 h-14" />
                       </div>
                     </div>
 
                     <!-- Floating icons -->
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0s">
-                      <IconBookmark class="w-8 h-8" />
+                      <IconBookmark class="w-10 h-10" />
                     </div>
                     <div class="absolute top-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.2s">
-                      <IconHeart class="w-8 h-8" />
+                      <IconHeart class="w-10 h-10" />
                     </div>
                     <div class="absolute bottom-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.4s">
-                      <IconSetting class="w-8 h-8" />
+                      <IconSetting class="w-10 h-10" />
                     </div>
                     <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.6s">
-                      <IconNotification class="w-8 h-8" />
+                      <IconNotification class="w-10 h-10" />
                     </div>
                     <div class="absolute bottom-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.8s">
-                      <IconDanger class="w-8 h-8" />
+                      <IconDanger class="w-10 h-10" />
                     </div>
                     <div class="absolute top-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 1s">
-                      <IconInfo class="w-8 h-8" />
+                      <IconInfo class="w-10 h-10" />
                     </div>
                   </div>
                 </div>
