@@ -2,6 +2,15 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
+import IconTick from '@/components/icons/IconTick.vue'
+import IconBookmark from '@/components/icons/IconBookmark.vue'
+import IconMenu from '@/components/icons/IconMenu.vue'
+import IconDanger from '@/components/icons/IconDanger.vue'
+import IconHeart from '@/components/icons/IconHeart.vue'
+import IconSetting from '@/components/icons/IconSetting.vue'
+import IconInfo from '@/components/icons/IconInfo.vue'
+import IconNotification from '@/components/icons/IconNotification.vue'
+import IconStar from '@/components/icons/IconStar.vue'
 
 const router = useRouter()
 const reviews = ref<any[]>([])
@@ -95,10 +104,7 @@ onMounted(() => {
           <div class="flex flex-col gap-8 lg:gap-10">
             <div class="space-y-4 lg:space-y-6">
               <div class="flex items-center gap-2">
-                <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" opacity="0.5"/>
-                  <circle cx="12" cy="12" r="1" stroke="currentColor" stroke-width="2"/>
-                </svg>
+                <IconTick class="w-6 h-6" />
                 <p class="text-primary font-semibold text-lg tracking-wide">Добро пожаловать</p>
               </div>
               <h1 class="text-5xl lg:text-7xl font-bold text-secondary leading-tight">
@@ -164,42 +170,28 @@ onMounted(() => {
                     <!-- Center icon -->
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card">
-                        <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-                        </svg>
+                        <IconMenu class="w-12 h-12" />
                       </div>
                     </div>
 
                     <!-- Floating icons -->
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0s">
-                      <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-                      </svg>
+                      <IconBookmark class="w-8 h-8" />
                     </div>
                     <div class="absolute top-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.2s">
-                      <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                      </svg>
+                      <IconHeart class="w-8 h-8" />
                     </div>
                     <div class="absolute bottom-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.4s">
-                      <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M16.5 6c1.1 0 2.1.4 2.8 1.1l2.1-2.1C19.5 3.5 16.4 2 12.9 2 9.7 2 6.8 3.3 4.9 5.4l2.5 2.5c.9-1.1 2.1-1.9 3.6-1.9zm2.5 6c0-.5 0-1-.1-1.5H8.1V11h10.9c-.1.5-.1 1-.1 1.5zm0 2v3.1c.9-.5 1.7-1.1 2.4-1.9l2.1 2.1c-1.3 1.3-3 2.3-4.5 2.9v-6.2zm-4.9-9.6c-.5 0-1 .1-1.5.3V3.6c1.5.3 3 1 4.1 1.8l-2.6 2.6zM8.1 9.5H2c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h6.1v-4zm8 8c1.1 0 2.1-.4 2.8-1.1l2.1 2.1c-1.5 1.4-3.4 2.3-4.9 2.7v-3.7z"/>
-                      </svg>
+                      <IconSetting class="w-8 h-8" />
                     </div>
                     <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.6s">
-                      <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-                      </svg>
+                      <IconNotification class="w-8 h-8" />
                     </div>
                     <div class="absolute bottom-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.8s">
-                      <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14 6l-3.5 5 2.5 3.5h-5l-4-5 4-5h5.5zm-10 7c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h2v-6h-2z"/>
-                      </svg>
+                      <IconDanger class="w-8 h-8" />
                     </div>
                     <div class="absolute top-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 1s">
-                      <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                      </svg>
+                      <IconInfo class="w-8 h-8" />
                     </div>
                   </div>
                 </div>
@@ -318,9 +310,7 @@ onMounted(() => {
         <div class="flex flex-col gap-12 lg:gap-16">
           <div class="text-center space-y-4">
             <div class="flex items-center justify-center gap-2">
-              <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/>
-              </svg>
+              <IconStar class="w-6 h-6" />
               <p class="text-primary font-semibold text-lg">Отзывы</p>
             </div>
             <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
@@ -343,16 +333,14 @@ onMounted(() => {
 
               <!-- Stars -->
               <div class="flex gap-1 mb-6">
-                <svg v-for="i in 5" :key="i" class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/>
-                </svg>
+                <IconStar v-for="i in 5" :key="i" class="w-5 h-5" />
               </div>
 
               <!-- Quote with icon -->
               <div class="relative mb-8">
-                <svg class="w-8 h-8 text-primary/30 absolute -top-2 -left-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 21c3 0 7-1 7-8V5c0-1.25-4.716-5-7-5C5.284 0 3 4.75 3 6v12c0 1.25 0 5 7 5zm18 0c3 0 7-1 7-8V5c0-1.25-4.716-5-7-5-1.284 0-3 4.75-3 6v12c0 1.25 0 5 7 5z"/>
-                </svg>
+                <div class="w-8 h-8 text-primary/30 absolute -top-2 -left-2">
+                  <IconBookmark class="w-full h-full" />
+                </div>
                 <p class="text-secondary/70 text-lg leading-relaxed">{{ review.text }}</p>
               </div>
 
@@ -415,17 +403,17 @@ onMounted(() => {
         <!-- Trust badges -->
         <div class="mt-16 flex flex-col sm:flex-row gap-6 justify-center items-center text-sm">
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+            <IconTick class="w-5 h-5" />
             <span>Проверенный контент</span>
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" /></svg>
+            <IconDanger class="w-5 h-5" />
             <span>Защита данных</span>
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+            <IconStar class="w-5 h-5" />
             <span>500+ отзывов 5★</span>
           </div>
         </div>
