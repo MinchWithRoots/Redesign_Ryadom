@@ -104,7 +104,7 @@ onMounted(() => {
           <div class="flex flex-col gap-8 lg:gap-10">
             <div class="space-y-4 lg:space-y-6">
               <div class="flex items-center gap-2">
-                <IconTick class="w-6 h-6" />
+                <IconTick class="w-[50px] h-[50px]" />
                 <p class="text-primary font-semibold text-lg tracking-wide">Добро пожаловать</p>
               </div>
               <h1 class="text-5xl lg:text-7xl font-bold text-secondary leading-tight">
@@ -169,8 +169,8 @@ onMounted(() => {
                   <div class="relative w-48 h-48">
                     <!-- Center icon -->
                     <div class="absolute inset-0 flex items-center justify-center">
-                      <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card">
-                        <IconMenu class="w-14 h-14" />
+                      <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card border border-white opacity-100">
+                        <IconMenu class="w-[50px] h-[50px]" />
                       </div>
                     </div>
 
@@ -310,7 +310,7 @@ onMounted(() => {
         <div class="flex flex-col gap-12 lg:gap-16">
           <div class="text-center space-y-4">
             <div class="flex items-center justify-center gap-2">
-              <IconStar class="w-6 h-6" />
+              <IconStar class="w-[50px] h-[50px]" />
               <p class="text-primary font-semibold text-lg">Отзывы</p>
             </div>
             <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
@@ -403,17 +403,17 @@ onMounted(() => {
         <!-- Trust badges -->
         <div class="mt-16 flex flex-col sm:flex-row gap-6 justify-center items-center text-sm">
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <IconTick class="w-5 h-5" />
+            <IconTick class="w-[80px] h-[80px]" />
             <span>Проверенный контент</span>
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <IconDanger class="w-5 h-5" />
+            <IconDanger class="w-[80px] h-[80px]" />
             <span>Защита данных</span>
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <IconStar class="w-5 h-5" />
+            <IconStar class="w-[80px] h-[80px]" />
             <span>500+ отзывов 5★</span>
           </div>
         </div>
