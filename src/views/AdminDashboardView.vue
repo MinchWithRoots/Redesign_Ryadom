@@ -12,6 +12,7 @@ const reviews = ref<any[]>([])
 const chats = ref<any[]>([])
 const isLoading = ref(false)
 const successMessage = ref('')
+const errorMessage = ref('')
 
 // Check admin access
 onMounted(async () => {
@@ -87,43 +88,77 @@ const stats = computed(() => ({
 const handleDeleteUser = async (userId: string | number) => {
   if (!confirm('Вы уверены? Это удалит пользователя и все его данные.')) return
 
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', userId)
+  try {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId)
 
-  if (!error) {
-    successMessage.value = 'Пользователь удален'
+    if (error) throw error
+
+    successMessage.value = 'Пользователь удален ✓'
     await loadUsers()
     setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
 
 const handleToggleCompanionStatus = async (companionId: string | number, isAvailable: boolean) => {
-  const { error } = await supabase
-    .from('companions')
-    .update({ is_available: !isAvailable })
-    .eq('id', companionId)
+  try {
+    const { error } = await supabase
+      .from('companions')
+      .update({ is_available: !isAvailable })
+      .eq('id', companionId)
 
-  if (!error) {
-    successMessage.value = 'Статус обновлен'
+    if (error) throw error
+
+    successMessage.value = `Статус изменен на "${!isAvailable ? 'Доступен' : 'Недоступен'}" ✓`
     await loadCompanions()
     setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при обновлении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
+}
+
+const handleToggleAdminStatus = async (userId: string | number, currentRole: string) => {
+  try {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin'
+    const { error } = await supabase
+      .from('users')
+      .update({ role: newRole })
+      .eq('id', userId)
+
+    if (error) throw error
+
+    successMessage.value = `Роль изменена на "${newRole === 'admin' ? 'Администратор' : 'Пользователь'}" ✓`
+    await loadUsers()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при изменении роли: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
 
 const handleDeleteReview = async (reviewId: string | number) => {
   if (!confirm('Удалить этот отзыв?')) return
 
-  const { error } = await supabase
-    .from('reviews')
-    .delete()
-    .eq('id', reviewId)
+  try {
+    const { error } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('id', reviewId)
 
-  if (!error) {
-    successMessage.value = 'Отзыв удален'
+    if (error) throw error
+
+    successMessage.value = 'Отзыв удален ✓'
     await loadReviews()
     setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
 
@@ -136,106 +171,146 @@ const navigate = (path: string) => {
   <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16">
     <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <h1 class="text-4xl font-bold text-secondary">🛡️ Админ Панель</h1>
-        <button
-          @click="navigate('/profile')"
-          class="px-6 py-2 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
-        >
-          Вернуться
-        </button>
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <svg class="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+              </svg>
+              <h1 class="text-4xl font-bold text-secondary">Админ Панель</h1>
+            </div>
+            <p class="text-secondary/60">Управление платформой и данными пользователей</p>
+          </div>
+          <button
+            @click="navigate('/profile')"
+            class="px-6 py-2 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+          >
+            ← Вернуться
+          </button>
+        </div>
       </div>
 
-      <!-- Success Message -->
+      <!-- Messages -->
       <transition name="fade">
         <div
           v-if="successMessage"
-          class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm"
+          class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm flex items-center gap-3"
         >
-          {{ successMessage }}
+          <span>✅</span>
+          <span>{{ successMessage }}</span>
+        </div>
+      </transition>
+      <transition name="fade">
+        <div
+          v-if="errorMessage"
+          class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3"
+        >
+          <span>❌</span>
+          <span>{{ errorMessage }}</span>
         </div>
       </transition>
 
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Пользователей</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </div>
+          <p class="text-secondary/60 text-sm">Пользователей</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Консультантов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm4-5h5v3h-5z"/></svg>
+          </div>
+          <p class="text-secondary/60 text-sm">Спутников</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Всего чатов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          </div>
+          <p class="text-secondary/60 text-sm">Всего чатов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.activeChats }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Активных чатов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-green-600">{{ stats.activeChats }}</div>
+            <svg class="w-6 h-6 text-green-600 opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <p class="text-secondary/60 text-sm">Активных чатов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card">
-          <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
-          <p class="text-secondary/60 text-sm mt-2">Отзывов</p>
+        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
+            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <p class="text-secondary/60 text-sm">Отзывов</p>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-2 mb-6 border-b border-border">
+      <div class="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-border">
         <button
           @click="activeTab = 'overview'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'overview'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          📊 Обзор
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+          Обзор
         </button>
         <button
           @click="activeTab = 'users'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'users'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          👥 Пользователи
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Пользователи ({{ users.length }})
         </button>
         <button
           @click="activeTab = 'companions'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'companions'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          🎯 Консультанты
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm4 2h5v3h-5z"/></svg>
+          Спутники ({{ companions.length }})
         </button>
         <button
           @click="activeTab = 'reviews'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'reviews'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          ⭐ Отзывы
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
+          Отзывы ({{ reviews.length }})
         </button>
         <button
           @click="activeTab = 'chats'"
           :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all',
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
             activeTab === 'chats'
               ? 'border-primary text-primary'
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          💬 Чаты
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          Чаты ({{ chats.length }})
         </button>
       </div>
 
@@ -244,10 +319,10 @@ const navigate = (path: string) => {
         <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
           <h2 class="text-2xl font-bold text-secondary mb-6">Добро пожаловать, Администратор!</h2>
           <div class="space-y-4 text-secondary/70">
-            <p>📊 На этой панели вы можете управлять:</p>
+            <p><svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>На этой панели вы можете управлять:</p>
             <ul class="list-disc list-inside space-y-2">
               <li><strong>Пользователи</strong> - просмотр, управление и удаление профилей</li>
-              <li><strong>Консультанты</strong> - управление статусом доступности и информацией</li>
+              <li><strong>Спутники</strong> - управление статусом доступности и информацией</li>
               <li><strong>Отзывы</strong> - модерация отзывов пользователей</li>
               <li><strong>Чаты</strong> - просмотр истории коммуникации</li>
             </ul>
@@ -266,51 +341,63 @@ const navigate = (path: string) => {
           Загрузка...
         </div>
 
-        <div v-else-if="users.length > 0" class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left px-4 py-3 font-semibold text-secondary">ID</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Имя</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Email</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Роль</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Дата</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id" class="border-b border-border/50 hover:bg-light-bg">
-                <td class="px-4 py-3 text-secondary text-sm">{{ user.id }}</td>
-                <td class="px-4 py-3 text-secondary font-medium">{{ user.name }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ user.email }}</td>
-                <td class="px-4 py-3">
-                  <span
-                    :class="[
-                      'px-3 py-1 rounded-full text-xs font-semibold',
-                      user.role === 'admin'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-secondary/10 text-secondary'
-                    ]"
-                  >
-                    {{ user.role === 'admin' ? '🛡️ Админ' : '👤 Пользователь' }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-secondary text-sm">
-                  {{ new Date(user.created_at).toLocaleDateString('ru-RU') }}
-                </td>
-                <td class="px-4 py-3">
-                  <button
-                    v-if="user.role !== 'admin'"
-                    @click="handleDeleteUser(user.id)"
-                    class="px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors"
-                  >
-                    Удалить
-                  </button>
-                  <span v-else class="text-secondary/50 text-xs">Защищен</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else-if="users.length > 0" class="bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-light-bg">
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">ID</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Имя</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Email</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Роль</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Дата</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="user in users" :key="user.id" class="border-b border-border/50 hover:bg-light-bg/50 transition-colors">
+                  <td class="px-4 py-4 text-secondary text-sm">{{ user.id }}</td>
+                  <td class="px-4 py-4 text-secondary font-medium">{{ user.name }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ user.email }}</td>
+                  <td class="px-4 py-4">
+                    <span
+                      :class="[
+                        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+                        user.role === 'admin'
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-secondary/10 text-secondary'
+                      ]"
+                    >
+                      {{ user.role === 'admin' ? 'Администратор' : 'Пользователь' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 text-secondary text-sm">
+                    {{ new Date(user.created_at).toLocaleDateString('ru-RU') }}
+                  </td>
+                  <td class="px-4 py-4 space-x-2">
+                    <button
+                      @click="handleToggleAdminStatus(user.id, user.role)"
+                      :class="[
+                        'px-3 py-1.5 text-xs font-semibold rounded transition-colors',
+                        user.role === 'admin'
+                          ? 'text-orange-600 hover:bg-orange-50'
+                          : 'text-green-600 hover:bg-green-50'
+                      ]"
+                    >
+                      {{ user.role === 'admin' ? 'Убрать' : 'Админ' }}
+                    </button>
+                    <button
+                      v-if="user.role !== 'admin'"
+                      @click="handleDeleteUser(user.id)"
+                      class="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      Удалить
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div v-else class="text-center py-12 text-secondary/60">
@@ -320,7 +407,7 @@ const navigate = (path: string) => {
 
       <!-- Companions Tab -->
       <div v-if="activeTab === 'companions'" class="space-y-4">
-        <h2 class="text-2xl font-bold text-secondary mb-6">Консультанты ({{ companions.length }})</h2>
+        <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companions.length }})</h2>
 
         <div v-if="isLoading" class="text-center py-12 text-secondary/60">
           Загрузка...
@@ -335,11 +422,9 @@ const navigate = (path: string) => {
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1">
                 <h3 class="text-lg font-bold text-secondary mb-2">{{ companion.name }}</h3>
-                <p class="text-secondary/60 text-sm mb-3">{{ companion.specialization }}</p>
+                <p class="text-secondary/60 text-sm mb-3">{{ companion.experience }} в терапии</p>
                 <div class="flex items-center gap-4 text-sm text-secondary/60">
-                  <span>⭐ {{ companion.rating }}/5</span>
-                  <span>📝 {{ companion.reviews }} отзывов</span>
-                  <span>💰 {{ companion.price_per_hour }}₽/час</span>
+                  <span>💝 {{ companion.reviews }} благодарностей</span>
                 </div>
               </div>
               <button
@@ -358,7 +443,7 @@ const navigate = (path: string) => {
         </div>
 
         <div v-else class="text-center py-12 text-secondary/60">
-          Консультантов не найдено
+          Спутников не найдено
         </div>
       </div>
 
@@ -422,42 +507,44 @@ const navigate = (path: string) => {
           Загрузка...
         </div>
 
-        <div v-else-if="chats.length > 0" class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left px-4 py-3 font-semibold text-secondary">ID</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Пользователь</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Консультант</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Статус</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Сообщений</th>
-                <th class="text-left px-4 py-3 font-semibold text-secondary">Дата</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="chat in chats" :key="chat.id" class="border-b border-border/50 hover:bg-light-bg">
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.id }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.user_id }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.companion_id }}</td>
-                <td class="px-4 py-3">
-                  <span
-                    :class="[
-                      'px-3 py-1 rounded-full text-xs font-semibold',
-                      chat.status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-secondary/10 text-secondary'
-                    ]"
-                  >
-                    {{ chat.status === 'active' ? '✓ Активен' : 'Завершен' }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-secondary text-sm">{{ chat.total_messages }}</td>
-                <td class="px-4 py-3 text-secondary text-sm">
-                  {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else-if="chats.length > 0" class="bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-light-bg">
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">ID</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Пользователь</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Консультант</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Статус</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Сообщений</th>
+                  <th class="text-left px-4 py-4 font-semibold text-secondary">Дата</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="chat in chats" :key="chat.id" class="border-b border-border/50 hover:bg-light-bg/50 transition-colors">
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.id }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.user_id }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion_id }}</td>
+                  <td class="px-4 py-4">
+                    <span
+                      :class="[
+                        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+                        chat.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-secondary/10 text-secondary'
+                      ]"
+                    >
+                      {{ chat.status === 'active' ? '✓ Активен' : '✗ Завершен' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.total_messages || 0 }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">
+                    {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div v-else class="text-center py-12 text-secondary/60">

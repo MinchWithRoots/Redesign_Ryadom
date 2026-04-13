@@ -133,12 +133,10 @@ onMounted(async () => {
                 </div>
                 <div>
                   <div class="flex items-center justify-center gap-1 mb-1">
-                    <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span class="font-bold text-primary">4.8</span>
+                    <span class="text-xl">💝</span>
+                    <span class="font-bold text-primary">8</span>
                   </div>
-                  <p class="text-xs text-secondary/60">рейтинг</p>
+                  <p class="text-xs text-secondary/60">благодарностей</p>
                 </div>
               </div>
             </div>
@@ -162,7 +160,8 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                📋 Мой профиль
+                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+                Мой профиль
               </button>
               <button
                 @click="activeTab = 'chats'"
@@ -173,7 +172,8 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                💬 Мои чаты
+                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                Мои чаты
               </button>
               <button
                 @click="activeTab = 'history'"
@@ -184,7 +184,8 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                📈 История сессий
+                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+                История сессий
               </button>
               <button
                 @click="activeTab = 'settings'"
@@ -195,8 +196,20 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                ⚙️ Настройки
+                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.49.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.48.1.62l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.1.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.49-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.48-.1-.62l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                Настройки
               </button>
+              <template v-if="userProfile.role === 'admin'">
+                <div class="border-t border-border/50 my-2 pt-2">
+                  <button
+                    @click="navigate('/admin')"
+                    class="w-full text-left px-4 py-3 rounded-xl font-medium transition-all bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10"
+                  >
+                    <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    Админ панель
+                  </button>
+                </div>
+              </template>
             </nav>
 
             <!-- Logout -->
