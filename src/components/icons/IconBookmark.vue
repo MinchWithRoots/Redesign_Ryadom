@@ -1,20 +1,20 @@
 <template>
-  <img
-    :src="iconUrl"
-    :alt="alt"
-    class="w-full h-full object-contain"
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
     v-bind="$attrs"
-  />
+  >
+    <!-- Rounded background -->
+    <rect width="24" height="24" rx="6" fill="currentColor" opacity="0.1" />
+    <!-- Bookmark icon -->
+    <path
+      d="M6 4C5.45 4 5 4.45 5 5V20C5 20.77 5.64 21.35 6.39 21.06L12 18.27L17.61 21.06C18.36 21.35 19 20.77 19 20V5C19 4.45 18.55 4 18 4H6Z"
+      fill="currentColor"
+    />
+  </svg>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  alt?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  alt: 'Bookmark icon',
-})
-
-const iconUrl = 'https://cdn.builder.io/api/v1/image/assets%2F4b9bcc88186042bd97cdfb19b0955a4d%2Ff4866a472cd34e11ad9c6ebddd9da5b6?format=webp&width=800&height=1200'
+defineProps<{ alt?: string }>()
 </script>

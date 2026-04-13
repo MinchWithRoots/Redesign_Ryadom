@@ -1,20 +1,20 @@
 <template>
-  <img
-    :src="iconUrl"
-    :alt="alt"
-    class="w-full h-full object-contain"
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
     v-bind="$attrs"
-  />
+  >
+    <!-- Rounded background -->
+    <rect width="24" height="24" rx="6" fill="currentColor" opacity="0.1" />
+    <!-- Star icon -->
+    <path
+      d="M12 17.27L18.18 21L16.54 14.81L22 10.24L15.81 10.13L12 4.26L8.19 10.13L2 10.24L7.46 14.81L5.82 21L12 17.27Z"
+      fill="currentColor"
+    />
+  </svg>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  alt?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  alt: 'Star icon',
-})
-
-const iconUrl = 'https://cdn.builder.io/api/v1/image/assets%2F4b9bcc88186042bd97cdfb19b0955a4d%2F1b50e5aa38684684b49950eec18033fa?format=webp&width=800&height=1200'
+defineProps<{ alt?: string }>()
 </script>

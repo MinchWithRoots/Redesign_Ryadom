@@ -1,20 +1,20 @@
 <template>
-  <img
-    :src="iconUrl"
-    :alt="alt"
-    class="w-full h-full object-contain"
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
     v-bind="$attrs"
-  />
+  >
+    <!-- Rounded background -->
+    <rect width="24" height="24" rx="6" fill="currentColor" opacity="0.1" />
+    <!-- Checkmark icon -->
+    <path
+      d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
+      fill="currentColor"
+    />
+  </svg>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  alt?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  alt: 'Tick icon',
-})
-
-const iconUrl = 'https://cdn.builder.io/api/v1/image/assets%2F4b9bcc88186042bd97cdfb19b0955a4d%2F22b1f3fa71364c349ce7aef2619c1bf9?format=webp&width=800&height=1200'
+defineProps<{ alt?: string }>()
 </script>
