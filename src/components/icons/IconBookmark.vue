@@ -1,12 +1,18 @@
 <template>
-  <img
+  <svg
     :alt="alt"
-    src="https://api.builder.io/api/v1/image/assets/TEMP/e03049c77637af2a6b655b8a64a79d13e91216ae?width=48"
-    class="w-full h-full object-contain"
-    v-bind="$attrs"
-  />
+    :class="[
+      'w-full h-full',
+      $attrs.class
+    ]"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
+  >
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+  </svg>
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{ alt?: string }>(), { alt: 'heart icon' })
+withDefaults(defineProps<{ alt?: string }>(), { alt: 'bookmark icon' })
 </script>

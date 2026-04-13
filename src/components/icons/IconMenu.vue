@@ -1,10 +1,19 @@
 <template>
-  <img
+  <svg
     :alt="alt"
-    src="https://api.builder.io/api/v1/image/assets/TEMP/7736f72dd881e8a719b359d8ed1d243c7b4751ab?width=48"
-    class="w-full h-full object-contain"
-    v-bind="$attrs"
-  />
+    :class="[
+      'w-full h-full',
+      $attrs.class
+    ]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
 </template>
 
 <script setup lang="ts">

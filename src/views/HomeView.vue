@@ -170,7 +170,7 @@ onMounted(() => {
                     <!-- Center icon -->
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card border border-white opacity-100">
-                        <IconMenu class="w-[65px] h-[65px]" />
+                        <IconMenu class="w-[40px] h-[40px]" />
                       </div>
                     </div>
 

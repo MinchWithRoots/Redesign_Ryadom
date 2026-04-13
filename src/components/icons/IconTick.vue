@@ -1,10 +1,19 @@
 <template>
-  <img
+  <svg
     :alt="alt"
-    src="https://api.builder.io/api/v1/image/assets/TEMP/3b9a05ccbdcd6aca5b8cad986c9223c7944ac490?width=48"
-    class="w-full h-full object-contain"
-    v-bind="$attrs"
-  />
+    :class="[
+      'w-full h-full',
+      $attrs.class
+    ]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
 </template>
 
 <script setup lang="ts">
