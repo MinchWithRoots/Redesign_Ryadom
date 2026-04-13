@@ -1,22 +1,12 @@
 <template>
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    xmlns="http://www.w3.org/2000/svg"
+  <img
+    :alt="alt"
+    src="https://api.builder.io/api/v1/image/assets/TEMP/e42b884bca1f11aef476dc492f907e826666784c?width=48"
+    class="w-full h-full object-contain"
     v-bind="$attrs"
-  >
-    <!-- Rounded background -->
-    <rect width="24" height="24" rx="6" fill="currentColor" opacity="0.1" />
-    <!-- Menu/Grid icon -->
-    <g>
-      <rect x="4" y="4" width="6" height="6" rx="2" fill="currentColor" />
-      <rect x="14" y="4" width="6" height="6" rx="2" fill="currentColor" />
-      <rect x="4" y="14" width="6" height="6" rx="2" fill="currentColor" />
-      <rect x="14" y="14" width="6" height="6" rx="2" fill="currentColor" />
-    </g>
-  </svg>
+  />
 </template>
 
 <script setup lang="ts">
-defineProps<{ alt?: string }>()
+withDefaults(defineProps<{ alt?: string }>(), { alt: 'Binance icon' })
 </script>
