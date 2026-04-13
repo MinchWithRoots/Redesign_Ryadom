@@ -1,20 +1,12 @@
 <template>
   <img
-    :src="iconUrl"
     :alt="alt"
+    src="https://api.builder.io/api/v1/image/assets/TEMP/665b16057504db6e8b5c94695c17cf3cb8de56c9?width=48"
     class="w-full h-full object-contain"
     v-bind="$attrs"
   />
 </template>
 
 <script setup lang="ts">
-interface Props {
-  alt?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  alt: 'Star icon',
-})
-
-const iconUrl = 'https://cdn.builder.io/api/v1/image/assets%2F4b9bcc88186042bd97cdfb19b0955a4d%2F1b50e5aa38684684b49950eec18033fa?format=webp&width=800&height=1200'
+withDefaults(defineProps<{ alt?: string }>(), { alt: 'like icon' })
 </script>

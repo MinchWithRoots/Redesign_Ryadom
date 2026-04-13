@@ -1,20 +1,12 @@
 <template>
   <img
-    :src="iconUrl"
     :alt="alt"
+    src="https://api.builder.io/api/v1/image/assets/TEMP/02fde8486730c41b46f6ffb2a7837774e7df6011?width=48"
     class="w-full h-full object-contain"
     v-bind="$attrs"
   />
 </template>
 
 <script setup lang="ts">
-interface Props {
-  alt?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  alt: 'Danger icon',
-})
-
-const iconUrl = 'https://cdn.builder.io/api/v1/image/assets%2F4b9bcc88186042bd97cdfb19b0955a4d%2Fd08671566c2b4bd799b194e4bf6d64d6?format=webp&width=800&height=1200'
+withDefaults(defineProps<{ alt?: string }>(), { alt: 'shield icon' })
 </script>
