@@ -88,3 +88,81 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@layer components {
+  .layout-page {
+    @apply min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16;
+  }
+
+  .layout-landing {
+    @apply min-h-screen bg-gradient-to-b from-white via-white to-light-bg overflow-hidden;
+  }
+
+  .layout-container {
+    @apply container mx-auto px-4 lg:px-8 max-w-7xl;
+  }
+
+  .container-wide {
+    @apply container mx-auto max-w-7xl;
+  }
+
+  .hero-container {
+    @apply container mx-auto max-w-7xl relative z-10;
+  }
+
+  .section-hero {
+    @apply pt-[140px] pb-24 lg:pb-32 px-4 lg:px-8 relative;
+  }
+
+  .card {
+    @apply bg-white border border-border/50 rounded-3xl p-8 shadow-card;
+  }
+
+  .card-surface {
+    @apply bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all;
+  }
+
+  .card-table {
+    @apply bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden;
+  }
+
+  .form-label {
+    @apply text-sm font-semibold text-secondary block mb-2;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 border border-border rounded-xl bg-light-bg text-secondary;
+  }
+
+  .btn-primary {
+    @apply px-8 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all;
+  }
+
+  .btn-secondary {
+    @apply px-8 py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all;
+  }
+
+  .alert-success {
+    @apply p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm;
+  }
+
+  .alert-success-row {
+    @apply mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm flex items-center gap-3;
+  }
+
+  .alert-error-row {
+    @apply mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3;
+  }
+
+  .settings-row {
+    @apply flex items-center gap-3 cursor-pointer hover:bg-light-bg p-3 rounded-lg transition-colors;
+  }
+
+  .table-th {
+    @apply text-left px-4 py-4 font-semibold text-secondary;
+  }
+
+  .table-tr {
+    @apply border-b border-border/50 hover:bg-light-bg/50 transition-colors;
+  }
+}

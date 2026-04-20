@@ -168,8 +168,8 @@ const navigate = (path: string) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16">
-    <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+  <div class="layout-page">
+    <div class="layout-container">
       <!-- Header -->
       <div class="mb-8">
         <div class="flex items-center justify-between mb-6">
@@ -195,7 +195,7 @@ const navigate = (path: string) => {
       <transition name="fade">
         <div
           v-if="successMessage"
-          class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm flex items-center gap-3"
+          class="alert-success-row"
         >
           <span>✅</span>
           <span>{{ successMessage }}</span>
@@ -204,7 +204,7 @@ const navigate = (path: string) => {
       <transition name="fade">
         <div
           v-if="errorMessage"
-          class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3"
+          class="alert-error-row"
         >
           <span>❌</span>
           <span>{{ errorMessage }}</span>
@@ -316,7 +316,7 @@ const navigate = (path: string) => {
 
       <!-- Overview Tab -->
       <div v-if="activeTab === 'overview'" class="space-y-6">
-        <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+        <div class="card">
           <h2 class="text-2xl font-bold text-secondary mb-6">Добро пожаловать, Администратор!</h2>
           <div class="space-y-4 text-secondary/70">
             <p><svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>На этой панели вы можете управлять:</p>
@@ -341,21 +341,21 @@ const navigate = (path: string) => {
           Загрузка...
         </div>
 
-        <div v-else-if="users.length > 0" class="bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden">
+        <div v-else-if="users.length > 0" class="card-table">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-light-bg">
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">ID</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Имя</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Email</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Роль</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Дата</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Действия</th>
+                  <th class="table-th">ID</th>
+                  <th class="table-th">Имя</th>
+                  <th class="table-th">Email</th>
+                  <th class="table-th">Роль</th>
+                  <th class="table-th">Дата</th>
+                  <th class="table-th">Действия</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="user in users" :key="user.id" class="border-b border-border/50 hover:bg-light-bg/50 transition-colors">
+                <tr v-for="user in users" :key="user.id" class="table-tr">
                   <td class="px-4 py-4 text-secondary text-sm">{{ user.id }}</td>
                   <td class="px-4 py-4 text-secondary font-medium">{{ user.name }}</td>
                   <td class="px-4 py-4 text-secondary text-sm">{{ user.email }}</td>
@@ -417,7 +417,7 @@ const navigate = (path: string) => {
           <div
             v-for="companion in companions"
             :key="companion.id"
-            class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all"
+            class="card-surface"
           >
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1">
@@ -469,11 +469,11 @@ const navigate = (path: string) => {
                 <div class="flex items-center gap-2 mb-2">
                   <div class="flex gap-0.5">
                     <svg
-                      v-for="i in 5"
-                      :key="i"
+                      v-for="starIndex in 5"
+                      :key="starIndex"
                       :class="[
                         'w-4 h-4 rounded',
-                        i <= review.rating ? 'text-primary' : 'text-secondary/20'
+                        starIndex <= review.rating ? 'text-primary' : 'text-secondary/20'
                       ]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -510,21 +510,21 @@ const navigate = (path: string) => {
           Загрузка...
         </div>
 
-        <div v-else-if="chats.length > 0" class="bg-white border border-border/50 rounded-2xl shadow-card overflow-hidden">
+        <div v-else-if="chats.length > 0" class="card-table">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-light-bg">
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">ID</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Пользователь</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Консультант</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Статус</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Сообщений</th>
-                  <th class="text-left px-4 py-4 font-semibold text-secondary">Дата</th>
+                  <th class="table-th">ID</th>
+                  <th class="table-th">Пользователь</th>
+                  <th class="table-th">Консультант</th>
+                  <th class="table-th">Статус</th>
+                  <th class="table-th">Сообщений</th>
+                  <th class="table-th">Дата</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="chat in chats" :key="chat.id" class="border-b border-border/50 hover:bg-light-bg/50 transition-colors">
+                <tr v-for="chat in chats" :key="chat.id" class="table-tr">
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.id }}</td>
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.user_id }}</td>
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion_id }}</td>

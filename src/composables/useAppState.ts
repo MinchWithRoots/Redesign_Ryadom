@@ -100,17 +100,17 @@ export const loadCurrentUser = async () => {
     }
 
     // Fetch user profile by email (not by UUID id)
-    const { data: profile, error: err } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
       .eq('email', userEmail)
       .single()
 
-    if (err) {
+    if (profileError) {
       console.error('Error loading user profile:', {
-        message: err.message,
-        code: err.code,
-        hint: err.hint,
+        message: profileError.message,
+        code: profileError.code,
+        hint: profileError.hint,
       })
       // User is authenticated but profile doesn't exist yet (new user)
       // This is normal for newly created users
@@ -154,14 +154,14 @@ export const updateUserProfile = async (updates: { bio: string; image?: string }
     if (!currentUser.value) throw new Error('No user logged in')
 
     // Update by email (not by id) to match our user lookup strategy
-    const { data: profile, error: err } = await supabase
+    const { data: profile, error: updateProfileError } = await supabase
       .from('users')
       .update(updates)
       .eq('email', currentUser.value.email)
       .select()
       .single()
 
-    if (err) throw err
+    if (updateProfileError) throw updateProfileError
 
     currentUser.value = {
       ...currentUser.value,
@@ -193,7 +193,7 @@ export const logoutUser = async () => {
 // Companion operations
 export const getCompanionById = async (id: string) => {
   try {
-    const { data, error: err } = await supabase
+    const { data, error: companionFetchError } = await supabase
       .from('companions')
       .select(
         `
@@ -205,7 +205,7 @@ export const getCompanionById = async (id: string) => {
       .eq('id', id)
       .single()
 
-    if (err) throw err
+    if (companionFetchError) throw companionFetchError
     return data
   } catch (err) {
     console.error('Error fetching companion:', err)
@@ -245,15 +245,15 @@ export const filterCompanions = async (filters: {
       query = query.eq('experience', filters.experience)
     }
 
-    const { data: result, error: err } = await query
+    const { data: result, error: filterError } = await query
 
-    if (err) throw err
+    if (filterError) throw filterError
 
     // Transform to include topics array
-    const transformed = (result || []).map((c: any) => ({
-      ...c,
-      topics: Array.isArray(c.companion_topics)
-        ? c.companion_topics.map((ct: any) => ct.topic)
+    const transformed = (result || []).map((companion: any) => ({
+      ...companion,
+      topics: Array.isArray(companion.companion_topics)
+        ? companion.companion_topics.map((companionTopic: any) => companionTopic.topic)
         : []
     }))
 
@@ -275,7 +275,7 @@ export const loadCompanions = async () => {
     isLoading.value = true
     error.value = ''
 
-    const { data: result, error: err } = await supabase
+    const { data: result, error: loadCompanionsError } = await supabase
       .from('companions')
       .select(
         `
@@ -287,20 +287,20 @@ export const loadCompanions = async () => {
       .eq('is_available', true)
       .order('created_at', { ascending: false })
 
-    if (err) {
+    if (loadCompanionsError) {
       console.error('Supabase error loading companions:', {
-        message: err.message,
-        code: err.code,
-        hint: err.hint,
+        message: loadCompanionsError.message,
+        code: loadCompanionsError.code,
+        hint: loadCompanionsError.hint,
       })
-      throw err
+      throw loadCompanionsError
     }
 
     // Transform to include topics array
-    const transformed = (result || []).map((c: any) => ({
-      ...c,
-      topics: Array.isArray(c.companion_topics)
-        ? c.companion_topics.map((ct: any) => ct.topic)
+    const transformed = (result || []).map((companion: any) => ({
+      ...companion,
+      topics: Array.isArray(companion.companion_topics)
+        ? companion.companion_topics.map((companionTopic: any) => companionTopic.topic)
         : []
     }))
 
@@ -326,7 +326,7 @@ export const sendConnectionRequest = async (companionId: string) => {
     if (!currentUser.value) throw new Error('No user logged in')
 
     // Create chat
-    const { data: chat, error: err } = await supabase
+    const { data: chat, error: createChatError } = await supabase
       .from('chats')
       .insert([
         {
@@ -337,18 +337,18 @@ export const sendConnectionRequest = async (companionId: string) => {
       .select()
       .single()
 
-    if (err) throw err
+    if (createChatError) throw createChatError
 
     // Get companion info
-    const companion = companions.value.find(c => c.id === companionId)
+    const selectedCompanion = companions.value.find(companionItem => companionItem.id === companionId)
 
     const newChat: Chat = {
       id: chat.id,
-      name: companion?.name || '',
+      name: selectedCompanion?.name || '',
       lastMessage: 'Новое соединение',
       time: 'только что',
       unread_count: 0,
-      image: companion?.image || '',
+      image: selectedCompanion?.image || '',
       status: 'active' as const,
       companion_id: companionId,
       user_id: currentUser.value.id,
@@ -356,7 +356,7 @@ export const sendConnectionRequest = async (companionId: string) => {
       updated_at: chat.updated_at,
     }
 
-    if (!chats.value.find(c => c.id === chat.id)) {
+    if (!chats.value.find(chatItem => chatItem.id === chat.id)) {
       chats.value.push(newChat)
     }
 
@@ -378,7 +378,7 @@ export const loadChats = async () => {
 
     if (!currentUser.value) throw new Error('No user logged in')
 
-    const { data: result, error: err } = await supabase
+    const { data: result, error: loadChatsError } = await supabase
       .from('chats')
       .select(
         `
@@ -389,13 +389,13 @@ export const loadChats = async () => {
       .eq('user_id', currentUser.value.id)
       .order('updated_at', { ascending: false })
 
-    if (err) {
+    if (loadChatsError) {
       console.error('Supabase error loading chats:', {
-        message: err.message,
-        code: err.code,
-        hint: err.hint,
+        message: loadChatsError.message,
+        code: loadChatsError.code,
+        hint: loadChatsError.hint,
       })
-      throw err
+      throw loadChatsError
     }
 
     // Transform chats with companion info
@@ -426,7 +426,7 @@ export const loadChats = async () => {
 }
 
 export const getChatById = (id: string) => {
-  return chats.value.find(c => c.id === id)
+  return chats.value.find(chatItem => chatItem.id === id)
 }
 
 export const getChatMessages = async (chatId: string) => {
@@ -434,30 +434,30 @@ export const getChatMessages = async (chatId: string) => {
     isLoading.value = true
     error.value = ''
 
-    const { data: result, error: err } = await supabase
+    const { data: result, error: loadMessagesError } = await supabase
       .from('messages')
       .select('*, users (name, image)')
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true })
 
-    if (err) {
+    if (loadMessagesError) {
       console.error('Supabase error loading messages:', {
-        message: err.message,
-        code: err.code,
-        hint: err.hint,
+        message: loadMessagesError.message,
+        code: loadMessagesError.code,
+        hint: loadMessagesError.hint,
         chatId,
       })
-      throw err
+      throw loadMessagesError
     }
 
-    messages.value = (result || []).map((msg: any) => ({
-      id: msg.id,
-      sender_id: msg.sender_id,
-      text: msg.text,
-      created_at: msg.created_at,
-      author: msg.users?.name || 'Unknown',
-      isMine: msg.sender_id === currentUser.value?.id,
-      chat_id: msg.chat_id,
+    messages.value = (result || []).map((messageItem: any) => ({
+      id: messageItem.id,
+      sender_id: messageItem.sender_id,
+      text: messageItem.text,
+      created_at: messageItem.created_at,
+      author: messageItem.users?.name || 'Unknown',
+      isMine: messageItem.sender_id === currentUser.value?.id,
+      chat_id: messageItem.chat_id,
     }))
 
     return messages.value
@@ -480,7 +480,7 @@ export const sendMessage = async (chatId: string, text: string) => {
     if (!currentUser.value) throw new Error('No user logged in')
 
     // Insert message
-    const { data: messageData, error: err } = await supabase
+    const { data: messageData, error: sendMessageError } = await supabase
       .from('messages')
       .insert([
         {
@@ -492,14 +492,14 @@ export const sendMessage = async (chatId: string, text: string) => {
       .select('*, users (name, image)')
       .single()
 
-    if (err) {
+    if (sendMessageError) {
       console.error('Supabase error sending message:', {
-        message: err.message,
-        code: err.code,
-        hint: err.hint,
+        message: sendMessageError.message,
+        code: sendMessageError.code,
+        hint: sendMessageError.hint,
         chatId,
       })
-      throw err
+      throw sendMessageError
     }
 
     // Update chat last_message
@@ -532,10 +532,10 @@ export const sendMessage = async (chatId: string, text: string) => {
     messages.value.push(message)
 
     // Update chat in chats list
-    const chat = getChatById(chatId)
-    if (chat) {
-      chat.lastMessage = text
-      chat.time = new Date().toLocaleString('ru-RU')
+    const currentChat = getChatById(chatId)
+    if (currentChat) {
+      currentChat.lastMessage = text
+      currentChat.time = new Date().toLocaleString('ru-RU')
     }
 
     return message
@@ -554,16 +554,16 @@ export const deleteChat = async (chatId: string) => {
     isLoading.value = true
     error.value = ''
 
-    const { error: err } = await supabase
+    const { error: deleteChatError } = await supabase
       .from('chats')
       .delete()
       .eq('id', chatId)
 
-    if (err) throw err
+    if (deleteChatError) throw deleteChatError
 
-    const index = chats.value.findIndex(c => c.id === chatId)
-    if (index > -1) {
-      chats.value.splice(index, 1)
+    const chatIndex = chats.value.findIndex(chatItem => chatItem.id === chatId)
+    if (chatIndex > -1) {
+      chats.value.splice(chatIndex, 1)
     }
 
     return true
@@ -589,17 +589,17 @@ export const endSession = async (chatId: string) => {
     isLoading.value = true
     error.value = ''
 
-    const { error: err } = await supabase
+    const { error: endSessionError } = await supabase
       .from('chats')
       .update({ status: 'offline' })
       .eq('id', chatId)
 
-    if (err) throw err
+    if (endSessionError) throw endSessionError
 
-    const chat = getChatById(chatId)
-    if (chat) {
-      chat.status = 'offline'
-      chat.lastMessage = 'Сессия завершена'
+    const currentChat = getChatById(chatId)
+    if (currentChat) {
+      currentChat.status = 'offline'
+      currentChat.lastMessage = 'Сессия завершена'
     }
 
     return true

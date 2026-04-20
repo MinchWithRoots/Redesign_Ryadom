@@ -184,7 +184,7 @@ const handleReportUser = async () => {
             <div class="space-y-4">
               <!-- Reason Select -->
               <div>
-                <label class="text-sm font-semibold text-secondary block mb-2">Причина</label>
+                <label class="form-label">Причина</label>
                 <select
                   v-model="reportReason"
                   class="w-full px-4 py-2 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -200,7 +200,7 @@ const handleReportUser = async () => {
 
               <!-- Message -->
               <div>
-                <label class="text-sm font-semibold text-secondary block mb-2">Описание</label>
+                <label class="form-label">Описание</label>
                 <textarea
                   v-model="reportMessage"
                   rows="3"

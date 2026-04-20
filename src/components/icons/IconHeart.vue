@@ -1,12 +1,10 @@
+﻿<script setup lang="ts">
+import iconSrc from '@/images/heart.svg'
+
+withDefaults(defineProps<{ alt?: string }>(), { alt: 'IconHeart' })
+</script>
+
 <template>
-  <img
-    :alt="alt"
-    src="https://api.builder.io/api/v1/image/assets/TEMP/bbe1357e7aa61ed65a296dada6983d5507f2045d?width=48"
-    class="w-full h-full object-contain"
-    v-bind="$attrs"
-  />
+  <img :src="iconSrc" :alt="alt" class="w-full h-full object-contain" v-bind="$attrs" />
 </template>
 
-<script setup lang="ts">
-withDefaults(defineProps<{ alt?: string }>(), { alt: 'user heart icon' })
-</script>

@@ -50,7 +50,7 @@ const navigateToChat = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16">
+  <div class="layout-page">
     <!-- Notification -->
     <transition name="slide">
       <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
@@ -144,7 +144,7 @@ const navigateToChat = () => {
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Experience Section -->
-          <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+          <div class="card">
             <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
 
             <div class="space-y-4">
@@ -175,7 +175,7 @@ const navigateToChat = () => {
           </div>
 
           <!-- Bio Section -->
-          <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+          <div class="card">
             <h2 class="text-2xl font-bold text-secondary mb-6">О себе</h2>
             <p class="text-secondary/70 leading-relaxed text-lg">
               {{ companion.bio }}
@@ -183,7 +183,7 @@ const navigateToChat = () => {
           </div>
 
           <!-- Topics Section -->
-          <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+          <div class="card">
             <h2 class="text-2xl font-bold text-secondary mb-6">Темы для обсуждения</h2>
 
             <div class="flex flex-wrap gap-3">
@@ -246,7 +246,7 @@ const navigateToChat = () => {
           <p class="text-secondary/60 mb-6">К сожалению, не удалось загрузить профиль пользователя</p>
           <button
             @click="goBack"
-            class="px-8 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+            class="btn-primary"
           >
             Вернуться назад
           </button>

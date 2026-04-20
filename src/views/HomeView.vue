@@ -95,10 +95,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white via-white to-light-bg overflow-hidden">
+  <div class="layout-landing">
     <!-- Hero Section -->
-    <section class="pt-[140px] pb-24 lg:pb-32 px-4 lg:px-8 relative">
-      <div class="container mx-auto max-w-7xl relative z-10">
+    <section class="section-hero">
+      <div class="hero-container">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <!-- Left Content -->
           <div class="flex flex-col gap-8 lg:gap-10">
@@ -207,7 +207,7 @@ onMounted(() => {
 
     <!-- About Section -->
     <section id="about" class="py-24 lg:py-32 px-4 lg:px-8 relative">
-      <div class="container mx-auto max-w-7xl">
+      <div class="container-wide">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <!-- Image -->
           <div class="order-2 lg:order-1 flex justify-center relative">
@@ -306,7 +306,7 @@ onMounted(() => {
       <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
       <div class="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
 
-      <div class="container mx-auto max-w-7xl">
+      <div class="container-wide">
         <div class="flex flex-col gap-12 lg:gap-16">
           <div class="text-center space-y-4">
             <div class="flex items-center justify-center gap-2">
@@ -333,7 +333,7 @@ onMounted(() => {
 
               <!-- Stars -->
               <div class="flex gap-1 mb-6">
-                <IconStar v-for="i in 5" :key="i" class="w-5 h-5" />
+                <IconStar v-for="starIndex in 5" :key="starIndex" class="w-5 h-5" />
               </div>
 
               <!-- Quote with icon -->

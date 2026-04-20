@@ -136,7 +136,7 @@ const navigate = (path: string) => {
       </div>
 
       <!-- Form Container -->
-      <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+      <div class="card">
         <!-- Error Message -->
         <transition name="fade">
           <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">

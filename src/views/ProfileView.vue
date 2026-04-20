@@ -109,8 +109,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16">
-    <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+  <div class="layout-page">
+    <div class="layout-container">
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- Sidebar with Profile -->
         <div class="lg:col-span-1">
@@ -228,41 +228,41 @@ onMounted(async () => {
           <div v-if="activeTab === 'profile'" class="space-y-6">
             <!-- Success Message -->
             <transition name="fade">
-              <div v-if="successMessage" class="p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
+              <div v-if="successMessage" class="alert-success">
                 {{ successMessage }}
               </div>
             </transition>
 
             <!-- Edit Profile Card -->
-            <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+            <div class="card">
               <h2 class="text-2xl font-bold text-secondary mb-6">Мой профиль</h2>
 
               <div class="space-y-6">
                 <!-- Name -->
                 <div>
-                  <label class="text-sm font-semibold text-secondary block mb-2">Полное имя</label>
+                  <label class="form-label">Полное имя</label>
                   <input
                     type="text"
                     :value="userProfile?.name"
                     disabled
-                    class="w-full px-4 py-3 border border-border rounded-xl bg-light-bg text-secondary"
+                    class="input"
                   />
                 </div>
 
                 <!-- Email -->
                 <div>
-                  <label class="text-sm font-semibold text-secondary block mb-2">Email</label>
+                  <label class="form-label">Email</label>
                   <input
                     type="email"
                     :value="userProfile?.email"
                     disabled
-                    class="w-full px-4 py-3 border border-border rounded-xl bg-light-bg text-secondary"
+                    class="input"
                   />
                 </div>
 
                 <!-- Bio -->
                 <div>
-                  <label class="text-sm font-semibold text-secondary block mb-2">О себе</label>
+                  <label class="form-label">О себе</label>
                   <textarea
                     v-model="userEditForm.bio"
                     rows="4"
@@ -282,7 +282,7 @@ onMounted(async () => {
                   </button>
                   <button
                     @click="activeTab = 'chats'"
-                    class="px-8 py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+                    class="btn-secondary"
                   >
                     Отмена
                   </button>
@@ -378,11 +378,11 @@ onMounted(async () => {
                   <span class="text-xs text-secondary/60">Ваша оценка:</span>
                   <div class="flex gap-0.5">
                     <svg
-                      v-for="i in 5"
-                      :key="i"
+                      v-for="starIndex in 5"
+                      :key="starIndex"
                       :class="[
                         'w-4 h-4',
-                        i <= session.feedback ? 'text-primary' : 'text-secondary/20'
+                        starIndex <= session.feedback ? 'text-primary' : 'text-secondary/20'
                       ]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -403,19 +403,19 @@ onMounted(async () => {
           <div v-if="activeTab === 'settings'" class="space-y-6">
             <!-- Success Message -->
             <transition name="fade">
-              <div v-if="successMessage" class="p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
+              <div v-if="successMessage" class="alert-success">
                 {{ successMessage }}
               </div>
             </transition>
 
-            <div class="bg-white border border-border/50 rounded-3xl p-8 shadow-card">
+            <div class="card">
               <h2 class="text-2xl font-bold text-secondary mb-6">Настройки</h2>
 
               <!-- Notifications -->
               <div class="mb-8 pb-8 border-b border-border/50">
                 <h3 class="text-lg font-semibold text-secondary mb-4">Уведомления</h3>
                 <div class="space-y-4">
-                  <label class="flex items-center gap-3 cursor-pointer hover:bg-light-bg p-3 rounded-lg transition-colors">
+                  <label class="settings-row">
                     <input
                       v-model="settings.emailNotifications"
                       type="checkbox"
@@ -426,7 +426,7 @@ onMounted(async () => {
                       <p class="text-xs text-secondary/50">Получайте важные новости о сервисе</p>
                     </div>
                   </label>
-                  <label class="flex items-center gap-3 cursor-pointer hover:bg-light-bg p-3 rounded-lg transition-colors">
+                  <label class="settings-row">
                     <input
                       v-model="settings.newMessagesNotifications"
                       type="checkbox"
@@ -437,7 +437,7 @@ onMounted(async () => {
                       <p class="text-xs text-secondary/50">Получайте напоминания о сообщениях</p>
                     </div>
                   </label>
-                  <label class="flex items-center gap-3 cursor-pointer hover:bg-light-bg p-3 rounded-lg transition-colors">
+                  <label class="settings-row">
                     <input
                       v-model="settings.marketingEmails"
                       type="checkbox"
@@ -455,7 +455,7 @@ onMounted(async () => {
               <div class="mb-8 pb-8 border-b border-border/50">
                 <h3 class="text-lg font-semibold text-secondary mb-4">Приватность</h3>
                 <div class="space-y-4">
-                  <label class="flex items-center gap-3 cursor-pointer hover:bg-light-bg p-3 rounded-lg transition-colors">
+                  <label class="settings-row">
                     <input
                       v-model="settings.showOnlineStatus"
                       type="checkbox"
@@ -466,7 +466,7 @@ onMounted(async () => {
                       <p class="text-xs text-secondary/50">Люди смогут видеть, когда вы онлайн</p>
                     </div>
                   </label>
-                  <label class="flex items-center gap-3 cursor-pointer hover:bg-light-bg p-3 rounded-lg transition-colors">
+                  <label class="settings-row">
                     <input
                       v-model="settings.allowEmailSearch"
                       type="checkbox"
@@ -492,7 +492,7 @@ onMounted(async () => {
                 </button>
                 <button
                   @click="activeTab = 'profile'"
-                  class="px-8 py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+                  class="btn-secondary"
                 >
                   Отмена
                 </button>

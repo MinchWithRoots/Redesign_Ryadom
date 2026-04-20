@@ -18,27 +18,29 @@ const filters = ref({
 const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
 
 const filteredCompanions = computed(() => {
-  let filtered = [...companions.value]
+  let filteredCompanionList = [...companions.value]
 
   // Filter by gender
   if (filters.value.gender !== 'all') {
-    filtered = filtered.filter(c => c.gender === filters.value.gender)
+    filteredCompanionList = filteredCompanionList.filter(companion => companion.gender === filters.value.gender)
   }
 
   // Filter by age
-  filtered = filtered.filter(c => c.age >= filters.value.ageMin && c.age <= filters.value.ageMax)
+  filteredCompanionList = filteredCompanionList.filter(
+    companion => companion.age >= filters.value.ageMin && companion.age <= filters.value.ageMax
+  )
 
   // Filter by experience
   if (filters.value.experience !== 'all') {
-    filtered = filtered.filter(c => c.experience === filters.value.experience)
+    filteredCompanionList = filteredCompanionList.filter(companion => companion.experience === filters.value.experience)
   }
 
   // Filter by topic
   if (filters.value.topic !== 'Все') {
-    filtered = filtered.filter(c => c.topics.includes(filters.value.topic))
+    filteredCompanionList = filteredCompanionList.filter(companion => companion.topics.includes(filters.value.topic))
   }
 
-  return filtered
+  return filteredCompanionList
 })
 
 onMounted(async () => {
@@ -79,9 +81,9 @@ const handleConnectionRequest = async (companionId: number) => {
 }
 
 const navigateToChat = (companionId: number) => {
-  const chat = chats.value.find(c => c.companionId === companionId)
-  if (chat) {
-    router.push(`/chat?id=${chat.id}`)
+  const selectedChat = chats.value.find(chatItem => chatItem.companionId === companionId)
+  if (selectedChat) {
+    router.push(`/chat?id=${selectedChat.id}`)
   }
 }
 
@@ -91,8 +93,8 @@ const navigateToProfile = (companionId: number) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16">
-    <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+  <div class="layout-page">
+    <div class="layout-container">
       <!-- Header -->
       <div class="mb-12 lg:mb-16">
         <h1 class="text-4xl lg:text-5xl font-bold text-secondary mb-4">
