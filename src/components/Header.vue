@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentUser, loadCurrentUser, logoutUser } from '../composables/useAppState'
 import { useAuth } from '../composables/useAuth'
-import logo from '../assets/logo.svg'
+import heart from '../images/heart.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -47,7 +47,7 @@ const navItems = [
     <div class="container mx-auto px-4 lg:px-8 w-full flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" @click="navigate('/')">
-        <img :src="logo" alt="Рядом" class="w-12 h-12" />
+        <img :src="heart" alt="Рядом" class="w-12 h-12" />
         <span class="text-2xl font-bold text-secondary">Рядом</span>
       </div>
 

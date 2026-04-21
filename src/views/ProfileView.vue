@@ -133,7 +133,7 @@ onMounted(async () => {
                 </div>
                 <div>
                   <div class="flex items-center justify-center gap-1 mb-1">
-                    <span class="text-xl">💝</span>
+                    <img src="../images/support.svg" alt="Thanks" class="w-[24px] h-[24px] object-contain" />
                     <span class="font-bold text-primary">8</span>
                   </div>
                   <p class="text-xs text-secondary/60">благодарностей</p>

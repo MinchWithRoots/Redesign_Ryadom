@@ -23,17 +23,12 @@ export interface Companion {
   name: string
   age: number
   gender?: 'female' | 'male'
-  specialization: string
-  experience: string
-  companion_topics?: CompanionTopic[] | { topic: string }[]
-  topics?: string[]
+  experience?: 'beginner' | 'experienced'
+  reviews_count?: number
   image: string
-  rating: number
-  reviews: number
   bio: string
   created_at?: string
   updated_at?: string
-  is_available?: boolean
 }
 
 export interface Chat {
@@ -218,7 +213,6 @@ export const filterCompanions = async (filters: {
   ageMin?: number
   ageMax?: number
   experience?: string
-  topic?: string
 }) => {
   try {
     isLoading.value = true
@@ -226,22 +220,18 @@ export const filterCompanions = async (filters: {
 
     let query = supabase
       .from('companions')
-      .select(
-        `
-        *,
-        companion_topics (topic),
-        reviews (rating)
-      `
-      )
-      .eq('is_available', true)
+      .select('*')
 
+    if (filters.gender && filters.gender !== 'all') {
+      query = query.eq('gender', filters.gender)
+    }
     if (filters.ageMin) {
       query = query.gte('age', filters.ageMin)
     }
     if (filters.ageMax) {
       query = query.lte('age', filters.ageMax)
     }
-    if (filters.experience) {
+    if (filters.experience && filters.experience !== 'all') {
       query = query.eq('experience', filters.experience)
     }
 
@@ -249,16 +239,8 @@ export const filterCompanions = async (filters: {
 
     if (filterError) throw filterError
 
-    // Transform to include topics array
-    const transformed = (result || []).map((companion: any) => ({
-      ...companion,
-      topics: Array.isArray(companion.companion_topics)
-        ? companion.companion_topics.map((companionTopic: any) => companionTopic.topic)
-        : []
-    }))
-
-    companions.value = transformed
-    return transformed
+    companions.value = result || []
+    return result || []
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to filter companions'
     error.value = errorMessage
@@ -277,14 +259,7 @@ export const loadCompanions = async () => {
 
     const { data: result, error: loadCompanionsError } = await supabase
       .from('companions')
-      .select(
-        `
-        *,
-        companion_topics (topic),
-        reviews (rating)
-      `
-      )
-      .eq('is_available', true)
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (loadCompanionsError) {
@@ -296,16 +271,8 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    // Transform to include topics array
-    const transformed = (result || []).map((companion: any) => ({
-      ...companion,
-      topics: Array.isArray(companion.companion_topics)
-        ? companion.companion_topics.map((companionTopic: any) => companionTopic.topic)
-        : []
-    }))
-
-    companions.value = transformed
-    return transformed
+    companions.value = result || []
+    return result || []
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage

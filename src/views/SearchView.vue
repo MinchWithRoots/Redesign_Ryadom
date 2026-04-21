@@ -12,10 +12,7 @@ const filters = ref({
   ageMin: 18,
   ageMax: 65,
   experience: 'all',
-  topic: 'Все',
 })
-
-const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
 
 const filteredCompanions = computed(() => {
   let filteredCompanionList = [...companions.value]
@@ -35,11 +32,6 @@ const filteredCompanions = computed(() => {
     filteredCompanionList = filteredCompanionList.filter(companion => companion.experience === filters.value.experience)
   }
 
-  // Filter by topic
-  if (filters.value.topic !== 'Все') {
-    filteredCompanionList = filteredCompanionList.filter(companion => companion.topics.includes(filters.value.topic))
-  }
-
   return filteredCompanionList
 })
 
@@ -57,7 +49,6 @@ const resetFilters = async () => {
     ageMin: 18,
     ageMax: 65,
     experience: 'all',
-    topic: 'Все',
   }
   try {
     await loadCompanions()
@@ -255,11 +246,6 @@ const navigateToProfile = (companionId: number) => {
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-
-                <!-- Helper Badge -->
-                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-card">
-                  <span class="text-sm font-bold text-secondary">💚 Помощник</span>
-                </div>
               </div>
 
               <!-- Info -->
@@ -268,7 +254,11 @@ const navigateToProfile = (companionId: number) => {
                   <div class="flex items-start justify-between mb-2">
                     <div>
                       <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
-                      <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
+                        <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
+                        <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
+                      </div>
                     </div>
                   </div>
                   <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ companion.experience }}</p>
@@ -287,7 +277,10 @@ const navigateToProfile = (companionId: number) => {
                 </div>
 
                 <!-- Testimonials -->
-                <p class="text-xs text-secondary/60 mb-4">{{ companion.reviews }} благодарностей</p>
+                <div class="flex items-center gap-2 mb-4">
+                  <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
+                  <p class="text-xs text-secondary/60">{{ companion.reviewsCount }} благодарностей</p>
+                </div>
 
                 <!-- Button -->
                 <button
