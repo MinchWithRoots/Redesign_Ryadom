@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { companions, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import { companions, chats, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -12,6 +12,18 @@ const filters = ref({
   ageMin: 18,
   ageMax: 65,
   experience: 'all',
+  topic: 'all',
+})
+
+// Extract unique topics from companions
+const topics = computed(() => {
+  const uniqueTopics = new Set<string>()
+  companions.value.forEach(companion => {
+    if (companion.topics && Array.isArray(companion.topics)) {
+      companion.topics.forEach(topic => uniqueTopics.add(topic))
+    }
+  })
+  return Array.from(uniqueTopics)
 })
 
 const filteredCompanions = computed(() => {
@@ -30,6 +42,13 @@ const filteredCompanions = computed(() => {
   // Filter by experience
   if (filters.value.experience !== 'all') {
     filteredCompanionList = filteredCompanionList.filter(companion => companion.experience === filters.value.experience)
+  }
+
+  // Filter by topic
+  if (filters.value.topic !== 'all') {
+    filteredCompanionList = filteredCompanionList.filter(
+      companion => companion.topics && companion.topics.includes(filters.value.topic)
+    )
   }
 
   return filteredCompanionList
@@ -57,9 +76,9 @@ const resetFilters = async () => {
   }
 }
 
-const handleConnectionRequest = async (companionId: number) => {
+const handleConnectionRequest = async (companionId: string | number) => {
   try {
-    await sendConnectionRequest(companionId)
+    await sendConnectionRequest(companionId.toString())
     showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
     setTimeout(() => {
       showNotification.value = ''
@@ -71,14 +90,14 @@ const handleConnectionRequest = async (companionId: number) => {
   }
 }
 
-const navigateToChat = (companionId: number) => {
-  const selectedChat = chats.value.find(chatItem => chatItem.companionId === companionId)
+const navigateToChat = (companionId: string | number) => {
+  const selectedChat = chats.value.find(chatItem => chatItem.companion_id === companionId.toString())
   if (selectedChat) {
     router.push(`/chat?id=${selectedChat.id}`)
   }
 }
 
-const navigateToProfile = (companionId: number) => {
+const navigateToProfile = (companionId: string | number) => {
   router.push(`/user/${companionId}`)
 }
 </script>

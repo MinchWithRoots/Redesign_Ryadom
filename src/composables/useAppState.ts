@@ -192,6 +192,8 @@ export const logoutUser = async () => {
 // Companion operations
 export const getCompanionById = async (id: string) => {
   try {
+    const companionId = parseInt(id)
+
     const { data, error: companionFetchError } = await supabase
       .from('companions')
       .select(
@@ -201,13 +203,28 @@ export const getCompanionById = async (id: string) => {
         reviews (rating, comment, user_id)
       `
       )
-      .eq('id', id)
+      .eq('id', companionId)
       .single()
 
-    if (companionFetchError) throw companionFetchError
+    if (companionFetchError) {
+      console.error('Supabase error fetching companion:', {
+        message: companionFetchError.message,
+        code: companionFetchError.code,
+        hint: companionFetchError.hint,
+        companionId,
+      })
+      throw companionFetchError
+    }
+
+    // Transform companion_topics to just topics array
+    if (data && data.companion_topics) {
+      data.topics = data.companion_topics.map((item: any) => item.topic)
+    }
+
     return data
   } catch (err) {
-    console.error('Error fetching companion:', err)
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    console.error('Error fetching companion:', errorMessage)
     return null
   }
 }
@@ -263,7 +280,7 @@ export const loadCompanions = async () => {
 
     const { data: result, error: loadCompanionsError } = await supabase
       .from('companions')
-      .select('*')
+      .select('*, companion_topics (topic)')
       .order('created_at', { ascending: false })
 
     if (loadCompanionsError) {
@@ -275,8 +292,14 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    companions.value = result || []
-    return result || []
+    // Transform companion_topics to just topics array
+    const transformedData = (result || []).map((item: any) => ({
+      ...item,
+      topics: item.companion_topics ? item.companion_topics.map((t: any) => t.topic) : []
+    }))
+
+    companions.value = transformedData
+    return transformedData
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage
@@ -289,12 +312,14 @@ export const loadCompanions = async () => {
 }
 
 // Chat operations
-export const sendConnectionRequest = async (companionId: string) => {
+export const sendConnectionRequest = async (companionId: string | number) => {
   try {
     isLoading.value = true
     error.value = ''
 
     if (!currentUser.value) throw new Error('No user logged in')
+
+    const companionIdStr = companionId.toString()
 
     // Create chat
     const { data: chat, error: createChatError } = await supabase
@@ -302,7 +327,7 @@ export const sendConnectionRequest = async (companionId: string) => {
       .insert([
         {
           user_id: currentUser.value.id,
-          companion_id: companionId,
+          companion_id: parseInt(companionIdStr),
         },
       ])
       .select()
@@ -311,7 +336,7 @@ export const sendConnectionRequest = async (companionId: string) => {
     if (createChatError) throw createChatError
 
     // Get companion info
-    const selectedCompanion = companions.value.find(companionItem => companionItem.id === companionId)
+    const selectedCompanion = companions.value.find(companionItem => companionItem.id === companionIdStr)
 
     const newChat: Chat = {
       id: chat.id,
@@ -321,7 +346,7 @@ export const sendConnectionRequest = async (companionId: string) => {
       unread_count: 0,
       image: selectedCompanion?.image || '',
       status: 'active' as const,
-      companion_id: companionId,
+      companion_id: companionIdStr,
       user_id: currentUser.value.id,
       created_at: chat.created_at,
       updated_at: chat.updated_at,
