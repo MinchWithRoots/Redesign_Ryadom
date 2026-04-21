@@ -2,6 +2,8 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { companions, chats, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import { getAgeForm } from '../utils/ageForm'
+import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -175,13 +177,13 @@ const navigateToProfile = (companionId: string | number) => {
                 />
               </div>
               <p class="text-xs text-secondary/60">
-                от {{ filters.ageMin }} до {{ filters.ageMax }} лет
+                от {{ filters.ageMin }} {{ getAgeForm(filters.ageMin) }} до {{ filters.ageMax }} {{ getAgeForm(filters.ageMax) }}
               </p>
             </div>
 
             <!-- Experience -->
             <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Опыт на платформе</p>
+              <p class="text-sm font-semibold text-secondary mb-3">Опыт в терапии</p>
               <div class="flex flex-col gap-2">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -199,7 +201,7 @@ const navigateToProfile = (companionId: string | number) => {
                     value="beginner"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Начало пути</span>
+                  <span class="text-sm text-secondary/70">До 1 года</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -208,7 +210,16 @@ const navigateToProfile = (companionId: string | number) => {
                     value="experienced"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">На пути уже некоторое время</span>
+                  <span class="text-sm text-secondary/70">2+ года</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    v-model="filters.experience"
+                    type="radio"
+                    value="expert"
+                    class="w-4 h-4 accent-primary"
+                  />
+                  <span class="text-sm text-secondary/70">5+ лет</span>
                 </label>
               </div>
             </div>
@@ -274,13 +285,13 @@ const navigateToProfile = (companionId: string | number) => {
                     <div>
                       <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
                       <div class="flex items-center gap-2">
-                        <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
+                        <p class="text-sm text-secondary/60">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
                         <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
                         <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
                       </div>
                     </div>
                   </div>
-                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ companion.experience }}</p>
+                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
                   <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
                 </div>
 
@@ -342,7 +353,7 @@ const navigateToProfile = (companionId: string | number) => {
               class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
             />
             <h2 class="text-2xl font-bold text-secondary mb-2">{{ selectedCompanion.name }}</h2>
-            <p class="text-secondary/60">{{ selectedCompanion.age }} лет</p>
+            <p class="text-secondary/60">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
           </div>
 
           <div class="space-y-3 mb-6">

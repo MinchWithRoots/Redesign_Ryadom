@@ -23,7 +23,7 @@ export interface Companion {
   name: string
   age: number
   gender?: 'female' | 'male'
-  experience?: 'beginner' | 'experienced'
+  experience?: 'beginner' | 'experienced' | 'expert'
   reviews_count?: number
   image: string
   bio: string

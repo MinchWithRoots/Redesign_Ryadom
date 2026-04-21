@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats } from '../composables/useAppState'
+import { getAgeForm } from '../utils/ageForm'
 
 const router = useRouter()
 const activeTab = ref('chats')
@@ -123,7 +124,7 @@ onMounted(async () => {
                 class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
               />
               <h2 v-if="userProfile" class="text-xl font-bold text-secondary mb-1">{{ userProfile.name }}</h2>
-              <p v-if="userProfile" class="text-sm text-secondary/60 mb-4">{{ userProfile.age }} лет</p>
+              <p v-if="userProfile" class="text-sm text-secondary/60 mb-4">{{ userProfile.age }} {{ getAgeForm(userProfile.age) }}</p>
 
               <!-- Stats -->
               <div v-if="userProfile" class="grid grid-cols-2 gap-4 mb-6 p-4 bg-light-bg rounded-2xl">

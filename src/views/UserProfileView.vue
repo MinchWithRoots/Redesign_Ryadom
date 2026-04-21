@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { companions, getCompanionById, sendConnectionRequest } from '../composables/useAppState'
+import supportIcon from '../images/support.svg'
+import { getAgeForm } from '../utils/ageForm'
+import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
 const route = useRoute()
@@ -102,23 +105,17 @@ const navigateToChat = () => {
             <!-- Basic Info -->
             <div class="text-center mb-6">
               <h1 class="text-2xl font-bold text-secondary mb-2">{{ companion.name }}</h1>
-              <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} лет</p>
-
-              <!-- Testimonials -->
-              <div class="flex items-center justify-center gap-2 mb-6 p-3 bg-light-bg rounded-xl">
-                <span class="text-sm text-secondary/60">{{ companion.reviews_count }} человек поблагодарили</span>
-              </div>
+              <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
             </div>
 
             <!-- Stats -->
-            <div class="grid grid-cols-2 gap-3 mb-6 pb-6 border-b border-border/50">
-              <div class="p-3 bg-light-bg rounded-xl text-center">
-                <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+            <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
+              <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                  <img :src="supportIcon" alt="благодарности" class="w-5 h-5" />
+                  <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+                </div>
                 <p class="text-xs text-secondary/60">благодарностей</p>
-              </div>
-              <div class="p-3 bg-light-bg rounded-xl text-center">
-                <p class="text-lg font-bold text-secondary">{{ companion.experience }}</p>
-                <p class="text-xs text-secondary/60">в терапии</p>
               </div>
             </div>
 
@@ -175,7 +172,7 @@ const navigateToChat = () => {
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-secondary mb-1">Время в пути</p>
-                  <p class="text-secondary/70">{{ companion.experience }}</p>
+                  <p class="text-secondary/70">{{ getExperienceText(companion.experience) }}</p>
                 </div>
               </div>
             </div>
