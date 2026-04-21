@@ -27,7 +27,8 @@ export interface Companion {
   reviews_count?: number
   image: string
   bio: string
-  specialization?: string
+  specialization?: string // Legacy: comma-separated string
+  specializations?: Specialization[] // New: array of Specialization objects
   is_available?: boolean
   topics?: string[]
   created_at?: string
@@ -258,8 +259,8 @@ export const filterCompanions = async (filters: {
 
     if (filterError) throw filterError
 
-    // Fetch companion topics separately
-    const companionsWithTopics = await Promise.all(
+    // Fetch companion topics and specializations separately
+    const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
           const { data: topicsData } = await supabase
@@ -267,22 +268,29 @@ export const filterCompanions = async (filters: {
             .select('topic')
             .eq('companion_id', companion.id)
 
+          const { data: specData } = await supabase
+            .from('companion_specializations')
+            .select('specializations(id, name)')
+            .eq('companion_id', companion.id)
+
           return {
             ...companion,
-            topics: topicsData ? topicsData.map((t: any) => t.topic) : []
+            topics: topicsData ? topicsData.map((t: any) => t.topic) : [],
+            specializations: specData ? specData.map((s: any) => s.specializations) : []
           }
         } catch (err) {
-          console.error(`Error fetching topics for companion ${companion.id}:`, err)
+          console.error(`Error fetching data for companion ${companion.id}:`, err)
           return {
             ...companion,
-            topics: []
+            topics: [],
+            specializations: []
           }
         }
       })
     )
 
-    companions.value = companionsWithTopics
-    return companionsWithTopics
+    companions.value = companionsWithData
+    return companionsWithData
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to filter companions'
     error.value = errorMessage
@@ -313,8 +321,8 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    // Fetch companion topics separately
-    const companionsWithTopics = await Promise.all(
+    // Fetch companion topics and specializations separately
+    const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
           const { data: topicsData } = await supabase
@@ -322,22 +330,29 @@ export const loadCompanions = async () => {
             .select('topic')
             .eq('companion_id', companion.id)
 
+          const { data: specData } = await supabase
+            .from('companion_specializations')
+            .select('specializations(id, name)')
+            .eq('companion_id', companion.id)
+
           return {
             ...companion,
-            topics: topicsData ? topicsData.map((t: any) => t.topic) : []
+            topics: topicsData ? topicsData.map((t: any) => t.topic) : [],
+            specializations: specData ? specData.map((s: any) => s.specializations) : []
           }
         } catch (err) {
-          console.error(`Error fetching topics for companion ${companion.id}:`, err)
+          console.error(`Error fetching data for companion ${companion.id}:`, err)
           return {
             ...companion,
-            topics: []
+            topics: [],
+            specializations: []
           }
         }
       })
     )
 
-    companions.value = companionsWithTopics
-    return companionsWithTopics
+    companions.value = companionsWithData
+    return companionsWithData
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage
@@ -694,5 +709,81 @@ export const endSession = async (chatId: string) => {
     throw err
   } finally {
     isLoading.value = false
+  }
+}
+
+// ============ SPECIALIZATIONS ============
+export interface Specialization {
+  id: number
+  name: string
+  created_at?: string
+}
+
+export const specializations = ref<Specialization[]>([])
+
+export const loadSpecializations = async () => {
+  try {
+    const { data, error: loadError } = await supabase
+      .from('specializations')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (loadError) throw loadError
+
+    specializations.value = data || []
+    return specializations.value
+  } catch (err) {
+    console.error('Error loading specializations:', err)
+    return []
+  }
+}
+
+export const getCompanionSpecializations = async (companionId: number) => {
+  try {
+    const { data, error: loadError } = await supabase
+      .from('companion_specializations')
+      .select('specialization_id, specializations(id, name)')
+      .eq('companion_id', companionId)
+
+    if (loadError) throw loadError
+
+    return data?.map(item => ({
+      id: (item.specializations as any).id,
+      name: (item.specializations as any).name
+    })) || []
+  } catch (err) {
+    console.error('Error loading companion specializations:', err)
+    return []
+  }
+}
+
+export const updateCompanionSpecializations = async (companionId: number, specializationIds: number[]) => {
+  try {
+    // Delete existing
+    const { error: deleteError } = await supabase
+      .from('companion_specializations')
+      .delete()
+      .eq('companion_id', companionId)
+
+    if (deleteError) throw deleteError
+
+    // Insert new
+    if (specializationIds.length > 0) {
+      const { error: insertError } = await supabase
+        .from('companion_specializations')
+        .insert(
+          specializationIds.map(specId => ({
+            companion_id: companionId,
+            specialization_id: specId
+          }))
+        )
+
+      if (insertError) throw insertError
+    }
+
+    return true
+  } catch (err) {
+    console.error('Error updating companion specializations:', err)
+    throw err
   }
 }

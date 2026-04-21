@@ -29,17 +29,19 @@ const topics = computed(() => {
   return Array.from(uniqueTopics)
 })
 
-// Extract unique specializations from companions (parse from comma-separated string)
+// Extract unique specializations from companions
 const specializations = computed(() => {
-  const uniqueSpecializations = new Set<string>()
+  const uniqueSpecializations = new Map<number, string>()
   companions.value.forEach(companion => {
-    if (companion.specialization && typeof companion.specialization === 'string') {
-      // Split by comma and trim whitespace
-      const specs = companion.specialization.split(',').map(s => s.trim()).filter(s => s)
-      specs.forEach(spec => uniqueSpecializations.add(spec))
+    if (companion.specializations && Array.isArray(companion.specializations)) {
+      companion.specializations.forEach(spec => {
+        if (spec.id && spec.name) {
+          uniqueSpecializations.set(spec.id, spec.name)
+        }
+      })
     }
   })
-  return Array.from(uniqueSpecializations).sort()
+  return Array.from(uniqueSpecializations.values()).sort()
 })
 
 const filteredCompanions = computed(() => {
@@ -249,31 +251,6 @@ const navigateToProfile = (companionId: string | number) => {
               </div>
             </div>
 
-            <!-- Specialization -->
-            <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Специализация</p>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.specialization"
-                    type="radio"
-                    value="all"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">Все</span>
-                </label>
-                <label v-for="spec in specializations" :key="spec" class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.specialization"
-                    type="radio"
-                    :value="spec"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">{{ spec }}</span>
-                </label>
-              </div>
-            </div>
-
             <!-- Reset Button -->
             <button
               @click="resetFilters"
@@ -286,8 +263,49 @@ const navigateToProfile = (companionId: string | number) => {
 
         <!-- Main Content -->
         <div class="lg:col-span-3">
+          <!-- Specialization Filter Tags -->
+          <div v-if="specializations.length > 0" class="mb-6">
+            <div class="flex flex-wrap gap-2">
+              <button
+                @click="filters.specialization = 'all'"
+                :class="[
+                  'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                  filters.specialization === 'all'
+                    ? 'bg-primary text-white shadow-soft'
+                    : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+                ]"
+              >
+                Все направления
+              </button>
+              <button
+                v-for="spec in specializations"
+                :key="spec"
+                @click="filters.specialization = spec"
+                :class="[
+                  'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                  filters.specialization === spec
+                    ? 'bg-primary text-white shadow-soft'
+                    : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+                ]"
+              >
+                {{ spec }}
+              </button>
+            </div>
+          </div>
+
           <!-- Topic Tags -->
           <div class="mb-8 flex flex-wrap gap-2">
+            <button
+              @click="filters.topic = 'all'"
+              :class="[
+                'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                filters.topic === 'all'
+                  ? 'bg-primary text-white shadow-soft'
+                  : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+              ]"
+            >
+              Все темы
+            </button>
             <button
               v-for="topic in topics"
               :key="topic"
@@ -342,6 +360,7 @@ const navigateToProfile = (companionId: string | number) => {
                     </div>
                   </div>
                   <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
+                  <p v-if="companion.specialization" class="text-xs text-primary font-semibold mb-3">Направление: {{ companion.specialization }}</p>
                   <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
                 </div>
 
