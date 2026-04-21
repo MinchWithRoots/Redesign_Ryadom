@@ -255,11 +255,6 @@ const navigateToProfile = (companionId: number) => {
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-
-                <!-- Helper Badge -->
-                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-card">
-                  <span class="text-sm font-bold text-secondary">💚 Помощник</span>
-                </div>
               </div>
 
               <!-- Info -->

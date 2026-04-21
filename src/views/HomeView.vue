@@ -301,7 +301,7 @@ onMounted(() => {
         <div class="flex flex-col gap-12 lg:gap-16">
           <div class="text-center space-y-4">
             <div class="flex items-center justify-center gap-2">
-              <img src="../images/smile.svg" alt="Star" class="w-[50px] h-[50px] object-contain" />
+              <img src="../images/star.svg" alt="Star" class="w-[50px] h-[50px] object-contain" />
               <p class="text-primary font-semibold text-lg">Отзывы</p>
             </div>
             <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
@@ -324,7 +324,7 @@ onMounted(() => {
 
               <!-- Stars -->
               <div class="flex gap-1 mb-6">
-                <img v-for="starIndex in 5" :key="starIndex" src="../images/smile.svg" alt="Star" class="w-5 h-5 object-contain" />
+                <img v-for="starIndex in 5" :key="starIndex" src="../images/star.svg" alt="Star" class="w-5 h-5 object-contain" />
               </div>
 
               <!-- Quote with icon -->
@@ -404,7 +404,7 @@ onMounted(() => {
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <img src="../images/smile.svg" alt="Reviews" class="w-[40px] h-[40px] object-contain" />
+            <img src="../images/star.svg" alt="Reviews" class="w-[40px] h-[40px] object-contain" />
             <span>500+ отзывов 5★</span>
           </div>
         </div>
