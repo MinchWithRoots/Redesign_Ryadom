@@ -424,7 +424,7 @@ const navigate = (path: string) => {
                 <div class="flex items-center gap-4 text-sm text-secondary/60">
                   <span class="inline-flex items-center gap-1.5">
                     <img src="../images/heart.svg" alt="Thanks" class="w-4 h-4 object-contain" />
-                    {{ companion.reviews }} благодарностей
+                    {{ companion.reviews_count }} благодарностей
                   </span>
                 </div>
               </div>

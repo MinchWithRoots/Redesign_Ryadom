@@ -27,6 +27,10 @@ export interface Companion {
   reviews_count?: number
   image: string
   bio: string
+  specialization?: string
+  rating?: number
+  price_per_hour?: number
+  is_available?: boolean
   created_at?: string
   updated_at?: string
 }
