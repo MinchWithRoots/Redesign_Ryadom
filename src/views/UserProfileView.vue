@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { companions, getCompanionById, sendConnectionRequest } from '../composables/useAppState'
+import supportIcon from '../images/support.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -109,7 +110,7 @@ const navigateToChat = () => {
             <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
               <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
                 <div class="flex items-center justify-center gap-2 mb-2">
-                  <img src="/images/support.svg" alt="благодарности" class="w-5 h-5" />
+                  <img :src="supportIcon" alt="благодарности" class="w-5 h-5" />
                   <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
                 </div>
                 <p class="text-xs text-secondary/60">благодарностей</p>
