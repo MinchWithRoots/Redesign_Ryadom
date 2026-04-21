@@ -28,9 +28,11 @@ export interface Companion {
   image: string
   bio: string
   specialization?: string
+  specializations?: string[]
   rating?: number
   price_per_hour?: number
   is_available?: boolean
+  topics?: string[]
   created_at?: string
   updated_at?: string
 }
@@ -210,14 +212,20 @@ export const getCompanionById = async (id: string) => {
       throw companionFetchError
     }
 
-    // Fetch companion topics separately
+    // Fetch companion topics and specializations separately
     const { data: topicsData } = await supabase
       .from('companion_topics')
       .select('topic')
       .eq('companion_id', companionId)
 
+    const { data: specializationsData } = await supabase
+      .from('companion_specializations')
+      .select('specialization')
+      .eq('companion_id', companionId)
+
     if (data) {
       data.topics = topicsData ? topicsData.map((item: any) => item.topic) : []
+      data.specializations = specializationsData ? specializationsData.map((item: any) => item.specialization) : []
     }
 
     return data
@@ -259,8 +267,8 @@ export const filterCompanions = async (filters: {
 
     if (filterError) throw filterError
 
-    // Fetch companion topics separately
-    const companionsWithTopics = await Promise.all(
+    // Fetch companion topics and specializations separately
+    const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
           const { data: topicsData } = await supabase
@@ -268,22 +276,29 @@ export const filterCompanions = async (filters: {
             .select('topic')
             .eq('companion_id', companion.id)
 
+          const { data: specializationsData } = await supabase
+            .from('companion_specializations')
+            .select('specialization')
+            .eq('companion_id', companion.id)
+
           return {
             ...companion,
-            topics: topicsData ? topicsData.map((t: any) => t.topic) : []
+            topics: topicsData ? topicsData.map((t: any) => t.topic) : [],
+            specializations: specializationsData ? specializationsData.map((s: any) => s.specialization) : []
           }
         } catch (err) {
-          console.error(`Error fetching topics for companion ${companion.id}:`, err)
+          console.error(`Error fetching data for companion ${companion.id}:`, err)
           return {
             ...companion,
-            topics: []
+            topics: [],
+            specializations: []
           }
         }
       })
     )
 
-    companions.value = companionsWithTopics
-    return companionsWithTopics
+    companions.value = companionsWithData
+    return companionsWithData
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to filter companions'
     error.value = errorMessage
@@ -314,8 +329,8 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    // Fetch companion topics separately
-    const companionsWithTopics = await Promise.all(
+    // Fetch companion topics and specializations separately
+    const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
           const { data: topicsData } = await supabase
@@ -323,22 +338,29 @@ export const loadCompanions = async () => {
             .select('topic')
             .eq('companion_id', companion.id)
 
+          const { data: specializationsData } = await supabase
+            .from('companion_specializations')
+            .select('specialization')
+            .eq('companion_id', companion.id)
+
           return {
             ...companion,
-            topics: topicsData ? topicsData.map((t: any) => t.topic) : []
+            topics: topicsData ? topicsData.map((t: any) => t.topic) : [],
+            specializations: specializationsData ? specializationsData.map((s: any) => s.specialization) : []
           }
         } catch (err) {
-          console.error(`Error fetching topics for companion ${companion.id}:`, err)
+          console.error(`Error fetching data for companion ${companion.id}:`, err)
           return {
             ...companion,
-            topics: []
+            topics: [],
+            specializations: []
           }
         }
       })
     )
 
-    companions.value = companionsWithTopics
-    return companionsWithTopics
+    companions.value = companionsWithData
+    return companionsWithData
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage
