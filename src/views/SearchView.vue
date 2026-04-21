@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { companions, chats, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import { getAgeForm } from '../utils/ageForm'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -175,7 +176,7 @@ const navigateToProfile = (companionId: string | number) => {
                 />
               </div>
               <p class="text-xs text-secondary/60">
-                от {{ filters.ageMin }} до {{ filters.ageMax }} лет
+                от {{ filters.ageMin }} {{ getAgeForm(filters.ageMin) }} до {{ filters.ageMax }} {{ getAgeForm(filters.ageMax) }}
               </p>
             </div>
 
@@ -274,7 +275,7 @@ const navigateToProfile = (companionId: string | number) => {
                     <div>
                       <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
                       <div class="flex items-center gap-2">
-                        <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
+                        <p class="text-sm text-secondary/60">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
                         <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
                         <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
                       </div>
@@ -342,7 +343,7 @@ const navigateToProfile = (companionId: string | number) => {
               class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
             />
             <h2 class="text-2xl font-bold text-secondary mb-2">{{ selectedCompanion.name }}</h2>
-            <p class="text-secondary/60">{{ selectedCompanion.age }} лет</p>
+            <p class="text-secondary/60">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
           </div>
 
           <div class="space-y-3 mb-6">

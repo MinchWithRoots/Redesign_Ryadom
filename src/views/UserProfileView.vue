@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { companions, getCompanionById, sendConnectionRequest } from '../composables/useAppState'
 import supportIcon from '../images/support.svg'
+import { getAgeForm } from '../utils/ageForm'
 
 const router = useRouter()
 const route = useRoute()
@@ -44,19 +45,6 @@ const handleSendConnectionRequest = async () => {
     }, 3000)
   } catch (err) {
     console.error('Error sending connection request:', err)
-  }
-}
-
-const getAgeForm = (age: number): string => {
-  const lastDigit = age % 10
-  const lastTwoDigits = age % 100
-
-  if (lastDigit === 1 && lastTwoDigits !== 11) {
-    return 'год'
-  } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
-    return 'года'
-  } else {
-    return 'лет'
   }
 }
 
