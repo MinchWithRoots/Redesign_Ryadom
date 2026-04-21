@@ -196,13 +196,7 @@ export const getCompanionById = async (id: string) => {
 
     const { data, error: companionFetchError } = await supabase
       .from('companions')
-      .select(
-        `
-        *,
-        companion_topics (topic),
-        reviews (rating, comment, user_id)
-      `
-      )
+      .select('*')
       .eq('id', companionId)
       .single()
 
@@ -216,9 +210,14 @@ export const getCompanionById = async (id: string) => {
       throw companionFetchError
     }
 
-    // Transform companion_topics to just topics array
-    if (data && data.companion_topics) {
-      data.topics = data.companion_topics.map((item: any) => item.topic)
+    // Fetch companion topics separately
+    const { data: topicsData } = await supabase
+      .from('companion_topics')
+      .select('topic')
+      .eq('companion_id', companionId)
+
+    if (data) {
+      data.topics = topicsData ? topicsData.map((item: any) => item.topic) : []
     }
 
     return data
@@ -260,8 +259,31 @@ export const filterCompanions = async (filters: {
 
     if (filterError) throw filterError
 
-    companions.value = result || []
-    return result || []
+    // Fetch companion topics separately
+    const companionsWithTopics = await Promise.all(
+      (result || []).map(async (companion: any) => {
+        try {
+          const { data: topicsData } = await supabase
+            .from('companion_topics')
+            .select('topic')
+            .eq('companion_id', companion.id)
+
+          return {
+            ...companion,
+            topics: topicsData ? topicsData.map((t: any) => t.topic) : []
+          }
+        } catch (err) {
+          console.error(`Error fetching topics for companion ${companion.id}:`, err)
+          return {
+            ...companion,
+            topics: []
+          }
+        }
+      })
+    )
+
+    companions.value = companionsWithTopics
+    return companionsWithTopics
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to filter companions'
     error.value = errorMessage
@@ -280,7 +302,7 @@ export const loadCompanions = async () => {
 
     const { data: result, error: loadCompanionsError } = await supabase
       .from('companions')
-      .select('*, companion_topics (topic)')
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (loadCompanionsError) {
@@ -292,14 +314,31 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    // Transform companion_topics to just topics array
-    const transformedData = (result || []).map((item: any) => ({
-      ...item,
-      topics: item.companion_topics ? item.companion_topics.map((t: any) => t.topic) : []
-    }))
+    // Fetch companion topics separately
+    const companionsWithTopics = await Promise.all(
+      (result || []).map(async (companion: any) => {
+        try {
+          const { data: topicsData } = await supabase
+            .from('companion_topics')
+            .select('topic')
+            .eq('companion_id', companion.id)
 
-    companions.value = transformedData
-    return transformedData
+          return {
+            ...companion,
+            topics: topicsData ? topicsData.map((t: any) => t.topic) : []
+          }
+        } catch (err) {
+          console.error(`Error fetching topics for companion ${companion.id}:`, err)
+          return {
+            ...companion,
+            topics: []
+          }
+        }
+      })
+    )
+
+    companions.value = companionsWithTopics
+    return companionsWithTopics
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage
@@ -376,12 +415,7 @@ export const loadChats = async () => {
 
     const { data: result, error: loadChatsError } = await supabase
       .from('chats')
-      .select(
-        `
-        *,
-        companions (name, image, specialization)
-      `
-      )
+      .select('*')
       .eq('user_id', currentUser.value.id)
       .order('updated_at', { ascending: false })
 
@@ -394,20 +428,49 @@ export const loadChats = async () => {
       throw loadChatsError
     }
 
-    // Transform chats with companion info
-    chats.value = (result || []).map((chat: any) => ({
-      id: chat.id,
-      name: chat.companions?.name || '',
-      lastMessage: chat.last_message || '',
-      time: new Date(chat.updated_at).toLocaleString('ru-RU'),
-      unread_count: chat.unread_count || 0,
-      image: chat.companions?.image || '',
-      status: chat.status || 'active',
-      companion_id: chat.companion_id,
-      user_id: chat.user_id,
-      created_at: chat.created_at,
-      updated_at: chat.updated_at,
-    }))
+    // Fetch companion info for each chat separately
+    const chatsWithCompanions = await Promise.all(
+      (result || []).map(async (chat: any) => {
+        try {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('name, image, specialization')
+            .eq('id', chat.companion_id)
+            .single()
+
+          return {
+            id: chat.id,
+            name: companionData?.name || '',
+            lastMessage: chat.last_message || '',
+            time: new Date(chat.updated_at).toLocaleString('ru-RU'),
+            unread_count: chat.unread_count || 0,
+            image: companionData?.image || '',
+            status: chat.status || 'active',
+            companion_id: chat.companion_id,
+            user_id: chat.user_id,
+            created_at: chat.created_at,
+            updated_at: chat.updated_at,
+          }
+        } catch (err) {
+          console.error(`Error fetching companion info for chat ${chat.id}:`, err)
+          return {
+            id: chat.id,
+            name: '',
+            lastMessage: chat.last_message || '',
+            time: new Date(chat.updated_at).toLocaleString('ru-RU'),
+            unread_count: chat.unread_count || 0,
+            image: '',
+            status: chat.status || 'active',
+            companion_id: chat.companion_id,
+            user_id: chat.user_id,
+            created_at: chat.created_at,
+            updated_at: chat.updated_at,
+          }
+        }
+      })
+    )
+
+    chats.value = chatsWithCompanions
 
     return result
   } catch (err) {
@@ -432,7 +495,7 @@ export const getChatMessages = async (chatId: string) => {
 
     const { data: result, error: loadMessagesError } = await supabase
       .from('messages')
-      .select('*, users (name, image)')
+      .select('*')
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true })
 
@@ -446,15 +509,41 @@ export const getChatMessages = async (chatId: string) => {
       throw loadMessagesError
     }
 
-    messages.value = (result || []).map((messageItem: any) => ({
-      id: messageItem.id,
-      sender_id: messageItem.sender_id,
-      text: messageItem.text,
-      created_at: messageItem.created_at,
-      author: messageItem.users?.name || 'Unknown',
-      isMine: messageItem.sender_id === currentUser.value?.id,
-      chat_id: messageItem.chat_id,
-    }))
+    // Fetch sender info for each message separately
+    const messagesWithSenders = await Promise.all(
+      (result || []).map(async (messageItem: any) => {
+        try {
+          const { data: senderData } = await supabase
+            .from('users')
+            .select('name, image')
+            .eq('id', messageItem.sender_id)
+            .single()
+
+          return {
+            id: messageItem.id,
+            sender_id: messageItem.sender_id,
+            text: messageItem.text,
+            created_at: messageItem.created_at,
+            author: senderData?.name || 'Unknown',
+            isMine: messageItem.sender_id === currentUser.value?.id,
+            chat_id: messageItem.chat_id,
+          }
+        } catch (err) {
+          console.error(`Error fetching sender info for message ${messageItem.id}:`, err)
+          return {
+            id: messageItem.id,
+            sender_id: messageItem.sender_id,
+            text: messageItem.text,
+            created_at: messageItem.created_at,
+            author: 'Unknown',
+            isMine: messageItem.sender_id === currentUser.value?.id,
+            chat_id: messageItem.chat_id,
+          }
+        }
+      })
+    )
+
+    messages.value = messagesWithSenders
 
     return messages.value
   } catch (err) {
@@ -485,7 +574,7 @@ export const sendMessage = async (chatId: string, text: string) => {
           text,
         },
       ])
-      .select('*, users (name, image)')
+      .select()
       .single()
 
     if (sendMessageError) {
@@ -520,7 +609,7 @@ export const sendMessage = async (chatId: string, text: string) => {
       sender_id: messageData.sender_id,
       text: messageData.text,
       created_at: messageData.created_at,
-      author: messageData.users?.name || 'Unknown',
+      author: currentUser.value.name || 'Unknown',
       isMine: true,
       chat_id: messageData.chat_id,
     }
