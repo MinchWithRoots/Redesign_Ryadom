@@ -192,7 +192,7 @@ const navigateToProfile = (companionId: string | number) => {
                     value="all"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">До 1 года</span>
+                  <span class="text-sm text-secondary/70">Все</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -201,13 +201,22 @@ const navigateToProfile = (companionId: string | number) => {
                     value="beginner"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">2+ года</span>
+                  <span class="text-sm text-secondary/70">До 1 года</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
                     v-model="filters.experience"
                     type="radio"
                     value="experienced"
+                    class="w-4 h-4 accent-primary"
+                  />
+                  <span class="text-sm text-secondary/70">2+ года</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    v-model="filters.experience"
+                    type="radio"
+                    value="expert"
                     class="w-4 h-4 accent-primary"
                   />
                   <span class="text-sm text-secondary/70">5+ лет</span>
