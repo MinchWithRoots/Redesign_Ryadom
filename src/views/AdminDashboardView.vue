@@ -175,9 +175,7 @@ const navigate = (path: string) => {
         <div class="flex items-center justify-between mb-6">
           <div>
             <div class="flex items-center gap-3 mb-2">
-              <svg class="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-              </svg>
+              <img src="../images/shield-tick.svg" alt="Admin" class="w-10 h-10 object-contain" />
               <h1 class="text-4xl font-bold text-secondary">Админ Панель</h1>
             </div>
             <p class="text-secondary/60">Управление платформой и данными пользователей</p>
@@ -216,35 +214,35 @@ const navigate = (path: string) => {
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
-            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <img src="../images/user.svg" alt="Users" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
           </div>
           <p class="text-secondary/60 text-sm">Пользователей</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
-            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.89 1.97 1.74 1.97 2.95V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            <img src="../images/user-story.svg" alt="Companions" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
           </div>
           <p class="text-secondary/60 text-sm">Спутников</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
-            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <img src="../images/message-add-alt.svg" alt="Chats" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
           </div>
           <p class="text-secondary/60 text-sm">Всего чатов</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-green-600">{{ stats.activeChats }}</div>
-            <svg class="w-6 h-6 text-green-600 opacity-30 group-hover:opacity-100 transition-opacity rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            <img src="../images/shield-tick.svg" alt="Active" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
           </div>
           <p class="text-secondary/60 text-sm">Активных чатов</p>
         </div>
         <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
           <div class="flex items-center justify-between mb-2">
             <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
-            <svg class="w-6 h-6 text-primary opacity-30 group-hover:opacity-100 transition-opacity rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <img src="../images/smile.svg" alt="Reviews" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
           </div>
           <p class="text-secondary/60 text-sm">Отзывов</p>
         </div>
@@ -261,7 +259,7 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          <svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+          <img src="../images/shield-tick.svg" alt="Overview" class="w-5 h-5 inline mr-2 object-contain" />
           Обзор
         </button>
         <button
@@ -273,7 +271,7 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          <svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <img src="../images/user.svg" alt="Users" class="w-5 h-5 inline mr-2 object-contain" />
           Пользователи ({{ users.length }})
         </button>
         <button
@@ -285,7 +283,7 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          <svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.89 1.97 1.74 1.97 2.95V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          <img src="../images/user-story.svg" alt="Companions" class="w-5 h-5 inline mr-2 object-contain" />
           Спутники ({{ companions.length }})
         </button>
         <button
@@ -297,7 +295,7 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          <svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
+          <img src="../images/smile.svg" alt="Reviews" class="w-5 h-5 inline mr-2 object-contain" />
           Отзывы ({{ reviews.length }})
         </button>
         <button
@@ -309,7 +307,7 @@ const navigate = (path: string) => {
               : 'border-transparent text-secondary/60 hover:text-secondary'
           ]"
         >
-          <svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          <img src="../images/message-add-alt.svg" alt="Chats" class="w-5 h-5 inline mr-2 object-contain" />
           Чаты ({{ chats.length }})
         </button>
       </div>
@@ -319,7 +317,7 @@ const navigate = (path: string) => {
         <div class="card">
           <h2 class="text-2xl font-bold text-secondary mb-6">Добро пожаловать, Администратор!</h2>
           <div class="space-y-4 text-secondary/70">
-            <p><svg class="w-5 h-5 inline mr-2 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>На этой панели вы можете управлять:</p>
+            <p><img src="../images/shield-tick.svg" alt="Overview" class="w-5 h-5 inline mr-2 object-contain" />На этой панели вы можете управлять:</p>
             <ul class="list-disc list-inside space-y-2">
               <li><strong>Пользователи</strong> - просмотр, управление и удаление профилей</li>
               <li><strong>Спутники</strong> - управление статусом доступности и информацией</li>
@@ -425,7 +423,7 @@ const navigate = (path: string) => {
                 <p class="text-secondary/60 text-sm mb-3">{{ companion.experience }}</p>
                 <div class="flex items-center gap-4 text-sm text-secondary/60">
                   <span class="inline-flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-secondary/60 rounded" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <img src="../images/heart.svg" alt="Thanks" class="w-4 h-4 object-contain" />
                     {{ companion.reviews }} благодарностей
                   </span>
                 </div>
@@ -468,20 +466,16 @@ const navigate = (path: string) => {
               <div>
                 <div class="flex items-center gap-2 mb-2">
                   <div class="flex gap-0.5">
-                    <svg
+                    <img
                       v-for="starIndex in 5"
                       :key="starIndex"
+                      src="../images/smile.svg"
+                      :alt="`Star ${starIndex}`"
                       :class="[
-                        'w-4 h-4 rounded',
-                        starIndex <= review.rating ? 'text-primary' : 'text-secondary/20'
+                        'w-4 h-4 object-contain',
+                        starIndex <= review.rating ? 'opacity-100' : 'opacity-20'
                       ]"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                      />
-                    </svg>
+                    />
                   </div>
                   <span class="text-sm font-semibold text-secondary">{{ review.title }}</span>
                 </div>
