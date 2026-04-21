@@ -103,17 +103,17 @@ const navigateToChat = () => {
             <div class="text-center mb-6">
               <h1 class="text-2xl font-bold text-secondary mb-2">{{ companion.name }}</h1>
               <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} лет</p>
-
-              <!-- Testimonials -->
-              <div class="flex items-center justify-center gap-2 mb-6 p-3 bg-light-bg rounded-xl">
-                <span class="text-sm text-secondary/60">{{ companion.reviews_count }} человек поблагодарили</span>
-              </div>
             </div>
 
             <!-- Stats -->
             <div class="grid grid-cols-2 gap-3 mb-6 pb-6 border-b border-border/50">
               <div class="p-3 bg-light-bg rounded-xl text-center">
-                <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+                <div class="flex items-center justify-center gap-2 mb-2">
+                  <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+                </div>
                 <p class="text-xs text-secondary/60">благодарностей</p>
               </div>
               <div class="p-3 bg-light-bg rounded-xl text-center">
