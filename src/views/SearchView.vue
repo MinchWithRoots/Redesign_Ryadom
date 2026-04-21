@@ -12,10 +12,7 @@ const filters = ref({
   ageMin: 18,
   ageMax: 65,
   experience: 'all',
-  topic: 'Все',
 })
-
-const topics = ['Все', 'Отношения', 'Карьера', 'Тревожность', 'Горе', 'Развитие']
 
 const filteredCompanions = computed(() => {
   let filteredCompanionList = [...companions.value]
@@ -35,11 +32,6 @@ const filteredCompanions = computed(() => {
     filteredCompanionList = filteredCompanionList.filter(companion => companion.experience === filters.value.experience)
   }
 
-  // Filter by topic
-  if (filters.value.topic !== 'Все') {
-    filteredCompanionList = filteredCompanionList.filter(companion => companion.topics.includes(filters.value.topic))
-  }
-
   return filteredCompanionList
 })
 
@@ -57,7 +49,6 @@ const resetFilters = async () => {
     ageMin: 18,
     ageMax: 65,
     experience: 'all',
-    topic: 'Все',
   }
   try {
     await loadCompanions()
