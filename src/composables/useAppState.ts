@@ -30,6 +30,7 @@ export interface Companion {
   image: string
   rating: number
   reviews: number
+  reviewsCount?: number
   bio: string
   created_at?: string
   updated_at?: string
@@ -249,12 +250,13 @@ export const filterCompanions = async (filters: {
 
     if (filterError) throw filterError
 
-    // Transform to include topics array
+    // Transform to include topics array and count reviews
     const transformed = (result || []).map((companion: any) => ({
       ...companion,
       topics: Array.isArray(companion.companion_topics)
         ? companion.companion_topics.map((companionTopic: any) => companionTopic.topic)
-        : []
+        : [],
+      reviewsCount: Array.isArray(companion.reviews) ? companion.reviews.length : 0
     }))
 
     companions.value = transformed
@@ -296,12 +298,13 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    // Transform to include topics array
+    // Transform to include topics array and count reviews
     const transformed = (result || []).map((companion: any) => ({
       ...companion,
       topics: Array.isArray(companion.companion_topics)
         ? companion.companion_topics.map((companionTopic: any) => companionTopic.topic)
-        : []
+        : [],
+      reviewsCount: Array.isArray(companion.reviews) ? companion.reviews.length : 0
     }))
 
     companions.value = transformed

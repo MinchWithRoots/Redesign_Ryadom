@@ -263,7 +263,11 @@ const navigateToProfile = (companionId: number) => {
                   <div class="flex items-start justify-between mb-2">
                     <div>
                       <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
-                      <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm text-secondary/60">{{ companion.age }} лет</p>
+                        <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
+                        <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
+                      </div>
                     </div>
                   </div>
                   <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ companion.experience }}</p>
@@ -284,7 +288,7 @@ const navigateToProfile = (companionId: number) => {
                 <!-- Testimonials -->
                 <div class="flex items-center gap-2 mb-4">
                   <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
-                  <p class="text-xs text-secondary/60">{{ companion.reviews }} благодарностей</p>
+                  <p class="text-xs text-secondary/60">{{ companion.reviewsCount }} благодарностей</p>
                 </div>
 
                 <!-- Button -->
