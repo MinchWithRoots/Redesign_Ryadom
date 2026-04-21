@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { companions, chats, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
 import { getAgeForm } from '../utils/ageForm'
+import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
@@ -281,7 +282,7 @@ const navigateToProfile = (companionId: string | number) => {
                       </div>
                     </div>
                   </div>
-                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ companion.experience }}</p>
+                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
                   <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
                 </div>
 

@@ -54,7 +54,7 @@
                 <span class="text-sm text-slate-400">{{ companion.reviews_count }} благодарностей</span>
               </div>
               <span class="text-sm font-semibold text-blue-400">
-                {{ companion.experience }}
+                {{ getExperienceText(companion.experience) }}
               </span>
             </div>
 
@@ -98,6 +98,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useCompanions } from '@/composables/useSupabase'
+import { getExperienceText } from '@/utils/experienceForm'
 
 const { companions, loading, error, fetchCompanions, searchCompanions } =
   useCompanions()

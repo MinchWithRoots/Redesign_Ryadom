@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { companions, getCompanionById, sendConnectionRequest } from '../composables/useAppState'
 import supportIcon from '../images/support.svg'
 import { getAgeForm } from '../utils/ageForm'
+import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
 const route = useRoute()
@@ -171,7 +172,7 @@ const navigateToChat = () => {
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-secondary mb-1">Время в пути</p>
-                  <p class="text-secondary/70">{{ companion.experience }}</p>
+                  <p class="text-secondary/70">{{ getExperienceText(companion.experience) }}</p>
                 </div>
               </div>
             </div>
