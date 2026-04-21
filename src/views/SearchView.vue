@@ -183,7 +183,7 @@ const navigateToProfile = (companionId: string | number) => {
 
             <!-- Experience -->
             <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Опыт на платформе</p>
+              <p class="text-sm font-semibold text-secondary mb-3">Опыт в терапии</p>
               <div class="flex flex-col gap-2">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -192,7 +192,7 @@ const navigateToProfile = (companionId: string | number) => {
                     value="all"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Все</span>
+                  <span class="text-sm text-secondary/70">До 1 года</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -201,7 +201,7 @@ const navigateToProfile = (companionId: string | number) => {
                     value="beginner"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Начало пути</span>
+                  <span class="text-sm text-secondary/70">2+ года</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -210,7 +210,7 @@ const navigateToProfile = (companionId: string | number) => {
                     value="experienced"
                     class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">На пути уже некоторое время</span>
+                  <span class="text-sm text-secondary/70">5+ лет</span>
                 </label>
               </div>
             </div>
