@@ -28,9 +28,8 @@ export interface Companion {
   image: string
   bio: string
   specialization?: string
-  rating?: number
-  price_per_hour?: number
   is_available?: boolean
+  topics?: string[]
   created_at?: string
   updated_at?: string
 }

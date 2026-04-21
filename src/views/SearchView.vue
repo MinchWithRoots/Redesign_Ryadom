@@ -15,6 +15,7 @@ const filters = ref({
   ageMax: 65,
   experience: 'all',
   topic: 'all',
+  specialization: 'all',
 })
 
 // Extract unique topics from companions
@@ -26,6 +27,19 @@ const topics = computed(() => {
     }
   })
   return Array.from(uniqueTopics)
+})
+
+// Extract unique specializations from companions (parse from comma-separated string)
+const specializations = computed(() => {
+  const uniqueSpecializations = new Set<string>()
+  companions.value.forEach(companion => {
+    if (companion.specialization && typeof companion.specialization === 'string') {
+      // Split by comma and trim whitespace
+      const specs = companion.specialization.split(',').map(s => s.trim()).filter(s => s)
+      specs.forEach(spec => uniqueSpecializations.add(spec))
+    }
+  })
+  return Array.from(uniqueSpecializations).sort()
 })
 
 const filteredCompanions = computed(() => {
@@ -53,6 +67,15 @@ const filteredCompanions = computed(() => {
     )
   }
 
+  // Filter by specialization
+  if (filters.value.specialization !== 'all') {
+    filteredCompanionList = filteredCompanionList.filter(companion => {
+      if (!companion.specialization || typeof companion.specialization !== 'string') return false
+      const specs = companion.specialization.split(',').map(s => s.trim())
+      return specs.includes(filters.value.specialization)
+    })
+  }
+
   return filteredCompanionList
 })
 
@@ -70,6 +93,8 @@ const resetFilters = async () => {
     ageMin: 18,
     ageMax: 65,
     experience: 'all',
+    topic: 'all',
+    specialization: 'all',
   }
   try {
     await loadCompanions()
@@ -220,6 +245,31 @@ const navigateToProfile = (companionId: string | number) => {
                     class="w-4 h-4 accent-primary"
                   />
                   <span class="text-sm text-secondary/70">5+ лет</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Specialization -->
+            <div class="mb-6 border-t border-border/50 pt-6">
+              <p class="text-sm font-semibold text-secondary mb-3">Специализация</p>
+              <div class="flex flex-col gap-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    v-model="filters.specialization"
+                    type="radio"
+                    value="all"
+                    class="w-4 h-4 accent-primary"
+                  />
+                  <span class="text-sm text-secondary/70">Все</span>
+                </label>
+                <label v-for="spec in specializations" :key="spec" class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    v-model="filters.specialization"
+                    type="radio"
+                    :value="spec"
+                    class="w-4 h-4 accent-primary"
+                  />
+                  <span class="text-sm text-secondary/70">{{ spec }}</span>
                 </label>
               </div>
             </div>
