@@ -99,14 +99,14 @@ const navigateToChat = () => {
 
               <!-- Testimonials -->
               <div class="flex items-center justify-center gap-2 mb-6 p-3 bg-light-bg rounded-xl">
-                <span class="text-sm text-secondary/60">{{ companion.reviews }} человек поблагодарили</span>
+                <span class="text-sm text-secondary/60">{{ companion.reviews_count }} человек поблагодарили</span>
               </div>
             </div>
 
             <!-- Stats -->
             <div class="grid grid-cols-2 gap-3 mb-6 pb-6 border-b border-border/50">
               <div class="p-3 bg-light-bg rounded-xl text-center">
-                <p class="text-2xl font-bold text-primary">{{ companion.reviews }}</p>
+                <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
                 <p class="text-xs text-secondary/60">благодарностей</p>
               </div>
               <div class="p-3 bg-light-bg rounded-xl text-center">

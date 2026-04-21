@@ -279,7 +279,7 @@ const navigateToProfile = (companionId: number) => {
                 <!-- Testimonials -->
                 <div class="flex items-center gap-2 mb-4">
                   <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
-                  <p class="text-xs text-secondary/60">{{ companion.reviewsCount }} благодарностей</p>
+                  <p class="text-xs text-secondary/60">{{ companion.reviews_count }} благодарностей</p>
                 </div>
 
                 <!-- Button -->
