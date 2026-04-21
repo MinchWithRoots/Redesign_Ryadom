@@ -83,15 +83,7 @@ VALUES
     '/images/users/id8-image.jpg',
     'Карьера, личностный рост, цели',
     16
-  )
-ON CONFLICT (name) DO UPDATE
-SET age = EXCLUDED.age,
-    gender = EXCLUDED.gender,
-    experience = EXCLUDED.experience,
-    bio = EXCLUDED.bio,
-    image = EXCLUDED.image,
-    specialization = EXCLUDED.specialization,
-    reviews_count = EXCLUDED.reviews_count;
+  );
 
 -- Confirmation
 SELECT 'Companions data added!' as status;
