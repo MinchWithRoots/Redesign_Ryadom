@@ -300,3 +300,40 @@ export async function submitReport(
     return null
   }
 }
+
+// ============ UPDATE COMPANION IMAGES ============
+export async function updateCompanionImages() {
+  try {
+    // Fetch all companions to get their IDs
+    const { data: companions, error: fetchError } = await supabase
+      .from('companions')
+      .select('id, name')
+      .order('created_at', { ascending: true })
+
+    if (fetchError) throw fetchError
+
+    // Update each companion with the correct image path based on their ID
+    const updates = companions?.map((companion: any, index: number) => ({
+      id: companion.id,
+      image: `/images/users/id${index + 1}-image.jpg`
+    })) || []
+
+    for (const update of updates) {
+      const { error: updateError } = await supabase
+        .from('companions')
+        .update({ image: update.image })
+        .eq('id', update.id)
+
+      if (updateError) {
+        console.error(`Error updating companion ${update.id}:`, updateError)
+      } else {
+        console.log(`✅ Updated companion ${update.id} with image: ${update.image}`)
+      }
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error updating companion images:', error)
+    return false
+  }
+}
