@@ -47,6 +47,19 @@ const handleSendConnectionRequest = async () => {
   }
 }
 
+const getAgeForm = (age: number): string => {
+  const lastDigit = age % 10
+  const lastTwoDigits = age % 100
+
+  if (lastDigit === 1 && lastTwoDigits !== 11) {
+    return 'год'
+  } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return 'года'
+  } else {
+    return 'лет'
+  }
+}
+
 const goBack = () => {
   router.back()
 }
@@ -103,7 +116,7 @@ const navigateToChat = () => {
             <!-- Basic Info -->
             <div class="text-center mb-6">
               <h1 class="text-2xl font-bold text-secondary mb-2">{{ companion.name }}</h1>
-              <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} лет</p>
+              <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
             </div>
 
             <!-- Stats -->
