@@ -2,7 +2,7 @@
 -- Люди, помогающие друг другу в терапии
 -- specialization содержит темы для разговоров
 
-INSERT INTO companions (name, age, gender, experience, bio, image, specialization, is_available, reviews_count)
+INSERT INTO companions (name, age, gender, experience, bio, image, specialization, reviews_count)
 VALUES
   (
     'Мария К.',
@@ -12,7 +12,6 @@ VALUES
     'Слушаю с открытым сердцем. Прошла свой путь и знаю, как помочь.',
     '/images/users/id1-image.jpg',
     'Депрессия, тревога, отношения',
-    true,
     12
   ),
   (
@@ -23,7 +22,6 @@ VALUES
     'Много лет в терапии. Помогаю найти смысл и справиться с трудностями.',
     '/images/users/id2-image.jpg',
     'Травма, отношения, личностный рост',
-    true,
     18
   ),
   (
@@ -34,7 +32,6 @@ VALUES
     'Поддержу в любой кризис. Верю в силу человека и его возможности.',
     '/images/users/id3-image.jpg',
     'Стресс, жизненные кризисы, поддержка',
-    true,
     9
   ),
   (
@@ -45,7 +42,6 @@ VALUES
     'Работаю над своими отношениями и хочу помочь другим в этом.',
     '/images/users/id4-image.jpg',
     'Отношения, семья, коммуникация',
-    true,
     15
   ),
   (
@@ -56,7 +52,6 @@ VALUES
     'Недавно начала заниматься собой. Понимаю молодёжные проблемы.',
     '/images/users/id5-image.jpg',
     'Самооценка, карьера, отношения',
-    true,
     6
   ),
   (
@@ -67,7 +62,6 @@ VALUES
     'Пережил многое. Помогаю другим восстанавливаться после трудных времён.',
     '/images/users/id6-image.jpg',
     'Травма, стресс, восстановление',
-    true,
     21
   ),
   (
@@ -78,7 +72,6 @@ VALUES
     'Ищу смысл и радость в жизни. Помогу вам найти свои сильные стороны.',
     '/images/users/id7-image.jpg',
     'Личностный рост, мотивация, счастье',
-    true,
     14
   ),
   (
@@ -89,17 +82,15 @@ VALUES
     'В процессе самосовершенствования. Помогу с целями и развитием.',
     '/images/users/id8-image.jpg',
     'Карьера, личностный рост, цели',
-    true,
     16
   )
-ON CONFLICT (name) DO UPDATE 
+ON CONFLICT (name) DO UPDATE
 SET age = EXCLUDED.age,
     gender = EXCLUDED.gender,
     experience = EXCLUDED.experience,
     bio = EXCLUDED.bio,
     image = EXCLUDED.image,
     specialization = EXCLUDED.specialization,
-    is_available = EXCLUDED.is_available,
     reviews_count = EXCLUDED.reviews_count;
 
 -- Confirmation
