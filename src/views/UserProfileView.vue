@@ -16,12 +16,19 @@ const companionId = computed(() => {
   return typeof id === 'string' ? parseInt(id) : id
 })
 
-onMounted(() => {
-  const comp = getCompanionById(companionId.value)
-  if (comp) {
-    companion.value = comp
+onMounted(async () => {
+  try {
+    const comp = await getCompanionById(companionId.value.toString())
+    if (comp) {
+      companion.value = comp
+    } else {
+      console.error('Companion not found with ID:', companionId.value)
+    }
+  } catch (err) {
+    console.error('Error loading companion profile:', err)
+  } finally {
+    isLoading.value = false
   }
-  isLoading.value = false
 })
 
 const handleSendConnectionRequest = async () => {
