@@ -29,17 +29,19 @@ const topics = computed(() => {
   return Array.from(uniqueTopics)
 })
 
-// Extract unique specializations from companions (parse from comma-separated string)
+// Extract unique specializations from companions
 const specializations = computed(() => {
-  const uniqueSpecializations = new Set<string>()
+  const uniqueSpecializations = new Map<number, string>()
   companions.value.forEach(companion => {
-    if (companion.specialization && typeof companion.specialization === 'string') {
-      // Split by comma and trim whitespace
-      const specs = companion.specialization.split(',').map(s => s.trim()).filter(s => s)
-      specs.forEach(spec => uniqueSpecializations.add(spec))
+    if (companion.specializations && Array.isArray(companion.specializations)) {
+      companion.specializations.forEach(spec => {
+        if (spec.id && spec.name) {
+          uniqueSpecializations.set(spec.id, spec.name)
+        }
+      })
     }
   })
-  return Array.from(uniqueSpecializations).sort()
+  return Array.from(uniqueSpecializations.values()).sort()
 })
 
 const filteredCompanions = computed(() => {
