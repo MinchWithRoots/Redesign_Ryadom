@@ -160,7 +160,7 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+                <img src="../images/user.svg" alt="Profile" class="w-5 h-5 inline mr-2 object-contain" />
                 Мой профиль
               </button>
               <button
@@ -172,7 +172,7 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                <img src="../images/message-add-alt.svg" alt="Chats" class="w-5 h-5 inline mr-2 object-contain" />
                 Мои чаты
               </button>
               <button
@@ -184,7 +184,7 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+                <img src="../images/shield-tick.svg" alt="History" class="w-5 h-5 inline mr-2 object-contain" />
                 История сессий
               </button>
               <button
@@ -196,7 +196,7 @@ onMounted(async () => {
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
               >
-                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.49.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.48.1.62l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.1.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.49-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.48-.1-.62l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <img src="../images/settings.svg" alt="Settings" class="w-5 h-5 inline mr-2 object-contain" />
                 Настройки
               </button>
               <template v-if="userProfile.role === 'admin'">
@@ -205,7 +205,7 @@ onMounted(async () => {
                     @click="navigate('/admin')"
                     class="w-full text-left px-4 py-3 rounded-xl font-medium transition-all bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10"
                   >
-                    <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    <img src="../images/shield-tick.svg" alt="Admin" class="w-5 h-5 inline mr-2 object-contain" />
                     Админ панель
                   </button>
                 </div>
@@ -333,9 +333,7 @@ onMounted(async () => {
                   </div>
 
                   <!-- Arrow -->
-                  <svg class="w-5 h-5 text-secondary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
+                  <img src="../images/send.svg" alt="Open" class="w-5 h-5 text-secondary/30 object-contain opacity-30" />
                 </div>
 
                 <!-- Delete Button -->
@@ -344,9 +342,7 @@ onMounted(async () => {
                   class="flex-shrink-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700"
                   title="Удалить чат"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <span class="text-lg">🗑</span>
                 </button>
               </div>
             </div>
@@ -377,18 +373,16 @@ onMounted(async () => {
                 <div class="flex items-center gap-2 pt-3 border-t border-border/50">
                   <span class="text-xs text-secondary/60">Ваша оценка:</span>
                   <div class="flex gap-0.5">
-                    <svg
+                    <img
                       v-for="starIndex in 5"
                       :key="starIndex"
+                      src="../images/smile.svg"
+                      :alt="`Star ${starIndex}`"
                       :class="[
-                        'w-4 h-4',
-                        starIndex <= session.feedback ? 'text-primary' : 'text-secondary/20'
+                        'w-4 h-4 object-contain',
+                        starIndex <= session.feedback ? 'opacity-100' : 'opacity-20'
                       ]"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
+                    />
                   </div>
                 </div>
               </div>

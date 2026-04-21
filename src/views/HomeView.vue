@@ -2,15 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
-import IconTick from '@/components/icons/IconTick.vue'
-import IconBookmark from '@/components/icons/IconBookmark.vue'
-import IconMenu from '@/components/icons/IconMenu.vue'
-import IconDanger from '@/components/icons/IconDanger.vue'
-import IconHeart from '@/components/icons/IconHeart.vue'
-import IconSetting from '@/components/icons/IconSetting.vue'
-import IconInfo from '@/components/icons/IconInfo.vue'
-import IconNotification from '@/components/icons/IconNotification.vue'
-import IconStar from '@/components/icons/IconStar.vue'
 
 const router = useRouter()
 const reviews = ref<any[]>([])
@@ -104,7 +95,7 @@ onMounted(() => {
           <div class="flex flex-col gap-8 lg:gap-10">
             <div class="space-y-4 lg:space-y-6">
               <div class="flex items-center gap-2">
-                <IconTick class="w-[50px] h-[50px]" />
+                <img src="../images/shield-tick.svg" alt="Добро пожаловать" class="w-[50px] h-[50px] object-contain" />
                 <p class="text-primary font-semibold text-lg tracking-wide">Добро пожаловать</p>
               </div>
               <h1 class="text-5xl lg:text-7xl font-bold text-secondary leading-tight">
@@ -170,28 +161,28 @@ onMounted(() => {
                     <!-- Center icon -->
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card border border-white opacity-100">
-                        <IconMenu class="w-[65px] h-[65px]" />
+                        <img src="../images/user-story.svg" alt="Menu" class="w-[65px] h-[65px] object-contain" />
                       </div>
                     </div>
 
                     <!-- Floating icons -->
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0s">
-                      <IconBookmark class="w-[45px] h-[45px]" />
+                      <img src="../images/heart-add.svg" alt="Bookmark" class="w-[45px] h-[45px] object-contain" />
                     </div>
                     <div class="absolute top-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.2s">
-                      <IconHeart class="w-[45px] h-[45px]" />
+                      <img src="../images/heart.svg" alt="Heart" class="w-[45px] h-[45px] object-contain" />
                     </div>
                     <div class="absolute bottom-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.4s">
-                      <IconSetting class="w-[45px] h-[45px]" />
+                      <img src="../images/settings.svg" alt="Setting" class="w-[45px] h-[45px] object-contain" />
                     </div>
                     <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.6s">
-                      <IconNotification class="w-[45px] h-[45px]" />
+                      <img src="../images/message-add-alt.svg" alt="Notification" class="w-[45px] h-[45px] object-contain" />
                     </div>
                     <div class="absolute bottom-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.8s">
-                      <IconDanger class="w-[45px] h-[45px]" />
+                      <img src="../images/lock.svg" alt="Danger" class="w-[45px] h-[45px] object-contain" />
                     </div>
                     <div class="absolute top-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 1s">
-                      <IconInfo class="w-[45px] h-[45px]" />
+                      <img src="../images/support.svg" alt="Info" class="w-[45px] h-[45px] object-contain" />
                     </div>
                   </div>
                 </div>
@@ -310,7 +301,7 @@ onMounted(() => {
         <div class="flex flex-col gap-12 lg:gap-16">
           <div class="text-center space-y-4">
             <div class="flex items-center justify-center gap-2">
-              <IconStar class="w-[50px] h-[50px]" />
+              <img src="../images/smile.svg" alt="Star" class="w-[50px] h-[50px] object-contain" />
               <p class="text-primary font-semibold text-lg">Отзывы</p>
             </div>
             <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
@@ -333,13 +324,13 @@ onMounted(() => {
 
               <!-- Stars -->
               <div class="flex gap-1 mb-6">
-                <IconStar v-for="starIndex in 5" :key="starIndex" class="w-5 h-5" />
+                <img v-for="starIndex in 5" :key="starIndex" src="../images/smile.svg" alt="Star" class="w-5 h-5 object-contain" />
               </div>
 
               <!-- Quote with icon -->
               <div class="relative mb-8">
-                <div class="w-8 h-8 text-primary/30 absolute -top-2 -left-2">
-                  <IconBookmark class="w-full h-full" />
+                <div class="w-8 h-8 absolute -top-2 -left-2">
+                  <img src="../images/heart-add.svg" alt="Quote" class="w-full h-full object-contain opacity-30" />
                 </div>
                 <p class="text-secondary/70 text-lg leading-relaxed">{{ review.text }}</p>
               </div>
@@ -403,17 +394,17 @@ onMounted(() => {
         <!-- Trust badges -->
         <div class="mt-16 flex flex-col sm:flex-row gap-6 justify-center items-center text-sm">
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <IconTick class="w-[80px] h-[80px]" />
+            <img src="../images/shield-tick.svg" alt="Verified" class="w-[40px] h-[40px] object-contain" />
             <span>Проверенный контент</span>
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <IconDanger class="w-[80px] h-[80px]" />
+            <img src="../images/lock.svg" alt="Security" class="w-[40px] h-[40px] object-contain" />
             <span>Защита данных</span>
           </div>
           <div class="hidden sm:block text-secondary/30">•</div>
           <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <IconStar class="w-[80px] h-[80px]" />
+            <img src="../images/smile.svg" alt="Reviews" class="w-[40px] h-[40px] object-contain" />
             <span>500+ отзывов 5★</span>
           </div>
         </div>
