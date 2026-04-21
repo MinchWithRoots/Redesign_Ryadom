@@ -1,16 +1,9 @@
--- Migration: Add specialization field to companions table
--- Date: 2024
--- Description: Adds specialization field to store companion specialization information
+-- Ensure specialization column exists in companions table
+-- This field stores comma-separated specialization topics (e.g., "Депрессия, тревога, отношения")
 
--- Add specialization column if it doesn't exist
 ALTER TABLE companions 
 ADD COLUMN IF NOT EXISTS specialization TEXT;
 
--- Add comment to the column
-COMMENT ON COLUMN companions.specialization IS 'Professional specialization of the companion (e.g., Psychotherapy, Coaching, etc.)';
+COMMENT ON COLUMN companions.specialization IS 'Comma-separated list of specialization topics for conversations (e.g., "Депрессия, тревога, отношения")';
 
--- Create index for faster searches
-CREATE INDEX IF NOT EXISTS idx_companions_specialization ON companions(specialization);
-
--- Display confirmation
-SELECT 'Specialization column added successfully!' as status;
+SELECT 'Specialization column ready!' as status;
