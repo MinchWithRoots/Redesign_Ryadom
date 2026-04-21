@@ -142,234 +142,133 @@ const navigateToProfile = (companionId: string | number) => {
         </p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-6">
-        <!-- Filters Sidebar -->
-        <div class="lg:col-span-1">
-          <div class="bg-white border border-border/50 rounded-3xl p-6 shadow-card sticky top-[140px]">
-            <h3 class="text-lg font-bold text-secondary mb-6">Фильтры</h3>
-
-            <!-- Gender Filter -->
-            <div class="mb-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Пол</p>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.gender"
-                    type="radio"
-                    value="all"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">Все</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.gender"
-                    type="radio"
-                    value="female"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">Женщина</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.gender"
-                    type="radio"
-                    value="male"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">Мужчина</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Age Range -->
-            <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Возраст</p>
-              <div class="flex gap-2 mb-3">
-                <input
-                  v-model.number="filters.ageMin"
-                  type="number"
-                  min="18"
-                  max="65"
-                  class="w-full px-3 py-2 border border-border rounded-xl text-sm text-secondary focus:outline-none focus:border-primary"
-                />
-                <input
-                  v-model.number="filters.ageMax"
-                  type="number"
-                  min="18"
-                  max="65"
-                  class="w-full px-3 py-2 border border-border rounded-xl text-sm text-secondary focus:outline-none focus:border-primary"
-                />
-              </div>
-              <p class="text-xs text-secondary/60">
-                от {{ filters.ageMin }} {{ getAgeForm(filters.ageMin) }} до {{ filters.ageMax }} {{ getAgeForm(filters.ageMax) }}
-              </p>
-            </div>
-
-            <!-- Experience -->
-            <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Опыт в терапии</p>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.experience"
-                    type="radio"
-                    value="all"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">Все</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.experience"
-                    type="radio"
-                    value="beginner"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">До 1 года</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.experience"
-                    type="radio"
-                    value="experienced"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">2+ года</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.experience"
-                    type="radio"
-                    value="expert"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">5+ лет</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Specialization -->
-            <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Специализация</p>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.specialization"
-                    type="radio"
-                    value="all"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">Все</span>
-                </label>
-                <label v-for="spec in specializations" :key="spec" class="flex items-center gap-2 cursor-pointer">
-                  <input
-                    v-model="filters.specialization"
-                    type="radio"
-                    :value="spec"
-                    class="w-4 h-4 accent-primary"
-                  />
-                  <span class="text-sm text-secondary/70">{{ spec }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Reset Button -->
+      <!-- Main Content -->
+      <div class="w-full">
+        <!-- Specialization Filter Tags -->
+        <div v-if="specializations.length > 0" class="mb-6">
+          <div class="flex flex-wrap gap-2">
             <button
-              @click="resetFilters"
-              class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all"
-            >
-              Сбросить фильтры
-            </button>
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="lg:col-span-3">
-          <!-- Topic Tags -->
-          <div class="mb-8 flex flex-wrap gap-2">
-            <button
-              v-for="topic in topics"
-              :key="topic"
-              @click="filters.topic = topic"
+              @click="filters.specialization = 'all'"
               :class="[
                 'px-4 py-2 rounded-full text-sm font-medium transition-all',
-                filters.topic === topic
+                filters.specialization === 'all'
                   ? 'bg-primary text-white shadow-soft'
                   : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
               ]"
             >
-              {{ topic }}
+              Все направления
+            </button>
+            <button
+              v-for="spec in specializations"
+              :key="spec"
+              @click="filters.specialization = spec"
+              :class="[
+                'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                filters.specialization === spec
+                  ? 'bg-primary text-white shadow-soft'
+                  : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+              ]"
+            >
+              {{ spec }}
             </button>
           </div>
+        </div>
 
-          <!-- Notification -->
-          <transition name="slide">
-            <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
-              {{ showNotification }}
+        <!-- Topic Tags -->
+        <div class="mb-8 flex flex-wrap gap-2">
+          <button
+            @click="filters.topic = 'all'"
+            :class="[
+              'px-4 py-2 rounded-full text-sm font-medium transition-all',
+              filters.topic === 'all'
+                ? 'bg-primary text-white shadow-soft'
+                : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+            ]"
+          >
+            Все темы
+          </button>
+          <button
+            v-for="topic in topics"
+            :key="topic"
+            @click="filters.topic = topic"
+            :class="[
+              'px-4 py-2 rounded-full text-sm font-medium transition-all',
+              filters.topic === topic
+                ? 'bg-primary text-white shadow-soft'
+                : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+            ]"
+          >
+            {{ topic }}
+          </button>
+        </div>
+
+        <!-- Notification -->
+        <transition name="slide">
+          <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
+            {{ showNotification }}
+          </div>
+        </transition>
+
+        <!-- Companions Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-6">
+          <div
+            v-for="companion in filteredCompanions"
+            :key="companion.id"
+            class="group bg-white border border-border/50 rounded-3xl overflow-hidden shadow-card hover:shadow-hover hover:translate-y-[-4px] transition-all cursor-pointer"
+            @click="selectedCompanion = companion"
+          >
+            <!-- Image -->
+            <div class="h-64 overflow-hidden bg-light-bg relative">
+              <img
+                :src="companion.image"
+                :alt="companion.name"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
             </div>
-          </transition>
 
-          <!-- Companions Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-6">
-            <div
-              v-for="companion in filteredCompanions"
-              :key="companion.id"
-              class="group bg-white border border-border/50 rounded-3xl overflow-hidden shadow-card hover:shadow-hover hover:translate-y-[-4px] transition-all cursor-pointer"
-              @click="selectedCompanion = companion"
-            >
-              <!-- Image -->
-              <div class="h-64 overflow-hidden bg-light-bg relative">
-                <img
-                  :src="companion.image"
-                  :alt="companion.name"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-              </div>
-
-              <!-- Info -->
-              <div class="p-6">
-                <div class="mb-4">
-                  <div class="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
-                      <div class="flex items-center gap-2">
-                        <p class="text-sm text-secondary/60">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
-                        <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
-                        <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
-                      </div>
+            <!-- Info -->
+            <div class="p-6">
+              <div class="mb-4">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm text-secondary/60">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
+                      <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
+                      <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
                     </div>
                   </div>
-                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-                  <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
                 </div>
-
-                <!-- Topics -->
-                <div class="mb-4 flex flex-wrap gap-2">
-                  <span
-                    v-for="topic in companion.topics"
-                    :key="topic"
-                    class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full"
-                  >
-                    {{ topic }}
-                  </span>
-                </div>
-
-                <!-- Testimonials -->
-                <div class="flex items-center gap-2 mb-4">
-                  <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
-                  <p class="text-xs text-secondary/60">{{ companion.reviews_count }} благодарностей</p>
-                </div>
-
-                <!-- Button -->
-                <button
-                  @click.stop="selectedCompanion = companion"
-                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-                >
-                  Предложить связь
-                </button>
+                <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
+                <p v-if="companion.specialization" class="text-xs text-primary font-semibold mb-3">Направление: {{ companion.specialization }}</p>
+                <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
               </div>
+
+              <!-- Topics -->
+              <div class="mb-4 flex flex-wrap gap-2">
+                <span
+                  v-for="topic in companion.topics"
+                  :key="topic"
+                  class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full"
+                >
+                  {{ topic }}
+                </span>
+              </div>
+
+              <!-- Testimonials -->
+              <div class="flex items-center gap-2 mb-4">
+                <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
+                <p class="text-xs text-secondary/60">{{ companion.reviews_count }} благодарностей</p>
+              </div>
+
+              <!-- Button -->
+              <button
+                @click.stop="selectedCompanion = companion"
+                class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+              >
+                Предложить связь
+              </button>
             </div>
           </div>
         </div>
