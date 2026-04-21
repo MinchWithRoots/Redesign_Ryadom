@@ -70,6 +70,7 @@ const resetFilters = async () => {
     ageMin: 18,
     ageMax: 65,
     experience: 'all',
+    topic: 'all',
   }
   try {
     await loadCompanions()
