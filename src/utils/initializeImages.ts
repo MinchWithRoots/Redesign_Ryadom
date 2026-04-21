@@ -42,7 +42,7 @@ export async function initializeCompanionImages() {
 
       // Check if images need updating (check first companion)
       const firstCompanion = companions[0]
-      const expectedPath = '/images/users/id1-image.jpg'
+      const expectedPath = `./src/images/users/id${firstCompanion.id}-image.jpg`
 
       if (firstCompanion?.image === expectedPath) {
         console.log('✅ Companion images are already using local paths')
@@ -55,7 +55,7 @@ export async function initializeCompanionImages() {
       // Update each companion with the correct image path based on their ID
       const updates = companions.map((companion: any) => ({
         id: companion.id,
-        image: `/images/users/id${companion.id}-image.jpg`
+        image: `./src/images/users/id${companion.id}-image.jpg`
       }))
 
       let successCount = 0
