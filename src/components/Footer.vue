@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import logo from '../assets/logo.svg'
+import heart from '../images/heart.svg'
 
 const router = useRouter()
 
@@ -17,7 +17,7 @@ const navigate = (path: string) => {
         <!-- Logo and description -->
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-2 group cursor-pointer hover:opacity-70 transition-opacity">
-            <img :src="logo" alt="Рядом" class="w-10 h-10" />
+            <img :src="heart" alt="Рядом" class="w-10 h-10" />
             <span class="text-xl font-bold text-secondary">Рядом</span>
           </div>
           <p class="text-sm text-secondary/60 leading-relaxed">
