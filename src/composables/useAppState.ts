@@ -712,6 +712,29 @@ export const endSession = async (chatId: string) => {
   }
 }
 
+// ============ TOPICS ============
+export const topics = ref<string[]>([])
+
+export const loadTopics = async () => {
+  try {
+    const { data, error: loadError } = await supabase
+      .from('companion_topics')
+      .select('topic')
+      .order('topic', { ascending: true })
+
+    if (loadError) throw loadError
+
+    // Get unique topics
+    const uniqueTopics = [...new Set(data?.map(item => item.topic) || [])]
+    topics.value = uniqueTopics
+    return uniqueTopics
+  } catch (err) {
+    console.error('Error loading topics:', err)
+    topics.value = []
+    return []
+  }
+}
+
 // ============ SPECIALIZATIONS ============
 export interface Specialization {
   id: number

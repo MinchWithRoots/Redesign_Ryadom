@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { companions, chats, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import { companions, chats, sendConnectionRequest, loadCompanions, topics, loadTopics } from '../composables/useAppState'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 
@@ -18,16 +18,6 @@ const filters = ref({
   specialization: 'all',
 })
 
-// Extract unique topics from companions
-const topics = computed(() => {
-  const uniqueTopics = new Set<string>()
-  companions.value.forEach(companion => {
-    if (companion.topics && Array.isArray(companion.topics)) {
-      companion.topics.forEach(topic => uniqueTopics.add(topic))
-    }
-  })
-  return Array.from(uniqueTopics)
-})
 
 // Extract unique specializations from companions
 const specializations = computed(() => {
@@ -83,9 +73,9 @@ const filteredCompanions = computed(() => {
 
 onMounted(async () => {
   try {
-    await loadCompanions()
+    await Promise.all([loadCompanions(), loadTopics()])
   } catch (err) {
-    console.error('Failed to load companions:', err)
+    console.error('Failed to load companions or topics:', err)
   }
 })
 
