@@ -9,9 +9,9 @@ router.get('/', async (req, res) => {
     const { ageMin = 18, ageMax = 65, experience, topic } = req.query
 
     let query = `
-      SELECT DISTINCT c.id, c.name, c.age, c.specialization, c.experience, c.image, c.rating, c.reviews, c.bio
+      SELECT c.id, c.name, c.age, c.experience, c.image, c.bio, c.topics,
+             c.created_at, c.updated_at
       FROM companions c
-      LEFT JOIN companion_topics ct ON c.id = ct.companion_id
       WHERE c.age >= $1 AND c.age <= $2
     `
     const params = [ageMin, ageMax]
@@ -23,18 +23,30 @@ router.get('/', async (req, res) => {
     }
 
     if (topic) {
-      query += ` AND ct.topic = $${params.length + 1}`
-      params.push(topic)
+      // Filter by topic name - find topic ID first
+      const topicResult = await pool.query('SELECT id FROM companion_topics WHERE name = $1', [topic])
+      if (topicResult.rows.length > 0) {
+        const topicId = topicResult.rows[0].id
+        query += ` AND c.topics @> $${params.length + 1}::jsonb`
+        params.push(JSON.stringify([topicId]))
+      }
     }
 
-    query += ' ORDER BY c.rating DESC'
+    query += ' ORDER BY c.id DESC'
 
     const result = await pool.query(query, params)
 
-    // Get topics for each companion
+    // Convert topic IDs to topic names
+    const topicsResult = await pool.query('SELECT id, name FROM companion_topics')
+    const topicMap = new Map()
+    topicsResult.rows.forEach(t => topicMap.set(t.id, t.name))
+
+    // Transform each companion's topics array
     for (let companion of result.rows) {
-      const topicsResult = await pool.query('SELECT topic FROM companion_topics WHERE companion_id = $1', [companion.id])
-      companion.topics = topicsResult.rows.map(row => row.topic)
+      const topicIds = companion.topics || []
+      companion.topics = topicIds
+        .map(id => topicMap.get(id))
+        .filter(name => name !== undefined)
     }
 
     res.json(result.rows)
@@ -55,8 +67,16 @@ router.get('/:id', async (req, res) => {
     }
 
     const companion = result.rows[0]
-    const topicsResult = await pool.query('SELECT topic FROM companion_topics WHERE companion_id = $1', [id])
-    companion.topics = topicsResult.rows.map(row => row.topic)
+
+    // Get topic names from topic IDs
+    const topicsResult = await pool.query('SELECT id, name FROM companion_topics')
+    const topicMap = new Map()
+    topicsResult.rows.forEach(t => topicMap.set(t.id, t.name))
+
+    const topicIds = companion.topics || []
+    companion.topics = topicIds
+      .map(id => topicMap.get(id))
+      .filter(name => name !== undefined)
 
     res.json(companion)
   } catch (error) {
