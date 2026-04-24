@@ -88,6 +88,7 @@ onMounted(async () => {
 
     // Extract topics from loaded companions
     const extractedTopics = extractTopicsFromCompanions()
+
     if (extractedTopics.length > 0) {
       // Update topics with extracted values
       topics.value = extractedTopics

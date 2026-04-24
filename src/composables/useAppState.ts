@@ -259,29 +259,57 @@ export const filterCompanions = async (filters: {
 
     if (filterError) throw filterError
 
+    // Load ALL topics once for efficiency
+    const { data: allTopics } = await supabase
+      .from('companion_topics')
+      .select('*')
+      .limit(1000)
+
+    // Create a map of topics by companion_id
+    const topicsByCompanionId = new Map<any, string[]>()
+    if (allTopics) {
+      allTopics.forEach((topicRecord: any) => {
+        const cid = topicRecord.companion_id
+        if (!topicsByCompanionId.has(cid)) {
+          topicsByCompanionId.set(cid, [])
+        }
+        topicsByCompanionId.get(cid)?.push(topicRecord.topic)
+      })
+    }
+
     // Fetch companion topics and specializations separately
     const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
-          const companionId = parseInt(companion.id.toString())
-
-          const { data: topicsData, error: topicsError } = await supabase
-            .from('companion_topics')
-            .select('topic')
-            .eq('companion_id', companionId)
-
-          if (topicsError) {
-            console.error(`Error fetching topics for companion ${companionId}:`, topicsError)
+          // Try to match by raw ID first, then by parsed
+          let topicsData = topicsByCompanionId.get(companion.id) || []
+          if (topicsData.length === 0) {
+            const companionId = parseInt(companion.id.toString())
+            topicsData = topicsByCompanionId.get(companionId) || []
           }
 
-          const { data: specData } = await supabase
+          // Try both raw ID and parsed ID for specializations
+          let specData = null
+          const specResult1 = await supabase
             .from('companion_specializations')
             .select('specializations(id, name)')
-            .eq('companion_id', companionId)
+            .eq('companion_id', companion.id)
+
+          specData = specResult1.data
+
+          // If no results, try with parsed ID
+          if (!specData || specData.length === 0) {
+            const companionId = parseInt(companion.id.toString())
+            const specResult2 = await supabase
+              .from('companion_specializations')
+              .select('specializations(id, name)')
+              .eq('companion_id', companionId)
+            specData = specResult2.data
+          }
 
           return {
             ...companion,
-            topics: topicsData ? topicsData.map((t: any) => t.topic) : [],
+            topics: topicsData,
             specializations: specData ? specData.map((s: any) => s.specializations) : []
           }
         } catch (err) {
@@ -327,29 +355,57 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
+    // First, load ALL companion topics for mapping
+    const { data: allTopics } = await supabase
+      .from('companion_topics')
+      .select('*')
+      .limit(1000)
+
+    // Create a map of topics by companion_id for faster lookup
+    const topicsByCompanionId = new Map<any, string[]>()
+    if (allTopics && allTopics.length > 0) {
+      allTopics.forEach((topicRecord: any) => {
+        const cid = topicRecord.companion_id
+        if (!topicsByCompanionId.has(cid)) {
+          topicsByCompanionId.set(cid, [])
+        }
+        topicsByCompanionId.get(cid)?.push(topicRecord.topic)
+      })
+    }
+
     // Fetch companion topics and specializations separately
     const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
-          const companionId = parseInt(companion.id.toString())
-
-          const { data: topicsData, error: topicsError } = await supabase
-            .from('companion_topics')
-            .select('topic')
-            .eq('companion_id', companionId)
-
-          if (topicsError) {
-            console.error(`Error fetching topics for companion ${companionId}:`, topicsError)
+          // Try to match by raw ID first, then by parsed
+          let topicsData = topicsByCompanionId.get(companion.id) || []
+          if (topicsData.length === 0) {
+            const companionId = parseInt(companion.id.toString())
+            topicsData = topicsByCompanionId.get(companionId) || []
           }
 
-          const { data: specData } = await supabase
+          // Try both raw ID and parsed ID for specializations
+          let specData = null
+          const specResult1 = await supabase
             .from('companion_specializations')
             .select('specializations(id, name)')
-            .eq('companion_id', companionId)
+            .eq('companion_id', companion.id)
+
+          specData = specResult1.data
+
+          // If no results, try with parsed ID
+          if (!specData || specData.length === 0) {
+            const companionId = parseInt(companion.id.toString())
+            const specResult2 = await supabase
+              .from('companion_specializations')
+              .select('specializations(id, name)')
+              .eq('companion_id', companionId)
+            specData = specResult2.data
+          }
 
           return {
             ...companion,
-            topics: topicsData ? topicsData.map((t: any) => t.topic) : [],
+            topics: topicsData,
             specializations: specData ? specData.map((s: any) => s.specializations) : []
           }
         } catch (err) {
