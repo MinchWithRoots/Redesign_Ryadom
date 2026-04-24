@@ -10,6 +10,8 @@ export interface User {
   bio: string
   image?: string
   role?: string // 'user' or 'admin'
+  gender?: string
+  topics?: string[]
 }
 
 export interface CompanionTopic {
@@ -119,6 +121,8 @@ export const loadCurrentUser = async () => {
         email: userEmail,
         bio: '',
         role: 'user',
+        gender: undefined,
+        topics: [],
       }
       return currentUser.value
     }
@@ -131,6 +135,8 @@ export const loadCurrentUser = async () => {
       bio: profile.bio || '',
       image: profile.image,
       role: profile.role || 'user',
+      gender: profile.gender,
+      topics: profile.topics || [],
     }
 
     return profile
@@ -145,17 +151,31 @@ export const loadCurrentUser = async () => {
 }
 
 // User operations
-export const updateUserProfile = async (updates: { bio: string; image?: string }) => {
+export const updateUserProfile = async (updates: {
+  bio?: string
+  image?: string
+  age?: number
+  gender?: string
+  topics?: string[]
+}) => {
   try {
     isLoading.value = true
     error.value = ''
 
     if (!currentUser.value) throw new Error('No user logged in')
 
+    // Build update object, filtering out undefined values
+    const updateData: Record<string, any> = {}
+    if (updates.bio !== undefined) updateData.bio = updates.bio
+    if (updates.image !== undefined) updateData.image = updates.image
+    if (updates.age !== undefined) updateData.age = updates.age
+    if (updates.gender !== undefined) updateData.gender = updates.gender
+    if (updates.topics !== undefined) updateData.topics = updates.topics
+
     // Update by email (not by id) to match our user lookup strategy
     const { data: profile, error: updateProfileError } = await supabase
       .from('users')
-      .update(updates)
+      .update(updateData)
       .eq('email', currentUser.value.email)
       .select()
       .single()

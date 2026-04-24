@@ -14,6 +14,12 @@ const routes = [
     component: () => import('../views/SearchView.vue'),
   },
   {
+    path: '/profile-setup',
+    name: 'ProfileSetup',
+    component: () => import('../views/ProfileSetupView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('../views/ProfileView.vue'),
@@ -55,15 +61,26 @@ router.beforeEach((to, from, next) => {
   const userIsLoggedIn = isLoggedIn()
   const userIsAdmin = isAdmin()
 
+  // Check if route requires authentication
   if (requiresAuth && !userIsLoggedIn) {
     next('/auth')
-  } else if (requiresAdmin && !userIsAdmin) {
-    next('/profile')
-  } else if (to.path === '/auth' && userIsLoggedIn) {
-    next('/profile')
-  } else {
-    next()
+    return
   }
+
+  // Check if route requires admin role
+  if (requiresAdmin && !userIsAdmin) {
+    next('/profile')
+    return
+  }
+
+  // If user is logged in and tries to access auth page (but not profile-setup), redirect to home
+  if (to.path === '/auth' && userIsLoggedIn) {
+    next('/')
+    return
+  }
+
+  // Allow navigation
+  next()
 })
 
 export default router
