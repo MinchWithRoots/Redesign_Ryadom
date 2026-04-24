@@ -71,11 +71,29 @@ const filteredCompanions = computed(() => {
   return filteredCompanionList
 })
 
+// Extract unique topics from loaded companions
+const extractTopicsFromCompanions = () => {
+  const uniqueTopicsSet = new Set<string>()
+  companions.value.forEach(companion => {
+    if (companion.topics && Array.isArray(companion.topics)) {
+      companion.topics.forEach(topic => uniqueTopicsSet.add(topic))
+    }
+  })
+  return Array.from(uniqueTopicsSet).sort()
+}
+
 onMounted(async () => {
   try {
-    await Promise.all([loadCompanions(), loadTopics()])
+    await loadCompanions()
+
+    // Extract topics from loaded companions
+    const extractedTopics = extractTopicsFromCompanions()
+    if (extractedTopics.length > 0) {
+      // Update topics with extracted values
+      topics.value = extractedTopics
+    }
   } catch (err) {
-    console.error('Failed to load companions or topics:', err)
+    console.error('Failed to load companions:', err)
   }
 })
 

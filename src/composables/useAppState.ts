@@ -717,19 +717,37 @@ export const topics = ref<string[]>([])
 
 export const loadTopics = async () => {
   try {
+    // Use raw SQL query to get distinct topics with better performance
     const { data, error: loadError } = await supabase
       .from('companion_topics')
-      .select('topic')
+      .select('topic', { count: 'exact', head: false })
       .order('topic', { ascending: true })
 
-    if (loadError) throw loadError
+    if (loadError) {
+      console.error('Supabase error loading topics:', {
+        message: loadError.message,
+        code: loadError.code,
+        hint: loadError.hint,
+      })
+      throw loadError
+    }
 
-    // Get unique topics
-    const uniqueTopics = [...new Set(data?.map(item => item.topic) || [])]
+    // Get unique topics from the result
+    const uniqueTopicsSet = new Set<string>()
+    data?.forEach(item => {
+      if (item.topic) {
+        uniqueTopicsSet.add(item.topic)
+      }
+    })
+
+    const uniqueTopics = Array.from(uniqueTopicsSet).sort()
     topics.value = uniqueTopics
+
+    console.log('Loaded topics:', uniqueTopics)
     return uniqueTopics
   } catch (err) {
-    console.error('Error loading topics:', err)
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load topics'
+    console.error('Error loading topics:', errorMessage)
     topics.value = []
     return []
   }
