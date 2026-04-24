@@ -1,26 +1,17 @@
--- Add missing foreign key constraints
+-- Remove the problematic FK constraints first
+-- This allows us to clean up and add proper constraints later
 
--- 1. Add FK to companion_topics
 ALTER TABLE public.companion_topics
-ADD CONSTRAINT companion_topics_companion_id_fkey 
-FOREIGN KEY (companion_id) REFERENCES public.companions(id) ON DELETE CASCADE;
+DROP CONSTRAINT IF EXISTS companion_topics_companion_id_fkey;
 
--- 2. Add FK to favorites (companion_id)
 ALTER TABLE public.favorites
-ADD CONSTRAINT favorites_companion_id_fkey 
-FOREIGN KEY (companion_id) REFERENCES public.companions(id) ON DELETE CASCADE;
+DROP CONSTRAINT IF EXISTS favorites_companion_id_fkey;
 
--- 3. Add FK to chats (companion_id)
 ALTER TABLE public.chats
-ADD CONSTRAINT chats_companion_id_fkey 
-FOREIGN KEY (companion_id) REFERENCES public.companions(id) ON DELETE CASCADE;
+DROP CONSTRAINT IF EXISTS chats_companion_id_fkey;
 
--- 4. Add FK to reviews (companion_id)
 ALTER TABLE public.reviews
-ADD CONSTRAINT reviews_companion_id_fkey 
-FOREIGN KEY (companion_id) REFERENCES public.companions(id) ON DELETE CASCADE;
+DROP CONSTRAINT IF EXISTS reviews_companion_id_fkey;
 
--- 5. Add FK to reports (companion_id)
 ALTER TABLE public.reports
-ADD CONSTRAINT reports_companion_id_fkey 
-FOREIGN KEY (companion_id) REFERENCES public.companions(id) ON DELETE CASCADE;
+DROP CONSTRAINT IF EXISTS reports_companion_id_fkey;
