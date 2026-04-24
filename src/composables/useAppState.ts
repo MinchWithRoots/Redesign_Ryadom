@@ -277,48 +277,17 @@ export const filterCompanions = async (filters: {
       })
     }
 
-    // Fetch companion topics and specializations separately
-    const companionsWithData = await Promise.all(
-      (result || []).map(async (companion: any) => {
-        try {
-          // Match by string ID
-          const companionIdStr = String(companion.id)
-          const topicsData = topicsByCompanionId.get(companionIdStr) || []
+    // Attach topics to companions (don't fetch specializations here)
+    const companionsWithData = (result || []).map((companion: any) => {
+      const companionIdStr = String(companion.id)
+      const topicsData = topicsByCompanionId.get(companionIdStr) || []
 
-          // Try both raw ID and parsed ID for specializations
-          let specData = null
-          const specResult1 = await supabase
-            .from('companion_specializations')
-            .select('specializations(id, name)')
-            .eq('companion_id', companion.id)
-
-          specData = specResult1.data
-
-          // If no results, try with parsed ID
-          if (!specData || specData.length === 0) {
-            const companionId = parseInt(companion.id.toString())
-            const specResult2 = await supabase
-              .from('companion_specializations')
-              .select('specializations(id, name)')
-              .eq('companion_id', companionId)
-            specData = specResult2.data
-          }
-
-          return {
-            ...companion,
-            topics: topicsData,
-            specializations: specData ? specData.map((s: any) => s.specializations) : []
-          }
-        } catch (err) {
-          console.error(`Error fetching data for companion ${companion.id}:`, err)
-          return {
-            ...companion,
-            topics: [],
-            specializations: []
-          }
-        }
-      })
-    )
+      return {
+        ...companion,
+        topics: topicsData,
+        specializations: companion.specializations || []
+      }
+    })
 
     companions.value = companionsWithData
     return companionsWithData
@@ -374,48 +343,19 @@ export const loadCompanions = async () => {
 
     console.log('Topics map created:', { mapSize: topicsByCompanionId.size, topicsMap: Array.from(topicsByCompanionId.entries()) })
 
-    // Fetch companion topics and specializations separately
-    const companionsWithData = await Promise.all(
-      (result || []).map(async (companion: any) => {
-        try {
-          // Match by string ID
-          const companionIdStr = String(companion.id)
-          const topicsData = topicsByCompanionId.get(companionIdStr) || []
+    // Attach topics to companions (don't fetch specializations here)
+    const companionsWithData = (result || []).map((companion: any) => {
+      const companionIdStr = String(companion.id)
+      const topicsData = topicsByCompanionId.get(companionIdStr) || []
 
-          // Try both raw ID and parsed ID for specializations
-          let specData = null
-          const specResult1 = await supabase
-            .from('companion_specializations')
-            .select('specializations(id, name)')
-            .eq('companion_id', companion.id)
+      return {
+        ...companion,
+        topics: topicsData,
+        specializations: companion.specializations || []
+      }
+    })
 
-          specData = specResult1.data
-
-          // If no results, try with parsed ID
-          if (!specData || specData.length === 0) {
-            const companionId = parseInt(companion.id.toString())
-            const specResult2 = await supabase
-              .from('companion_specializations')
-              .select('specializations(id, name)')
-              .eq('companion_id', companionId)
-            specData = specResult2.data
-          }
-
-          return {
-            ...companion,
-            topics: topicsData,
-            specializations: specData ? specData.map((s: any) => s.specializations) : []
-          }
-        } catch (err) {
-          console.error(`Error fetching data for companion ${companion.id}:`, err)
-          return {
-            ...companion,
-            topics: [],
-            specializations: []
-          }
-        }
-      })
-    )
+    console.log('Companions with data loaded:', { count: companionsWithData.length, sample: companionsWithData[0] })
 
     companions.value = companionsWithData
     return companionsWithData
