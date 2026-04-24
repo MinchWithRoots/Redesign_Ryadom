@@ -265,11 +265,11 @@ export const filterCompanions = async (filters: {
       .select('*')
       .limit(1000)
 
-    // Create a map of topics by companion_id
-    const topicsByCompanionId = new Map<any, string[]>()
+    // Create a map of topics by companion_id (normalize keys to strings)
+    const topicsByCompanionId = new Map<string, string[]>()
     if (allTopics) {
       allTopics.forEach((topicRecord: any) => {
-        const cid = topicRecord.companion_id
+        const cid = String(topicRecord.companion_id)
         if (!topicsByCompanionId.has(cid)) {
           topicsByCompanionId.set(cid, [])
         }
@@ -281,12 +281,9 @@ export const filterCompanions = async (filters: {
     const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
-          // Try to match by raw ID first, then by parsed
-          let topicsData = topicsByCompanionId.get(companion.id) || []
-          if (topicsData.length === 0) {
-            const companionId = parseInt(companion.id.toString())
-            topicsData = topicsByCompanionId.get(companionId) || []
-          }
+          // Match by string ID
+          const companionIdStr = String(companion.id)
+          const topicsData = topicsByCompanionId.get(companionIdStr) || []
 
           // Try both raw ID and parsed ID for specializations
           let specData = null
@@ -361,11 +358,11 @@ export const loadCompanions = async () => {
       .select('*')
       .limit(1000)
 
-    // Create a map of topics by companion_id for faster lookup
-    const topicsByCompanionId = new Map<any, string[]>()
+    // Create a map of topics by companion_id for faster lookup (normalize keys to strings)
+    const topicsByCompanionId = new Map<string, string[]>()
     if (allTopics && allTopics.length > 0) {
       allTopics.forEach((topicRecord: any) => {
-        const cid = topicRecord.companion_id
+        const cid = String(topicRecord.companion_id)
         if (!topicsByCompanionId.has(cid)) {
           topicsByCompanionId.set(cid, [])
         }
@@ -377,12 +374,9 @@ export const loadCompanions = async () => {
     const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
-          // Try to match by raw ID first, then by parsed
-          let topicsData = topicsByCompanionId.get(companion.id) || []
-          if (topicsData.length === 0) {
-            const companionId = parseInt(companion.id.toString())
-            topicsData = topicsByCompanionId.get(companionId) || []
-          }
+          // Match by string ID
+          const companionIdStr = String(companion.id)
+          const topicsData = topicsByCompanionId.get(companionIdStr) || []
 
           // Try both raw ID and parsed ID for specializations
           let specData = null
