@@ -25,6 +25,11 @@ const getErrorMessage = (err: any): string => {
   if (err?.message) return err.message
   if (err?.error_description) return err.error_description
   if (err?.msg) return err.msg
+
+  // For Supabase errors, try to extract from response
+  if (err?.response?.data?.msg) return err.response.data.msg
+  if (err?.response?.data?.error_description) return err.response.data.error_description
+
   return 'An unknown error occurred'
 }
 
@@ -34,27 +39,42 @@ export const signUp = async (email: string, password: string, name: string) => {
     isLoading.value = true
     error.value = null
 
+    // Normalize email
+    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedName = name.trim()
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(normalizedEmail)) {
+      throw new Error('Email address is invalid. Please check the format.')
+    }
+
+    console.log('Attempting sign up with email:', normalizedEmail)
+
     // Sign up with Supabase Auth
     const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: {
-          full_name: name,
+          full_name: normalizedName,
         },
       },
     })
 
     if (signUpError) {
       const errorMessage = getErrorMessage(signUpError)
-      console.error('Sign up error:', {
+      console.error('Sign up error details:', {
         message: errorMessage,
         code: signUpError.code,
         status: signUpError.status,
+        fullError: signUpError,
       })
       throw new Error(errorMessage)
     }
     if (!data.user) throw new Error('Failed to create user')
+
+    console.log('Supabase Auth user created successfully')
 
     // Note: For Supabase, the user ID is auto-generated (BIGSERIAL)
     // We only store the email and name, other fields use defaults
@@ -62,8 +82,8 @@ export const signUp = async (email: string, password: string, name: string) => {
       .from('users')
       .insert([
         {
-          email,
-          name,
+          email: normalizedEmail,
+          name: normalizedName,
         },
       ])
 
@@ -72,9 +92,12 @@ export const signUp = async (email: string, password: string, name: string) => {
       console.error('Error creating user profile:', {
         message: errorMessage,
         code: profileError.code,
+        fullError: profileError,
       })
       throw new Error(errorMessage)
     }
+
+    console.log('User profile created in database')
 
     // Fetch the created user profile to get the correct ID
     const { data: profile, error: fetchError } = await supabase

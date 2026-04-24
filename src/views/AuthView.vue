@@ -70,17 +70,29 @@ const handleRegister = async () => {
   errorMessage.value = ''
   successMessage.value = ''
 
-  if (!registerForm.value.fullName || !registerForm.value.email || !registerForm.value.password) {
+  // Trim whitespace from inputs
+  const email = registerForm.value.email.trim().toLowerCase()
+  const fullName = registerForm.value.fullName.trim()
+  const password = registerForm.value.password
+
+  if (!fullName || !email || !password) {
     errorMessage.value = 'Пожалуйста, заполните все поля'
     return
   }
 
-  if (registerForm.value.password !== registerForm.value.confirmPassword) {
+  // Simple email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    errorMessage.value = 'Пожалуйста, введите корректный email адрес'
+    return
+  }
+
+  if (password !== registerForm.value.confirmPassword) {
     errorMessage.value = 'Пароли не совпадают'
     return
   }
 
-  if (registerForm.value.password.length < 6) {
+  if (password.length < 6) {
     errorMessage.value = 'Пароль должен быть не менее 6 символов'
     return
   }
@@ -92,7 +104,7 @@ const handleRegister = async () => {
 
   isLoading.value = true
   try {
-    await signUp(registerForm.value.email, registerForm.value.password, registerForm.value.fullName)
+    await signUp(email, password, fullName)
     successMessage.value = 'Аккаунт создан успешно!'
     // Clear form
     registerForm.value = {
