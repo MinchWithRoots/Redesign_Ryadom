@@ -263,15 +263,21 @@ export const filterCompanions = async (filters: {
     const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
-          const { data: topicsData } = await supabase
+          const companionId = parseInt(companion.id.toString())
+
+          const { data: topicsData, error: topicsError } = await supabase
             .from('companion_topics')
             .select('topic')
-            .eq('companion_id', companion.id)
+            .eq('companion_id', companionId)
+
+          if (topicsError) {
+            console.error(`Error fetching topics for companion ${companionId}:`, topicsError)
+          }
 
           const { data: specData } = await supabase
             .from('companion_specializations')
             .select('specializations(id, name)')
-            .eq('companion_id', companion.id)
+            .eq('companion_id', companionId)
 
           return {
             ...companion,
@@ -325,15 +331,21 @@ export const loadCompanions = async () => {
     const companionsWithData = await Promise.all(
       (result || []).map(async (companion: any) => {
         try {
-          const { data: topicsData } = await supabase
+          const companionId = parseInt(companion.id.toString())
+
+          const { data: topicsData, error: topicsError } = await supabase
             .from('companion_topics')
             .select('topic')
-            .eq('companion_id', companion.id)
+            .eq('companion_id', companionId)
+
+          if (topicsError) {
+            console.error(`Error fetching topics for companion ${companionId}:`, topicsError)
+          }
 
           const { data: specData } = await supabase
             .from('companion_specializations')
             .select('specializations(id, name)')
-            .eq('companion_id', companion.id)
+            .eq('companion_id', companionId)
 
           return {
             ...companion,
