@@ -9,7 +9,8 @@
     "dev": "nodemon server.js",
     "init-db": "node init-db.js",
     "test-connection": "node test-connection.js",
-    "migrate-topics-jsonb": "node migrate-topics-jsonb.js"
+    "migrate-topics-jsonb": "node migrate-topics-jsonb.js",
+    "migrate-fix-users": "node migrate-fix-users-table.js"
   },
   "keywords": [],
   "author": "",
