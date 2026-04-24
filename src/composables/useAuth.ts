@@ -76,12 +76,12 @@ export const signUp = async (email: string, password: string, name: string) => {
 
     console.log('Supabase Auth user created successfully')
 
-    // Note: For Supabase, the user ID is auto-generated (BIGSERIAL)
-    // We only store the email and name, other fields use defaults
+    // Create user profile with the same ID as auth.users
     const { error: profileError } = await supabase
       .from('users')
       .insert([
         {
+          id: data.user.id,
           email: normalizedEmail,
           name: normalizedName,
         },
