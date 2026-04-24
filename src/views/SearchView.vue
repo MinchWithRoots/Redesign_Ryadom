@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { companions, chats, sendConnectionRequest, loadCompanions, topics, loadTopics } from '../composables/useAppState'
 import { getAgeForm } from '../utils/ageForm'
@@ -71,30 +71,15 @@ const filteredCompanions = computed(() => {
   return filteredCompanionList
 })
 
-// Extract unique topics from loaded companions
-const extractTopicsFromCompanions = () => {
-  const uniqueTopicsSet = new Set<string>()
-  companions.value.forEach(companion => {
-    if (companion.topics && Array.isArray(companion.topics)) {
-      companion.topics.forEach(topic => uniqueTopicsSet.add(topic))
-    }
-  })
-  return Array.from(uniqueTopicsSet).sort()
-}
 
 onMounted(async () => {
   try {
-    await loadCompanions()
-
-    // Extract topics from loaded companions
-    const extractedTopics = extractTopicsFromCompanions()
-
-    if (extractedTopics.length > 0) {
-      // Update topics with extracted values
-      topics.value = extractedTopics
-    }
+    await Promise.all([
+      loadCompanions(),
+      loadTopics()
+    ])
   } catch (err) {
-    console.error('Failed to load companions:', err)
+    console.error('Failed to load companions or topics:', err)
   }
 })
 
@@ -369,7 +354,7 @@ const navigateToProfile = (companionId: string | number) => {
                     </div>
                   </div>
                   <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-                  <p v-if="companion.specialization" class="text-xs text-primary font-semibold mb-3">Направление: {{ companion.specialization }}</p>
+                  <p v-if="companion.topics && companion.topics.length > 0" class="text-xs text-primary font-semibold mb-3">Темы: {{ companion.topics.join(', ') }}</p>
                   <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
                 </div>
 
