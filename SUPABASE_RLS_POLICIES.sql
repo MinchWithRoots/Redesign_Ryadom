@@ -57,6 +57,17 @@ WITH CHECK (id::text = auth.uid()::text);
 -- This explicitly allows authenticated users (including fresh signups) to insert.
 
 -- ============================================================================
+-- COMPANION TOPICS TABLE RLS POLICIES (Reference table - publicly readable)
+-- ============================================================================
+
+ALTER TABLE "public"."companion_topics" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow users to view all companion topics"
+ON "public"."companion_topics"
+FOR SELECT
+USING (true);
+
+-- ============================================================================
 -- COMPANIONS TABLE RLS POLICIES (for reference, if needed)
 -- ============================================================================
 
