@@ -353,10 +353,12 @@ export const loadCompanions = async () => {
     }
 
     // First, load ALL companion topics for mapping
-    const { data: allTopics } = await supabase
+    const { data: allTopics, error: topicsError } = await supabase
       .from('companion_topics')
       .select('*')
       .limit(1000)
+
+    console.log('Loaded companion_topics:', { allTopics, topicsError, count: allTopics?.length || 0 })
 
     // Create a map of topics by companion_id for faster lookup (normalize keys to strings)
     const topicsByCompanionId = new Map<string, string[]>()
@@ -369,6 +371,8 @@ export const loadCompanions = async () => {
         topicsByCompanionId.get(cid)?.push(topicRecord.topic)
       })
     }
+
+    console.log('Topics map created:', { mapSize: topicsByCompanionId.size, topicsMap: Array.from(topicsByCompanionId.entries()) })
 
     // Fetch companion topics and specializations separately
     const companionsWithData = await Promise.all(
@@ -780,10 +784,13 @@ export const topics = ref<string[]>([])
 export const loadTopics = async () => {
   try {
     // Use raw SQL query to get distinct topics with better performance
+    console.log('Starting to load topics from companion_topics table...')
+
     const { data, error: loadError } = await supabase
       .from('companion_topics')
-      .select('topic', { count: 'exact', head: false })
-      .order('topic', { ascending: true })
+      .select('*')
+
+    console.log('Raw topics data from Supabase:', { data, error: loadError })
 
     if (loadError) {
       console.error('Supabase error loading topics:', {
@@ -805,7 +812,8 @@ export const loadTopics = async () => {
     const uniqueTopics = Array.from(uniqueTopicsSet).sort()
     topics.value = uniqueTopics
 
-    console.log('Loaded topics:', uniqueTopics)
+    console.log('Processed unique topics:', uniqueTopics)
+    console.log('Topics ref value:', topics.value)
     return uniqueTopics
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load topics'
