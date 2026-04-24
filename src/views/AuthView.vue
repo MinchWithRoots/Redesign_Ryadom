@@ -105,7 +105,7 @@ const handleRegister = async () => {
     // Load current user from database
     await loadCurrentUser()
     setTimeout(() => {
-      router.push('/profile')
+      router.push('/profile-setup')
     }, 500)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка регистрации'
