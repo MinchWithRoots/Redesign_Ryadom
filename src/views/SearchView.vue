@@ -102,16 +102,16 @@ const resetFilters = async () => {
 const handleConnectionRequest = async (companionId: string | number) => {
   try {
     const chat = await sendConnectionRequest(companionId.toString())
-    showNotification.value = `Чат с ${selectedCompanion.value?.name} создан!`
+    showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
     setTimeout(() => {
       showNotification.value = ''
       selectedCompanion.value = null
-      // Navigate to the new chat
+      // Navigate to the pending chat to show status
       router.push(`/chat?id=${chat.id}`)
-    }, 500)
+    }, 1500)
   } catch (err) {
     console.error('Failed to send connection request:', err)
-    showNotification.value = 'Ошибка при создании чата'
+    showNotification.value = 'Ошибка при отправке запроса'
   }
 }
 
@@ -438,7 +438,7 @@ const navigateToProfile = (companionId: string | number) => {
           </div>
 
           <p class="text-xs text-secondary/60 text-center">
-            Ваш запрос будет отправлен {{ selectedCompanion.name }}. Они смогут ответить в течение 24 часов
+            Ваш запрос будет отправлен {{ selectedCompanion.name }}. Они смогут принять или отклонить в течение 24 часов. Общение начнется после принятия запроса.
           </p>
         </div>
       </div>

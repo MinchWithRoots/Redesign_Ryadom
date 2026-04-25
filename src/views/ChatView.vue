@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages } from '../composables/useAppState'
+import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages, acceptConnectionRequest, rejectConnectionRequest, currentUser } from '../composables/useAppState'
 import * as supabaseService from '../services/supabaseService'
 
 const router = useRouter()
@@ -14,6 +14,8 @@ const reportReason = ref('')
 const reportMessage = ref('')
 const isReporting = ref(false)
 const reportSuccess = ref('')
+const isAccepting = ref(false)
+const isRejecting = ref(false)
 
 const chatId = computed(() => (route.query.id as string) || null)
 
@@ -30,6 +32,18 @@ const currentCompanion = computed(() => {
     }
   }
   return null
+})
+
+const isPending = computed(() => chat.value?.status === 'pending')
+
+const isCompanionViewing = computed(() => {
+  // Check if current user is the companion (not the user who sent the request)
+  // Companions can be identified as users who are NOT the request sender
+  // In a pending chat, only the companion can accept/reject
+  if (!currentUser.value || !chat.value) return false
+
+  // If the current user is the one who sent the request, they're not the companion
+  return currentUser.value.id !== chat.value.user_id
 })
 
 const sendMessage = () => {
@@ -60,8 +74,8 @@ const handleReportUser = async () => {
 
   isReporting.value = true
   try {
-    const chat = getChatById(chatId.value)
-    if (!chat) {
+    const chatData = getChatById(chatId.value)
+    if (!chatData) {
       alert('Chat not found')
       return
     }
@@ -69,8 +83,8 @@ const handleReportUser = async () => {
     // Submit report to Supabase
     await supabaseService.submitReport(
       chatId.value,
-      chat.user_id,
-      chat.companion_id,
+      chatData.user_id,
+      chatData.companion_id,
       reportReason.value,
       reportMessage.value
     )
@@ -89,6 +103,43 @@ const handleReportUser = async () => {
     isReporting.value = false
   }
 }
+
+const handleAcceptRequest = async () => {
+  if (!chatId.value) return
+
+  isAccepting.value = true
+  try {
+    await acceptConnectionRequest(chatId.value)
+    // Show success message
+    reportSuccess.value = 'Вы приняли запрос! Начните общение.'
+    setTimeout(() => {
+      reportSuccess.value = ''
+    }, 2000)
+  } catch (err) {
+    console.error('Error accepting request:', err)
+    alert('Ошибка при принятии запроса')
+  } finally {
+    isAccepting.value = false
+  }
+}
+
+const handleRejectRequest = async () => {
+  if (!chatId.value) return
+
+  isRejecting.value = true
+  try {
+    await rejectConnectionRequest(chatId.value)
+    // Navigate back after rejection
+    setTimeout(() => {
+      router.push('/profile')
+    }, 500)
+  } catch (err) {
+    console.error('Error rejecting request:', err)
+    alert('Ошибка при отклонении запроса')
+  } finally {
+    isRejecting.value = false
+  }
+}
 </script>
 
 <template>
@@ -104,13 +155,25 @@ const handleReportUser = async () => {
               :alt="currentCompanion.name"
               class="w-12 h-12 rounded-full object-cover"
             />
-            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            <div
+              :class="[
+                'absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white',
+                isPending ? 'bg-yellow-500' : 'bg-green-500'
+              ]"
+            ></div>
           </div>
 
           <!-- Info -->
           <div>
             <h2 class="font-bold text-secondary">{{ currentCompanion.name }}</h2>
-            <p class="text-xs text-green-500 font-medium">{{ currentCompanion.status }}</p>
+            <p
+              :class="[
+                'text-xs font-medium',
+                isPending ? 'text-yellow-500' : 'text-green-500'
+              ]"
+            >
+              {{ isPending ? 'Запрос ожидает ответа' : 'Активный чат' }}
+            </p>
           </div>
         </div>
 
@@ -147,6 +210,58 @@ const handleReportUser = async () => {
           </button>
         </div>
       </div>
+
+      <!-- Pending Connection Request Banner (for companion) -->
+      <transition name="slide">
+        <div v-if="isPending && isCompanionViewing" class="bg-yellow-50 border border-yellow-200 rounded-3xl p-6 mb-6 shadow-card">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-secondary mb-2">Новый запрос на соединение</h3>
+              <p class="text-secondary/70 mb-4">
+                Пользователь хочет начать с вами общение. Вы можете принять или отклонить этот запрос.
+              </p>
+              <div class="flex gap-3">
+                <button
+                  @click="handleAcceptRequest"
+                  :disabled="isAccepting"
+                  class="px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span v-if="!isAccepting">Принять</span>
+                  <span v-else>Принимаю...</span>
+                </button>
+                <button
+                  @click="handleRejectRequest"
+                  :disabled="isRejecting"
+                  class="px-6 py-2 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span v-if="!isRejecting">Отклонить</span>
+                  <span v-else>Отклоняю...</span>
+                </button>
+              </div>
+            </div>
+            <svg class="w-6 h-6 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Pending Connection Request Banner (for requester) -->
+      <transition name="slide">
+        <div v-if="isPending && !isCompanionViewing" class="bg-blue-50 border border-blue-200 rounded-3xl p-6 mb-6 shadow-card">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-secondary mb-2">Запрос отправлен</h3>
+              <p class="text-secondary/70">
+                Ваш запрос на соединение отправлен {{ currentCompanion.name }}. Они ответят в течение 24 часов. Вы сможете начать общение как только они примут ваш запрос.
+              </p>
+            </div>
+            <svg class="w-6 h-6 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm6 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </div>
+      </transition>
 
       <!-- Session Ended Message -->
       <transition name="fade">
@@ -268,7 +383,7 @@ const handleReportUser = async () => {
       </div>
 
       <!-- Input Area -->
-      <div class="bg-white border border-border/50 rounded-3xl p-4 shadow-card">
+      <div v-if="!isPending" class="bg-white border border-border/50 rounded-3xl p-4 shadow-card">
         <div class="flex gap-3">
           <!-- Attachment Button -->
           <button class="flex-shrink-0 p-2 text-secondary/60 hover:text-secondary transition-colors">
@@ -303,6 +418,18 @@ const handleReportUser = async () => {
           Сессия завершится через 45 минут
         </p>
       </div>
+
+      <!-- Pending Status Info -->
+      <div v-else class="bg-yellow-50 border border-yellow-200 rounded-3xl p-4 shadow-card">
+        <p class="text-sm text-secondary text-center">
+          <span v-if="isCompanionViewing" class="font-medium">
+            Ожидается принятие запроса перед началом общения
+          </span>
+          <span v-else class="font-medium">
+            Ожидаем ответа от {{ currentCompanion.name }} на ваш запрос...
+          </span>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -334,5 +461,16 @@ div::-webkit-scrollbar-thumb:hover {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>

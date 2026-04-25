@@ -164,7 +164,7 @@ export async function createChat(userId: string, companionId: string) {
   try {
     const { data, error } = await supabase
       .from('chats')
-      .insert([{ user_id: userId, companion_id: companionId }])
+      .insert([{ user_id: userId, companion_id: companionId, status: 'pending' }])
       .select()
       .single()
 
@@ -173,6 +173,38 @@ export async function createChat(userId: string, companionId: string) {
   } catch (error) {
     console.error('Error creating chat:', error)
     return null
+  }
+}
+
+export async function acceptConnectionRequest(chatId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('chats')
+      .update({ status: 'active' })
+      .eq('id', chatId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error accepting connection request:', error)
+    return null
+  }
+}
+
+export async function rejectConnectionRequest(chatId: string) {
+  try {
+    const { error } = await supabase
+      .from('chats')
+      .delete()
+      .eq('id', chatId)
+
+    if (error) throw error
+    return true
+  } catch (error) {
+    console.error('Error rejecting connection request:', error)
+    return false
   }
 }
 

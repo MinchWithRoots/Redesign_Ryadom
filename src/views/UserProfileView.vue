@@ -38,24 +38,22 @@ const handleSendConnectionRequest = async () => {
   if (!companion.value) return
 
   try {
-    await sendConnectionRequest(companion.value.id)
+    const chat = await sendConnectionRequest(companion.value.id)
     hasRequestSent.value = true
     showNotification.value = `Запрос отправлен ${companion.value.name}!`
     setTimeout(() => {
       showNotification.value = ''
-    }, 3000)
+      // Navigate to chat to show pending status
+      router.push(`/chat?id=${chat.id}`)
+    }, 1500)
   } catch (err) {
     console.error('Error sending connection request:', err)
+    showNotification.value = 'Ошибка при отправке запроса'
   }
 }
 
 const goBack = () => {
   router.back()
-}
-
-const navigateToChat = () => {
-  // After connection request, user can navigate to chat
-  router.push('/profile?tab=chats')
 }
 </script>
 
@@ -122,18 +120,10 @@ const navigateToChat = () => {
             <!-- Action Buttons -->
             <div class="space-y-3">
               <button
-                v-if="!hasRequestSent"
                 @click="handleSendConnectionRequest"
                 class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
               >
                 Предложить связь
-              </button>
-              <button
-                v-else
-                @click="navigateToChat"
-                class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-              >
-                Перейти в чаты
               </button>
               <button
                 @click="goBack"

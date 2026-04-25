@@ -427,7 +427,7 @@ onMounted(async () => {
                     <div
                       :class="[
                         'absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white',
-                        chat.status === 'active' ? 'bg-green-500' : 'bg-secondary/30'
+                        chat.status === 'active' ? 'bg-green-500' : chat.status === 'pending' ? 'bg-yellow-500' : 'bg-secondary/30'
                       ]"
                     ></div>
                   </div>
@@ -436,7 +436,13 @@ onMounted(async () => {
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                       <h3 class="font-bold text-secondary">{{ chat.name }}</h3>
-                      <span v-if="chat.unread_count > 0" class="ml-auto px-2 py-1 bg-primary text-white text-xs font-bold rounded-full">
+                      <span
+                        v-if="chat.status === 'pending'"
+                        class="ml-auto px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full"
+                      >
+                        Ожидает
+                      </span>
+                      <span v-else-if="chat.unread_count > 0" class="ml-auto px-2 py-1 bg-primary text-white text-xs font-bold rounded-full">
                         {{ chat.unread_count }}
                       </span>
                     </div>

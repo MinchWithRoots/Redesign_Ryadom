@@ -44,7 +44,7 @@ export interface Chat {
   time: string
   unread_count: number
   image: string
-  status: 'active' | 'offline'
+  status: 'active' | 'offline' | 'pending'
   companion_id: string
   user_id: string
   created_at: string
@@ -450,13 +450,14 @@ export const sendConnectionRequest = async (companionId: string | number) => {
 
     const companionIdStr = companionId.toString()
 
-    // Create chat
+    // Create chat with 'pending' status
     const { data: chat, error: createChatError } = await supabase
       .from('chats')
       .insert([
         {
           user_id: currentUser.value.id,
           companion_id: parseInt(companionIdStr),
+          status: 'pending',
         },
       ])
       .select()
@@ -470,11 +471,11 @@ export const sendConnectionRequest = async (companionId: string | number) => {
     const newChat: Chat = {
       id: chat.id,
       name: selectedCompanion?.name || '',
-      lastMessage: 'Новое соединение',
+      lastMessage: 'Запрос на соединение отправлен',
       time: 'только что',
       unread_count: 0,
       image: selectedCompanion?.image || '',
-      status: 'active' as const,
+      status: 'pending' as const,
       companion_id: companionIdStr,
       user_id: currentUser.value.id,
       created_at: chat.created_at,
@@ -783,6 +784,121 @@ export const endSession = async (chatId: string) => {
     error.value = errorMessage
     console.error('End session error:', err)
     throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Connection request operations
+export const acceptConnectionRequest = async (chatId: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    const { error: acceptError } = await supabase
+      .from('chats')
+      .update({ status: 'active' })
+      .eq('id', chatId)
+
+    if (acceptError) throw acceptError
+
+    const currentChat = getChatById(chatId)
+    if (currentChat) {
+      currentChat.status = 'active'
+      currentChat.lastMessage = 'Запрос принят. Начните общение!'
+    }
+
+    return true
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to accept connection request'
+    error.value = errorMessage
+    console.error('Accept connection request error:', err)
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const rejectConnectionRequest = async (chatId: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    const { error: deleteError } = await supabase
+      .from('chats')
+      .delete()
+      .eq('id', chatId)
+
+    if (deleteError) throw deleteError
+
+    const chatIndex = chats.value.findIndex(chatItem => chatItem.id === chatId)
+    if (chatIndex > -1) {
+      chats.value.splice(chatIndex, 1)
+    }
+
+    return true
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to reject connection request'
+    error.value = errorMessage
+    console.error('Reject connection request error:', err)
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const loadIncomingConnectionRequests = async (companionId: number) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    // Get all chats where this user is a companion and status is 'pending'
+    const { data: result, error: loadError } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('companion_id', companionId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+
+    if (loadError) {
+      console.error('Supabase error loading incoming requests:', {
+        message: loadError.message,
+        code: loadError.code,
+        hint: loadError.hint,
+      })
+      throw loadError
+    }
+
+    // Fetch user info for each request
+    const requestsWithUsers = await Promise.all(
+      (result || []).map(async (chat: any) => {
+        try {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, name, image, bio')
+            .eq('id', chat.user_id)
+            .single()
+
+          return {
+            ...chat,
+            userInfo: userData,
+          }
+        } catch (err) {
+          console.error(`Error fetching user info for chat ${chat.id}:`, err)
+          return {
+            ...chat,
+            userInfo: null,
+          }
+        }
+      })
+    )
+
+    return requestsWithUsers
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load incoming requests'
+    error.value = errorMessage
+    console.error('Load incoming requests error:', errorMessage)
+    return []
   } finally {
     isLoading.value = false
   }
