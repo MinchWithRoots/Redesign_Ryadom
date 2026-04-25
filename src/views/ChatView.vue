@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages } from '../composables/useAppState'
 import * as supabaseService from '../services/supabaseService'
@@ -14,12 +14,13 @@ const reportReason = ref('')
 const reportMessage = ref('')
 const isReporting = ref(false)
 const reportSuccess = ref('')
+const isLoadingMessages = ref(false)
 
 const chatId = computed(() => (route.query.id as string) || null)
 
 const chat = computed(() => getChatById(chatId.value))
 
-const chatMessages = computed(() => getChatMessages(chatId.value))
+const chatMessages = computed(() => messages.value)
 
 const currentCompanion = computed(() => {
   if (chat.value) {
@@ -30,6 +31,29 @@ const currentCompanion = computed(() => {
     }
   }
   return null
+})
+
+const loadMessages = async () => {
+  if (chatId.value) {
+    isLoadingMessages.value = true
+    try {
+      await getChatMessages(chatId.value)
+    } catch (err) {
+      console.error('Error loading messages:', err)
+    } finally {
+      isLoadingMessages.value = false
+    }
+  }
+}
+
+// Load messages when chatId changes
+watch(chatId, () => {
+  loadMessages()
+})
+
+// Load messages on mount
+onMounted(() => {
+  loadMessages()
 })
 
 const sendMessage = () => {
