@@ -352,9 +352,9 @@ const submitApplication = async () => {
                 </label>
                 <div class="w-full px-4 py-3 rounded-xl border border-border/50 bg-gray-50 flex items-center">
                   <span class="text-secondary font-medium">
-                    {{ form.gender || 'Не указан' }}
+                    {{ form.gender && (form.gender === 'Женщина' || form.gender === 'Мужчина') ? form.gender : (form.gender === 'male' ? 'Мужчина' : form.gender === 'female' ? 'Женщина' : 'Не указан') }}
                   </span>
-                  <span class="text-xs text-secondary/50 ml-2">(автоматически заполнено)</span>
+                  <span class="text-xs text-secondary/50 ml-2">(из профиля)</span>
                 </div>
               </div>
             </div>
