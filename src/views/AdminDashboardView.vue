@@ -274,7 +274,11 @@ const handleApproveApplication = async (applicationId: string | number) => {
     }
 
     successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
-    await loadApplications()
+    // Reload both applications and companions lists to reflect changes
+    await Promise.all([
+      loadApplications(),
+      loadCompanions()
+    ])
     setTimeout(() => (successMessage.value = ''), 3000)
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Неизвестная ошибка'
