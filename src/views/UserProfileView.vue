@@ -155,18 +155,6 @@ const navigateToChat = () => {
               <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
                 <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                   <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-secondary mb-1">Направление</p>
-                  <p class="text-secondary/70">{{ companion.specialization }}</p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
-                <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>

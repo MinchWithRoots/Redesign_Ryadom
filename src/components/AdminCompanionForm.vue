@@ -65,25 +65,6 @@
         ></textarea>
       </div>
 
-      <!-- Specializations -->
-      <div>
-        <label class="block text-sm font-semibold text-secondary mb-3">Направления</label>
-        <div class="space-y-2 max-h-48 overflow-y-auto">
-          <label v-for="spec in specializations" :key="spec.id" class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              :value="spec.id"
-              v-model.number="formData.specializationIds"
-              class="w-4 h-4 accent-primary rounded"
-            />
-            <span class="text-secondary">{{ spec.name }}</span>
-          </label>
-        </div>
-        <p v-if="formData.specializationIds.length > 0" class="text-xs text-secondary/60 mt-2">
-          Выбрано: {{ formData.specializationIds.length }}
-        </p>
-      </div>
-
       <!-- Image -->
       <div>
         <label class="block text-sm font-semibold text-secondary mb-2">Фото (URL)</label>
@@ -131,9 +112,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { supabase } from '@/utils/supabase'
-import { loadSpecializations, specializations, getCompanionSpecializations, updateCompanionSpecializations } from '@/composables/useAppState'
 
 interface Props {
   companion?: any
@@ -161,14 +141,10 @@ const formData = ref({
   experience: 'experienced',
   bio: '',
   image: '',
-  specializationIds: [] as number[],
   is_available: true
 })
 
 onMounted(async () => {
-  // Load specializations
-  await loadSpecializations()
-
   // If editing, load companion data
   if (props.isEdit && props.companion) {
     formData.value.name = props.companion.name
@@ -178,10 +154,6 @@ onMounted(async () => {
     formData.value.bio = props.companion.bio
     formData.value.image = props.companion.image
     formData.value.is_available = props.companion.is_available !== false
-
-    // Load companion specializations
-    const specs = await getCompanionSpecializations(props.companion.id)
-    formData.value.specializationIds = specs.map(s => s.id)
   }
 })
 
@@ -206,12 +178,9 @@ const handleSubmit = async () => {
         .eq('id', props.companion.id)
 
       if (updateError) throw updateError
-
-      // Update specializations
-      await updateCompanionSpecializations(props.companion.id, formData.value.specializationIds)
     } else {
       // Create new companion
-      const { data: newCompanion, error: createError } = await supabase
+      const { error: createError } = await supabase
         .from('companions')
         .insert([{
           name: formData.value.name,
@@ -220,18 +189,12 @@ const handleSubmit = async () => {
           experience: formData.value.experience,
           bio: formData.value.bio,
           image: formData.value.image,
-          is_available: formData.value.is_available,
-          specialization: '' // Legacy field
+          is_available: formData.value.is_available
         }])
         .select()
         .single()
 
       if (createError) throw createError
-
-      // Add specializations
-      if (formData.value.specializationIds.length > 0) {
-        await updateCompanionSpecializations(newCompanion.id, formData.value.specializationIds)
-      }
     }
 
     emit('saved')

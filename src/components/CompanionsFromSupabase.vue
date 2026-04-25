@@ -44,7 +44,7 @@
           <div class="p-6">
             <h3 class="text-xl font-bold text-white">{{ companion.name }}</h3>
             <p class="text-sm text-blue-400">
-              {{ companion.specialization }}
+              {{ getExperienceText(companion.experience) }}
             </p>
             <p class="mt-2 text-slate-300">{{ companion.bio }}</p>
 

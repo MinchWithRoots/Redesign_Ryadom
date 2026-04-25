@@ -15,23 +15,6 @@ const filters = ref({
   ageMax: 65,
   experience: 'all',
   topic: 'all',
-  specialization: 'all',
-})
-
-
-// Extract unique specializations from companions
-const specializations = computed(() => {
-  const uniqueSpecializations = new Map<number, string>()
-  companions.value.forEach(companion => {
-    if (companion.specializations && Array.isArray(companion.specializations)) {
-      companion.specializations.forEach(spec => {
-        if (spec.id && spec.name) {
-          uniqueSpecializations.set(spec.id, spec.name)
-        }
-      })
-    }
-  })
-  return Array.from(uniqueSpecializations.values()).sort()
 })
 
 const filteredCompanions = computed(() => {
@@ -59,15 +42,6 @@ const filteredCompanions = computed(() => {
     )
   }
 
-  // Filter by specialization
-  if (filters.value.specialization !== 'all') {
-    filteredCompanionList = filteredCompanionList.filter(companion => {
-      if (!companion.specialization || typeof companion.specialization !== 'string') return false
-      const specs = companion.specialization.split(',').map(s => s.trim())
-      return specs.includes(filters.value.specialization)
-    })
-  }
-
   return filteredCompanionList
 })
 
@@ -90,7 +64,6 @@ const resetFilters = async () => {
     ageMax: 65,
     experience: 'all',
     topic: 'all',
-    specialization: 'all',
   }
   try {
     await loadCompanions()
@@ -260,36 +233,6 @@ const navigateToProfile = (companionId: string | number) => {
 
         <!-- Main Content -->
         <div class="lg:col-span-3">
-          <!-- Specialization Filter Tags -->
-          <div v-if="specializations.length > 0" class="mb-6">
-            <div class="flex flex-wrap gap-2">
-              <button
-                @click="filters.specialization = 'all'"
-                :class="[
-                  'px-4 py-2 rounded-full text-sm font-medium transition-all',
-                  filters.specialization === 'all'
-                    ? 'bg-primary text-white shadow-soft'
-                    : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
-                ]"
-              >
-                Все направления
-              </button>
-              <button
-                v-for="spec in specializations"
-                :key="spec"
-                @click="filters.specialization = spec"
-                :class="[
-                  'px-4 py-2 rounded-full text-sm font-medium transition-all',
-                  filters.specialization === spec
-                    ? 'bg-primary text-white shadow-soft'
-                    : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
-                ]"
-              >
-                {{ spec }}
-              </button>
-            </div>
-          </div>
-
           <!-- Topic Tags -->
           <div class="mb-8 flex flex-wrap gap-2">
             <button

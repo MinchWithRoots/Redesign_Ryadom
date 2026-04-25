@@ -29,8 +29,6 @@ export interface Companion {
   reviews_count?: number
   image: string
   bio: string
-  specialization?: string // Legacy: comma-separated string
-  specializations?: Specialization[] // New: array of Specialization objects
   is_available?: boolean
   topics?: string[]
   created_at?: string
@@ -524,7 +522,7 @@ export const loadChats = async () => {
         try {
           const { data: companionData } = await supabase
             .from('companions')
-            .select('name, image, specialization')
+            .select('name, image')
             .eq('id', chat.companion_id)
             .single()
 
