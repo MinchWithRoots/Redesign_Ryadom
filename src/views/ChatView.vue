@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages } from '../composables/useAppState'
+import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages, loadChats } from '../composables/useAppState'
 import * as supabaseService from '../services/supabaseService'
 
 const router = useRouter()
@@ -46,14 +46,28 @@ const loadMessages = async () => {
   }
 }
 
-// Load messages when chatId changes
-watch(chatId, () => {
-  loadMessages()
+// Load chats and messages when chatId changes
+watch(chatId, async () => {
+  if (chatId.value) {
+    try {
+      await loadChats()
+      await loadMessages()
+    } catch (err) {
+      console.error('Error loading chat data:', err)
+    }
+  }
 })
 
-// Load messages on mount
-onMounted(() => {
-  loadMessages()
+// Load chats and messages on mount
+onMounted(async () => {
+  try {
+    await loadChats()
+    if (chatId.value) {
+      await loadMessages()
+    }
+  } catch (err) {
+    console.error('Error during chat initialization:', err)
+  }
 })
 
 const sendMessage = () => {
@@ -118,8 +132,23 @@ const handleReportUser = async () => {
 <template>
   <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16 flex flex-col">
     <div class="container mx-auto px-4 lg:px-8 max-w-4xl flex-1 flex flex-col">
+      <!-- Loading or Chat Header -->
+      <div v-if="!currentCompanion && isLoadingMessages" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
+        <p class="text-secondary/60">Загрузка чата...</p>
+      </div>
+
+      <div v-else-if="!currentCompanion" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
+        <p class="text-secondary/60 mb-4">Чат не найден</p>
+        <button
+          @click="$router.push('/profile')"
+          class="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-all"
+        >
+          Вернуться в профиль
+        </button>
+      </div>
+
       <!-- Chat Header -->
-      <div class="bg-white border border-border/50 rounded-3xl p-4 mb-6 shadow-card flex items-center justify-between sticky top-[140px] z-40">
+      <div v-else class="bg-white border border-border/50 rounded-3xl p-4 mb-6 shadow-card flex items-center justify-between sticky top-[140px] z-40">
         <div class="flex items-center gap-4">
           <!-- Avatar -->
           <div class="relative">
@@ -251,7 +280,8 @@ const handleReportUser = async () => {
         </div>
       </transition>
 
-      <!-- Messages Container -->
+      <!-- Messages Container (only show if chat is loaded) -->
+      <template v-if="currentCompanion">
       <div class="flex-1 overflow-y-auto mb-6 space-y-4 px-2">
         <div
           v-for="message in chatMessages"
@@ -327,6 +357,7 @@ const handleReportUser = async () => {
           Сессия завершится через 45 минут
         </p>
       </div>
+      </template>
     </div>
   </div>
 </template>
