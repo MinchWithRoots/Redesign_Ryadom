@@ -379,7 +379,7 @@ onMounted(async () => {
                 <div>
                   <label class="form-label">Пол</label>
                   <div class="px-4 py-3 border border-border rounded-xl bg-light-bg text-secondary/70">
-                    {{ userProfile?.gender === 'female' ? '👩 Женщина' : userProfile?.gender === 'male' ? '👨 Мужчина' : '—' }}
+                    {{ userProfile?.gender === 'female' ? 'Женщина' : userProfile?.gender === 'male' ? 'Мужчина' : '—' }}
                   </div>
                 </div>
 

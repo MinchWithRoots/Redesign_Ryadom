@@ -218,7 +218,7 @@ const handleSkip = () => {
                       : 'border-border bg-white text-secondary hover:border-primary/50'
                   ]"
                 >
-                   Женщина
+                  Женщина
                 </button>
                 <button
                   @click="profileSetup.gender = 'male'"
@@ -229,7 +229,7 @@ const handleSkip = () => {
                       : 'border-border bg-white text-secondary hover:border-primary/50'
                   ]"
                 >
-                   Мужчина
+                  Мужчина
                 </button>
               </div>
             </div>
