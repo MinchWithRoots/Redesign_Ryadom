@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics } from '../composables/useAppState'
 import { getAgeForm } from '../utils/ageForm'
 
 const router = useRouter()
 const activeTab = ref('chats')
 const isSaving = ref(false)
 const successMessage = ref('')
+const errorMessage = ref('')
 const editBio = ref('')
+const previewImage = ref<string>('')
 
 // Mock history data (in real app would come from API)
 const sessionHistory = ref([
@@ -43,21 +45,92 @@ const userProfile = computed(() => currentUser.value || {})
 
 const userEditForm = ref({
   bio: userProfile.value?.bio || '',
+  age: userProfile.value?.age || null,
+  gender: userProfile.value?.gender || '',
+  image: userProfile.value?.image || '',
+  selectedTopics: (userProfile.value?.topics as string[]) || [],
 })
+
+// Watch for changes to currentUser and update form
+watch(currentUser, (newUser) => {
+  if (newUser) {
+    userEditForm.value = {
+      bio: newUser.bio || '',
+      age: newUser.age || null,
+      gender: newUser.gender || '',
+      image: newUser.image || '',
+      selectedTopics: (newUser.topics as string[]) || [],
+    }
+    if (userEditForm.value.image) {
+      previewImage.value = userEditForm.value.image
+    }
+  }
+}, { immediate: true })
 
 const handleLogout = () => {
   logoutUser()
   router.push('/')
 }
 
+const handleImageUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const imageData = e.target?.result as string
+      userEditForm.value.image = imageData
+      previewImage.value = imageData
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const toggleTopic = (topic: string) => {
+  const index = userEditForm.value.selectedTopics.indexOf(topic)
+  if (index > -1) {
+    userEditForm.value.selectedTopics.splice(index, 1)
+  } else {
+    userEditForm.value.selectedTopics.push(topic)
+  }
+}
+
 const handleSaveProfile = async () => {
+  errorMessage.value = ''
+
+  if (!userEditForm.value.age) {
+    errorMessage.value = 'Пожалуйста, укажите ваш возраст'
+    return
+  }
+  if (!userEditForm.value.gender) {
+    errorMessage.value = 'Пожалуйста, выберите ваш пол'
+    return
+  }
+  if (!userEditForm.value.bio.trim()) {
+    errorMessage.value = 'Пожалуйста, расскажите о себе'
+    return
+  }
+  if (userEditForm.value.selectedTopics.length === 0) {
+    errorMessage.value = 'Пожалуйста, выберите хотя бы одну тему'
+    return
+  }
+
   isSaving.value = true
   try {
-    updateUserProfile({ bio: userEditForm.value.bio })
+    await updateUserProfile({
+      bio: userEditForm.value.bio,
+      age: userEditForm.value.age || undefined,
+      gender: userEditForm.value.gender || undefined,
+      image: userEditForm.value.image || undefined,
+      topics: userEditForm.value.selectedTopics,
+    })
     successMessage.value = 'Профиль обновлён успешно!'
     setTimeout(() => {
       successMessage.value = ''
     }, 3000)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Ошибка при сохранении профиля'
+    errorMessage.value = message
+    console.error('Profile update error:', message)
   } finally {
     isSaving.value = false
   }
@@ -103,9 +176,10 @@ const handleSaveSettings = async () => {
   }
 }
 
-// Load chats on mount
+// Load chats and topics on mount
 onMounted(async () => {
   await loadChats()
+  await loadTopics()
 })
 </script>
 
@@ -234,6 +308,13 @@ onMounted(async () => {
         <div class="lg:col-span-3">
           <!-- Profile Tab -->
           <div v-if="activeTab === 'profile'" class="space-y-6">
+            <!-- Error Message -->
+            <transition name="fade">
+              <div v-if="errorMessage" class="mb-6 p-4 bg-red-100 border border-red-300 rounded-2xl text-red-700 text-sm">
+                {{ errorMessage }}
+              </div>
+            </transition>
+
             <!-- Success Message -->
             <transition name="fade">
               <div v-if="successMessage" class="alert-success">
@@ -246,6 +327,38 @@ onMounted(async () => {
               <h2 class="text-2xl font-bold text-secondary mb-6">Мой профиль</h2>
 
               <div class="space-y-6">
+                <!-- Photo Upload -->
+                <div>
+                  <label class="form-label">Фото профиля</label>
+                  <div class="mb-4 text-center">
+                    <div v-if="previewImage" class="mb-4">
+                      <img
+                        :src="previewImage"
+                        alt="Profile preview"
+                        class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-primary/20"
+                      />
+                    </div>
+                    <div v-else class="mb-4 w-32 h-32 rounded-full mx-auto bg-light-bg border-4 border-dashed border-border flex items-center justify-center">
+                      <span class="text-4xl">📸</span>
+                    </div>
+                  </div>
+                  <label class="block">
+                    <span class="sr-only">Выберите фото</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      @change="handleImageUpload"
+                      class="block w-full text-sm text-secondary
+                        file:mr-4 file:py-3 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-primary file:text-white
+                        hover:file:bg-primary/90
+                        file:cursor-pointer"
+                    />
+                  </label>
+                </div>
+
                 <!-- Name -->
                 <div>
                   <label class="form-label">Полное имя</label>
@@ -253,7 +366,7 @@ onMounted(async () => {
                     type="text"
                     :value="userProfile?.name"
                     disabled
-                    class="input"
+                    class="input opacity-50 cursor-not-allowed"
                   />
                 </div>
 
@@ -264,18 +377,81 @@ onMounted(async () => {
                     type="email"
                     :value="userProfile?.email"
                     disabled
+                    class="input opacity-50 cursor-not-allowed"
+                  />
+                </div>
+
+                <!-- Age -->
+                <div>
+                  <label class="form-label">Возраст *</label>
+                  <input
+                    v-model.number="userEditForm.age"
+                    type="number"
+                    min="18"
+                    max="120"
+                    placeholder="Введите возраст"
                     class="input"
                   />
                 </div>
 
+                <!-- Gender -->
+                <div>
+                  <label class="form-label">Пол *</label>
+                  <div class="grid grid-cols-2 gap-4">
+                    <button
+                      @click="userEditForm.gender = 'female'"
+                      :class="[
+                        'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
+                        userEditForm.gender === 'female'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-white text-secondary hover:border-primary/50'
+                      ]"
+                    >
+                      👩 Женщина
+                    </button>
+                    <button
+                      @click="userEditForm.gender = 'male'"
+                      :class="[
+                        'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
+                        userEditForm.gender === 'male'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-white text-secondary hover:border-primary/50'
+                      ]"
+                    >
+                      👨 Мужчина
+                    </button>
+                  </div>
+                </div>
+
                 <!-- Bio -->
                 <div>
-                  <label class="form-label">О себе</label>
+                  <label class="form-label">О себе *</label>
                   <textarea
                     v-model="userEditForm.bio"
                     rows="4"
-                    class="w-full px-4 py-3 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    placeholder="Расскажите о себе..."
+                    class="w-full px-4 py-3 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
                   ></textarea>
+                </div>
+
+                <!-- Topics -->
+                <div>
+                  <label class="form-label">Темы интересов *</label>
+                  <div class="flex flex-wrap gap-3">
+                    <button
+                      v-for="topic in topics"
+                      :key="topic"
+                      @click="toggleTopic(topic)"
+                      :class="[
+                        'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                        userEditForm.selectedTopics.includes(topic)
+                          ? 'bg-primary text-white shadow-soft'
+                          : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+                      ]"
+                    >
+                      {{ topic }}
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Buttons -->
