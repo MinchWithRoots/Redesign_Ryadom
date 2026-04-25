@@ -9,12 +9,6 @@ const routes = [
     component: HomeView,
   },
   {
-    path: '/recommendations',
-    name: 'Recommendations',
-    component: () => import('../views/RecommendationsView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/search',
     name: 'Search',
     component: () => import('../views/SearchView.vue'),
