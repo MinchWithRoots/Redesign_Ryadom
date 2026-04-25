@@ -48,20 +48,14 @@ onMounted(async () => {
       }
     }
 
-    // Prefill form with user data
-    const { data: userData } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (userData) {
-      form.value.name = userData.name || ''
-      form.value.age = userData.age || null
-      form.value.gender = userData.gender || ''
-      form.value.bio = userData.bio || ''
-      form.value.image = userData.image || ''
-      form.value.topics = userData.topics || []
+    // Prefill form with user data from currentUser (which already has the gender from profile setup)
+    if (user) {
+      form.value.name = user.name || ''
+      form.value.age = user.age || null
+      form.value.gender = user.gender || ''
+      form.value.bio = user.bio || ''
+      form.value.image = user.image || ''
+      form.value.topics = user.topics || []
     }
 
     // Fetch available topics
@@ -107,7 +101,7 @@ const submitApplication = async () => {
     }
 
     if (!form.value.gender) {
-      errorMessage.value = 'Пожалуйста, выберите пол'
+      errorMessage.value = 'Пол не заполнен. Пожалуйста, сначала заполните анкету в профиле'
       return
     }
 
@@ -258,17 +252,12 @@ const submitApplication = async () => {
                 <label for="gender" class="block text-sm font-semibold text-secondary mb-2">
                   Пол *
                 </label>
-                <select
-                  id="gender"
-                  v-model="form.gender"
-                  class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-                  required
-                >
-                  <option value="">Выберите пол</option>
-                  <option value="Мужчина">Мужчина</option>
-                  <option value="Женщина">Женщина</option>
-                  <option value="Другое">Другое</option>
-                </select>
+                <div class="w-full px-4 py-3 rounded-xl border border-border/50 bg-gray-50 flex items-center">
+                  <span class="text-secondary font-medium">
+                    {{ form.gender || 'Не указан' }}
+                  </span>
+                  <span class="text-xs text-secondary/50 ml-2">(автоматически заполнено)</span>
+                </div>
               </div>
             </div>
           </div>
