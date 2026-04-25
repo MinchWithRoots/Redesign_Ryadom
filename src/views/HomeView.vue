@@ -116,10 +116,10 @@ onMounted(() => {
                 </svg>
               </button>
               <button
-                @click="navigate('/')"
+                @click="navigate('/become-companion')"
                 class="inline-flex items-center justify-center gap-2 px-8 py-4 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
               >
-                Узнать больше
+                Стать спутником
               </button>
             </div>
 

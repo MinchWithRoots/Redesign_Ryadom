@@ -47,6 +47,12 @@ const routes = [
     component: () => import('../views/AdminDashboardView.vue'),
     meta: { requiresAuth: true, requiresAdmin: true },
   },
+  {
+    path: '/become-companion',
+    name: 'CompanionApplication',
+    component: () => import('../views/CompanionApplicationView.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({
