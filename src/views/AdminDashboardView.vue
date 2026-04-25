@@ -10,6 +10,8 @@ const users = ref<any[]>([])
 const companions = ref<any[]>([])
 const reviews = ref<any[]>([])
 const chats = ref<any[]>([])
+const applications = ref<any[]>([])
+const rejectionReasons = ref<{ [key: string]: string }>({})
 const isLoading = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
@@ -26,7 +28,7 @@ onMounted(async () => {
 const loadDashboardData = async () => {
   try {
     isLoading.value = true
-    await Promise.all([loadUsers(), loadCompanions(), loadReviews(), loadChats()])
+    await Promise.all([loadUsers(), loadCompanions(), loadReviews(), loadChats(), loadApplications()])
   } finally {
     isLoading.value = false
   }
@@ -76,6 +78,17 @@ const loadChats = async () => {
   }
 }
 
+const loadApplications = async () => {
+  const { data, error } = await supabase
+    .from('companion_applications')
+    .select('*, users (name, email)')
+    .order('created_at', { ascending: false })
+
+  if (!error) {
+    applications.value = data || []
+  }
+}
+
 // Stats
 const stats = computed(() => ({
   totalUsers: users.value.length,
@@ -83,6 +96,7 @@ const stats = computed(() => ({
   totalChats: chats.value.length,
   totalReviews: reviews.value.length,
   activeChats: chats.value.filter((c: any) => c.status === 'active').length,
+  pendingApplications: applications.value.filter((a: any) => a.status === 'pending').length,
 }))
 
 const handleDeleteUser = async (userId: string | number) => {
@@ -164,6 +178,85 @@ const handleDeleteReview = async (reviewId: string | number) => {
 
 const navigate = (path: string) => {
   router.push(path)
+}
+
+const handleApproveApplication = async (applicationId: string | number) => {
+  try {
+    // Get the application data
+    const app = applications.value.find((a: any) => a.id === applicationId)
+    if (!app) throw new Error('Application not found')
+
+    // Create a new companion from the application
+    const { data: companionData, error: companionError } = await supabase
+      .from('companions')
+      .insert([
+        {
+          name: app.name,
+          age: app.age,
+          gender: app.gender,
+          experience: app.experience,
+          bio: app.bio,
+          image: app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
+          topics: app.topics || [],
+          is_available: true,
+          created_at: new Date().toISOString(),
+        }
+      ])
+      .select()
+      .single()
+
+    if (companionError) throw companionError
+
+    // Update the application status
+    const { error: updateError } = await supabase
+      .from('companion_applications')
+      .update({
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', applicationId)
+
+    if (updateError) throw updateError
+
+    successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
+    await loadApplications()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при одобрении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
+}
+
+const handleRejectApplication = async (applicationId: string | number) => {
+  const reason = rejectionReasons.value[applicationId]
+  if (!reason || reason.trim().length === 0) {
+    errorMessage.value = 'Пожалуйста, укажите причину отклонения'
+    setTimeout(() => (errorMessage.value = ''), 3000)
+    return
+  }
+
+  if (!confirm(`Отклонить заявку с причиной: "${reason}"?`)) return
+
+  try {
+    const { error } = await supabase
+      .from('companion_applications')
+      .update({
+        status: 'rejected',
+        rejection_reason: reason,
+        rejected_at: new Date().toISOString(),
+      })
+      .eq('id', applicationId)
+
+    if (error) throw error
+
+    delete rejectionReasons.value[applicationId]
+    successMessage.value = 'Заявка отклонена ✓'
+    await loadApplications()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при отклонении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
 }
 </script>
 
@@ -309,6 +402,18 @@ const navigate = (path: string) => {
         >
           <img src="../images/message-add-alt.svg" alt="Chats" class="w-5 h-5 inline mr-2 object-contain" />
           Чаты ({{ chats.length }})
+        </button>
+        <button
+          @click="activeTab = 'applications'"
+          :class="[
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
+            activeTab === 'applications'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-secondary/60 hover:text-secondary'
+          ]"
+        >
+          <img src="../images/send.svg" alt="Applications" class="w-5 h-5 inline mr-2 object-contain" />
+          Заявки <span v-if="stats.pendingApplications > 0" class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">{{ stats.pendingApplications }}</span>
         </button>
       </div>
 
@@ -546,6 +651,107 @@ const navigate = (path: string) => {
 
         <div v-else class="text-center py-12 text-secondary/60">
           Чатов не найдено
+        </div>
+      </div>
+
+      <!-- Applications Tab -->
+      <div v-if="activeTab === 'applications'" class="space-y-4">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-secondary">Заявки на становление спутником ({{ applications.length }})</h2>
+          <div class="text-sm text-secondary/60">
+            <span class="font-semibold text-orange-600">{{ stats.pendingApplications }}</span> ожидают рассмотрения
+          </div>
+        </div>
+
+        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
+          Загрузка...
+        </div>
+
+        <div v-else-if="applications.length > 0" class="grid gap-6">
+          <div
+            v-for="app in applications"
+            :key="app.id"
+            :class="[
+              'card-surface border-l-4',
+              app.status === 'pending' ? 'border-l-orange-500 bg-orange-50/30' :
+              app.status === 'approved' ? 'border-l-green-500 bg-green-50/30' :
+              'border-l-red-500 bg-red-50/30'
+            ]"
+          >
+            <div class="mb-4">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-bold text-secondary">{{ app.name }}</h3>
+                    <span
+                      :class="[
+                        'px-3 py-1 rounded-full text-xs font-semibold',
+                        app.status === 'pending' ? 'bg-orange-100 text-orange-700' :
+                        app.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        'bg-red-100 text-red-700'
+                      ]"
+                    >
+                      {{
+                        app.status === 'pending' ? '⏳ На рассмотрении' :
+                        app.status === 'approved' ? '✅ Одобрена' :
+                        '❌ Отклонена'
+                      }}
+                    </span>
+                  </div>
+                  <p class="text-secondary/60 text-sm mb-2">
+                    <strong>От:</strong> {{ app.users?.name }} ({{ app.users?.email }})
+                  </p>
+                  <div class="flex flex-wrap gap-4 text-sm text-secondary/60 mb-3">
+                    <span><strong>Возраст:</strong> {{ app.age }}</span>
+                    <span><strong>Пол:</strong> {{ app.gender }}</span>
+                    <span><strong>Опыт:</strong> {{ app.experience }}</span>
+                  </div>
+                  <div class="mb-3">
+                    <p class="text-sm text-secondary/60 mb-2"><strong>О себе:</strong></p>
+                    <p class="text-secondary text-sm">{{ app.bio }}</p>
+                  </div>
+                  <div v-if="app.message" class="mb-3">
+                    <p class="text-sm text-secondary/60 mb-2"><strong>Мотивация:</strong></p>
+                    <p class="text-secondary text-sm">{{ app.message }}</p>
+                  </div>
+                  <div v-if="app.rejection_reason" class="mb-3 p-3 bg-red-100 rounded-lg">
+                    <p class="text-sm text-red-700"><strong>Причина отклонения:</strong> {{ app.rejection_reason }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions for Pending Applications -->
+            <div v-if="app.status === 'pending'" class="border-t border-border/50 pt-4">
+              <div class="space-y-3">
+                <button
+                  @click="handleApproveApplication(app.id)"
+                  class="w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  ✓ Одобрить заявку
+                </button>
+                <div>
+                  <label class="block text-xs text-secondary/60 mb-2 font-semibold">Причина отклонения (если отклоняете):</label>
+                  <textarea
+                    v-model="rejectionReasons[app.id]"
+                    placeholder="Например: Недостаточно информации в профиле, требуется дополнительная верификация..."
+                    rows="3"
+                    class="w-full px-3 py-2 rounded-lg border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-red-500/50 transition text-sm resize-none"
+                  ></textarea>
+                  <button
+                    @click="handleRejectApplication(app.id)"
+                    class="w-full mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm"
+                  >
+                    ✗ Отклонить заявку
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-12 text-secondary/60">
+          Заявок не найдено
         </div>
       </div>
     </div>

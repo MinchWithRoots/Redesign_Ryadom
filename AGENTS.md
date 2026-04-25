@@ -183,3 +183,26 @@ npm run test:unit    # Run unit tests
 - ESLint + Prettier for code quality
 - Vue DevTools integration for development debugging
 - Single-page application (SPA) architecture
+
+## Important: Companion Applications Database Schema
+
+### ⚠️ IMPORTANT: NO SPECIALIZATION FIELD OR TABLES
+
+The `companion_applications` table does **NOT** and **WILL NOT** have a `specialization` field.
+
+**The following tables and fields are REMOVED and must NOT be recreated:**
+- `specializations` table - DELETED
+- `companion_specializations` table - DELETED
+- `specialization` field from `companions` table - DELETED
+- Any migration files related to specializations - DELETED
+
+**DO NOT:**
+- Create or add a `specialization` field to `companion_applications` table
+- Create `specializations` or `companion_specializations` reference tables
+- Add `specialization` column to `companions` table
+- Add any specialization-related code to components or services
+- Run any old migration files that mention specialization
+
+**Users describe their experience and specialization ONLY in the `bio` field** of the application form. This is the only place where specialization information is stored.
+
+If `specializations` or `companion_specializations` tables exist in your Supabase database, delete them manually through the Supabase dashboard.

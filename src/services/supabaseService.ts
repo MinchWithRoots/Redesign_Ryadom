@@ -301,6 +301,162 @@ export async function submitReport(
   }
 }
 
+// ============ COMPANION APPLICATIONS ============
+export async function submitCompanionApplication(
+  userId: string,
+  applicationData: any
+) {
+  try {
+    const { data, error } = await supabase
+      .from('companion_applications')
+      .insert([
+        {
+          user_id: userId,
+          name: applicationData.name,
+          age: applicationData.age,
+          gender: applicationData.gender,
+          experience: applicationData.experience,
+          bio: applicationData.bio,
+          image: applicationData.image,
+          topics: applicationData.topics || [],
+          message: applicationData.message,
+          status: 'pending',
+        }
+      ])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error submitting companion application:', error)
+    return null
+  }
+}
+
+export async function getCompanionApplications(status?: string) {
+  try {
+    let query = supabase
+      .from('companion_applications')
+      .select('*, users (name, email)')
+
+    if (status) {
+      query = query.eq('status', status)
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching applications:', error)
+    return null
+  }
+}
+
+export async function getCompanionApplicationById(applicationId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('companion_applications')
+      .select('*, users (name, email)')
+      .eq('id', applicationId)
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching application:', error)
+    return null
+  }
+}
+
+export async function approveCompanionApplication(applicationId: string) {
+  try {
+    // Get the application data
+    const application = await getCompanionApplicationById(applicationId)
+    if (!application) throw new Error('Application not found')
+
+    // Create a new companion from the application
+    const { data: companionData, error: companionError } = await supabase
+      .from('companions')
+      .insert([
+        {
+          name: application.name,
+          age: application.age,
+          gender: application.gender,
+          experience: application.experience,
+          bio: application.bio,
+          image: application.image,
+          topics: application.topics,
+          is_available: true,
+          created_at: new Date().toISOString(),
+        }
+      ])
+      .select()
+      .single()
+
+    if (companionError) throw companionError
+
+    // Update the application status
+    const { data: updatedApp, error: updateError } = await supabase
+      .from('companion_applications')
+      .update({
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', applicationId)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+    return updatedApp
+  } catch (error) {
+    console.error('Error approving application:', error)
+    return null
+  }
+}
+
+export async function rejectCompanionApplication(
+  applicationId: string,
+  rejectionReason: string
+) {
+  try {
+    const { data, error } = await supabase
+      .from('companion_applications')
+      .update({
+        status: 'rejected',
+        rejection_reason: rejectionReason,
+        rejected_at: new Date().toISOString(),
+      })
+      .eq('id', applicationId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error rejecting application:', error)
+    return null
+  }
+}
+
+export async function getUserApplication(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('companion_applications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (error) throw error
+    return data && data.length > 0 ? data[0] : null
+  } catch (error) {
+    console.error('Error fetching user application:', error)
+    return null
+  }
+}
+
 // ============ UPDATE COMPANION IMAGES ============
 export async function updateCompanionImages() {
   try {
