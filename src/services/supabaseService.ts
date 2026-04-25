@@ -56,7 +56,7 @@ export async function searchCompanions(query: string) {
       `
       )
       .or(
-        `name.ilike.%${query}%,specialization.ilike.%${query}%,bio.ilike.%${query}%`
+        `name.ilike.%${query}%,bio.ilike.%${query}%`
       )
       .eq('is_available', true)
 
@@ -110,7 +110,7 @@ export async function getUserChats(userId: string) {
       .select(
         `
         *,
-        companions (name, image, specialization)
+        companions (name, image)
       `
       )
       .eq('user_id', userId)
