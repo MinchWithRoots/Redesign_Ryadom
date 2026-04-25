@@ -142,7 +142,7 @@ const goBack = () => {
             <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
 
             <div class="space-y-4">
-              <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
+              <div v-if="companion.specialization" class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
                 <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                   <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />

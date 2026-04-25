@@ -8,7 +8,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Поиск по названию или специальности..."
+          placeholder="Поиск по названию или описанию..."
           class="w-full rounded-lg bg-slate-700 px-4 py-3 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-500"
           @input="handleSearch"
         />
@@ -43,7 +43,7 @@
           <!-- Содержимое -->
           <div class="p-6">
             <h3 class="text-xl font-bold text-white">{{ companion.name }}</h3>
-            <p class="text-sm text-blue-400">
+            <p v-if="companion.specialization" class="text-sm text-blue-400">
               {{ companion.specialization }}
             </p>
             <p class="mt-2 text-slate-300">{{ companion.bio }}</p>

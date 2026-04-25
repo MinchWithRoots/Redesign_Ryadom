@@ -525,7 +525,7 @@ export const loadChats = async () => {
         try {
           const { data: companionData } = await supabase
             .from('companions')
-            .select('name, image, specialization')
+            .select('name, image')
             .eq('id', chat.companion_id)
             .single()
 
