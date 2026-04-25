@@ -38,24 +38,22 @@ const handleSendConnectionRequest = async () => {
   if (!companion.value) return
 
   try {
-    await sendConnectionRequest(companion.value.id)
+    const chat = await sendConnectionRequest(companion.value.id)
     hasRequestSent.value = true
     showNotification.value = `Запрос отправлен ${companion.value.name}!`
     setTimeout(() => {
       showNotification.value = ''
-    }, 3000)
+      // Navigate to chat to show pending status
+      router.push(`/chat?id=${chat.id}`)
+    }, 1500)
   } catch (err) {
     console.error('Error sending connection request:', err)
+    showNotification.value = 'Ошибка при отправке запроса'
   }
 }
 
 const goBack = () => {
   router.back()
-}
-
-const navigateToChat = () => {
-  // After connection request, user can navigate to chat
-  router.push('/profile?tab=chats')
 }
 </script>
 
@@ -122,18 +120,10 @@ const navigateToChat = () => {
             <!-- Action Buttons -->
             <div class="space-y-3">
               <button
-                v-if="!hasRequestSent"
                 @click="handleSendConnectionRequest"
                 class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
               >
                 Предложить связь
-              </button>
-              <button
-                v-else
-                @click="navigateToChat"
-                class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-              >
-                Перейти в чаты
               </button>
               <button
                 @click="goBack"
@@ -152,7 +142,7 @@ const navigateToChat = () => {
             <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
 
             <div class="space-y-4">
-              <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
+              <div v-if="companion.specialization" class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
                 <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                   <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />

@@ -233,6 +233,24 @@ export const chatsAPI = {
       throw error
     }
   },
+
+  acceptRequest: async (chatId: string) => {
+    try {
+      const result = await supabaseService.acceptConnectionRequest(chatId)
+      return { success: !!result }
+    } catch (error) {
+      throw error
+    }
+  },
+
+  rejectRequest: async (chatId: string) => {
+    try {
+      const result = await supabaseService.rejectConnectionRequest(chatId)
+      return { success: result }
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
 // ============ USERS ============
