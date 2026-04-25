@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, isAdmin } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
+import { getGenderInRussian } from '@/utils/genderForm'
 
 const router = useRouter()
 const activeTab = ref('overview')
@@ -186,26 +187,77 @@ const handleApproveApplication = async (applicationId: string | number) => {
     const app = applications.value.find((a: any) => a.id === applicationId)
     if (!app) throw new Error('Application not found')
 
+    console.log('Approving application:', {
+      id: app.id,
+      name: app.name,
+      age: app.age,
+      gender: app.gender,
+      experience: app.experience,
+      topics: app.topics,
+      bio: app.bio?.substring(0, 50),
+    })
+
+    // Validate required fields
+    if (!app.name || !app.age || !app.gender || !app.experience || !app.bio) {
+      throw new Error('Missing required fields in application')
+    }
+
+    // Handle image field - the database VARCHAR(500) limit applies to image column
+    // If image is a long base64 string from file upload, use default image instead
+    let imageUrl = app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+
+    // Check if image is a very long string (likely base64), and replace with default
+    if (imageUrl && imageUrl.length > 500) {
+      console.log(`Image too long (${imageUrl.length} chars), using default instead`)
+      imageUrl = 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+    }
+
+    // Prepare companion data
+    const companionData = {
+      name: app.name,
+      age: app.age,
+      gender: app.gender,
+      experience: app.experience,
+      bio: app.bio,
+      image: imageUrl,
+      topics: app.topics || [],
+      is_available: true,
+    }
+
+    console.log('Inserting companion with data:', companionData)
+
     // Create a new companion from the application
-    const { data: companionData, error: companionError } = await supabase
+    const { data: companionInsertData, error: companionError } = await supabase
       .from('companions')
-      .insert([
-        {
-          name: app.name,
-          age: app.age,
-          gender: app.gender,
-          experience: app.experience,
-          bio: app.bio,
-          image: app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
-          topics: app.topics || [],
-          is_available: true,
-          created_at: new Date().toISOString(),
-        }
-      ])
+      .insert([companionData])
       .select()
       .single()
 
-    if (companionError) throw companionError
+    if (companionError) {
+      console.error('Companion insert error details:', {
+        message: companionError.message,
+        code: companionError.code,
+        hint: companionError.hint,
+        details: (companionError as any).details,
+      })
+
+      // Check if the error is about missing is_available column
+      const isColumnMissingError = companionError.message?.includes('is_available') ||
+                                   companionError.code === 'PGRST204' ||
+                                   companionError.hint?.includes('is_available')
+
+      if (isColumnMissingError) {
+        throw new Error(`Ошибка: Столбец 'is_available' отсутствует в таблице companions. Необходимо применить миграцию в Supabase Dashboard. Откройте SQL Editor и выполните команду: ALTER TABLE public.companions ADD COLUMN IF NOT EXISTS is_available BOOLEAN DEFAULT true;`)
+      }
+
+      throw new Error(`Failed to create companion: ${companionError.message}${companionError.hint ? ' - ' + companionError.hint : ''}`)
+    }
+
+    if (!companionInsertData) {
+      throw new Error('No companion data returned after insert')
+    }
+
+    console.log('Companion created successfully:', companionInsertData)
 
     // Update the application status
     const { error: updateError } = await supabase
@@ -216,14 +268,23 @@ const handleApproveApplication = async (applicationId: string | number) => {
       })
       .eq('id', applicationId)
 
-    if (updateError) throw updateError
+    if (updateError) {
+      console.error('Application update error:', updateError.message)
+      throw new Error(`Failed to update application status: ${updateError.message}`)
+    }
 
     successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
-    await loadApplications()
+    // Reload both applications and companions lists to reflect changes
+    await Promise.all([
+      loadApplications(),
+      loadCompanions()
+    ])
     setTimeout(() => (successMessage.value = ''), 3000)
   } catch (err) {
-    errorMessage.value = `Ошибка при одобрении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
+    const errorMsg = err instanceof Error ? err.message : 'Неизвестная ошибка'
+    console.error('Full approval error:', err)
+    errorMessage.value = `Ошибка при одобрении: ${errorMsg}`
+    setTimeout(() => (errorMessage.value = ''), 5000)
   }
 }
 
@@ -703,7 +764,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   </p>
                   <div class="flex flex-wrap gap-4 text-sm text-secondary/60 mb-3">
                     <span><strong>Возраст:</strong> {{ app.age }}</span>
-                    <span><strong>Пол:</strong> {{ app.gender }}</span>
+                    <span><strong>Пол:</strong> {{ getGenderInRussian(app.gender) }}</span>
                     <span><strong>Опыт:</strong> {{ app.experience }}</span>
                   </div>
                   <div class="mb-3">
