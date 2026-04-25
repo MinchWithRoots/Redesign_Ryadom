@@ -170,7 +170,9 @@ export const updateUserProfile = async (updates: {
     if (updates.image !== undefined) updateData.image = updates.image
     if (updates.age !== undefined) updateData.age = updates.age
     if (updates.gender !== undefined) updateData.gender = updates.gender
-    if (updates.topics !== undefined) updateData.topics = updates.topics
+    if (updates.topics !== undefined) updateData.topics = JSON.stringify(updates.topics)
+
+    console.log('Updating user profile with data:', updateData)
 
     // Update by email (not by id) to match our user lookup strategy
     const { data: profile, error: updateProfileError } = await supabase
@@ -180,7 +182,18 @@ export const updateUserProfile = async (updates: {
       .select()
       .single()
 
-    if (updateProfileError) throw updateProfileError
+    if (updateProfileError) {
+      const errorMsg = updateProfileError instanceof Error
+        ? updateProfileError.message
+        : (updateProfileError as any)?.message || JSON.stringify(updateProfileError)
+      console.error('Supabase update error details:', {
+        code: (updateProfileError as any)?.code,
+        message: errorMsg,
+        hint: (updateProfileError as any)?.hint,
+        fullError: updateProfileError
+      })
+      throw new Error(errorMsg)
+    }
 
     currentUser.value = {
       ...currentUser.value,
@@ -191,7 +204,7 @@ export const updateUserProfile = async (updates: {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
     error.value = errorMessage
-    console.error('Update profile error:', err)
+    console.error('Update profile error:', errorMessage)
     throw err
   } finally {
     isLoading.value = false
