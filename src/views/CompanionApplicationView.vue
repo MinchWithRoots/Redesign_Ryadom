@@ -21,7 +21,6 @@ const form = ref({
   bio: '',
   image: '',
   topics: [] as number[],
-  specialization: '',
   message: '',
 })
 
@@ -329,20 +328,6 @@ const submitApplication = async () => {
                 ✓ {{ topic.name }}
               </button>
             </div>
-          </div>
-
-          <!-- Specialization -->
-          <div>
-            <label for="specialization" class="block text-sm font-semibold text-secondary mb-2">
-              Дополнительная специализация (опционально)
-            </label>
-            <input
-              id="specialization"
-              v-model="form.specialization"
-              type="text"
-              placeholder="Например: психолог, социальный работник, опытный человек в терапии"
-              class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-            />
           </div>
 
           <!-- Motivation Message -->

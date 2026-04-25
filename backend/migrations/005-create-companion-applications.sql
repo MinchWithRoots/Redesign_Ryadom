@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS companion_applications (
   bio TEXT,
   image VARCHAR,
   topics JSONB DEFAULT '[]'::jsonb, -- array of topic IDs
-  specialization TEXT, -- additional specialization info
   message TEXT, -- motivation/additional message
   status VARCHAR DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
   rejection_reason TEXT, -- reason if rejected

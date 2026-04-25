@@ -319,7 +319,6 @@ export async function submitCompanionApplication(
           bio: applicationData.bio,
           image: applicationData.image,
           topics: applicationData.topics || [],
-          specialization: applicationData.specialization,
           message: applicationData.message,
           status: 'pending',
         }

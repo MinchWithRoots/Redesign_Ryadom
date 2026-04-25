@@ -183,3 +183,17 @@ npm run test:unit    # Run unit tests
 - ESLint + Prettier for code quality
 - Vue DevTools integration for development debugging
 - Single-page application (SPA) architecture
+
+## Important: Companion Applications Database Schema
+
+### ⚠️ IMPORTANT: NO SPECIALIZATION FIELD
+
+The `companion_applications` table does **NOT** and **WILL NOT** have a `specialization` field.
+
+**DO NOT** create or add a `specialization` field to:
+- `companion_applications` table
+- `CompanionApplicationView.vue` form
+- `supabaseService.ts` functions
+- Any other related components or services
+
+Users describe their experience and specialization in the `bio` field of the application form. This is the only place where specialization information is stored.
