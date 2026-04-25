@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { companions, getCompanionById, sendConnectionRequest } from '../composables/useAppState'
+import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
+import AuthRequiredModal from '../components/AuthRequiredModal.vue'
+import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import supportIcon from '../images/support.svg'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
 const route = useRoute()
+const authModal = ref<InstanceType<typeof AuthRequiredModal> | null>(null)
 const companion = ref<(typeof companions)['value'][0] | null>(null)
 const isLoading = ref(true)
 const showNotification = ref('')
 const hasRequestSent = ref(false)
+
+const isCurrentUserCompanion = computed(() => {
+  return currentUser.value && companion.value && currentUser.value.id === companion.value.user_id
+})
 
 // Get companion ID from route params
 const companionId = computed(() => {
@@ -21,6 +28,11 @@ const companionId = computed(() => {
 
 onMounted(async () => {
   try {
+    // Load current user if not already loaded
+    if (!currentUser.value) {
+      await loadCurrentUser()
+    }
+
     const comp = await getCompanionById(companionId.value.toString())
     if (comp) {
       companion.value = comp
@@ -45,7 +57,14 @@ const handleSendConnectionRequest = async () => {
       showNotification.value = ''
     }, 3000)
   } catch (err) {
-    console.error('Error sending connection request:', err)
+    const error = err instanceof Error ? err.message : String(err)
+    if (error === 'NOT_LOGGED_IN') {
+      // Show auth modal instead of error
+      authModal.value?.openModal()
+    } else {
+      console.error('Error sending connection request:', err)
+      showNotification.value = 'Ошибка при отправке запроса'
+    }
   }
 }
 
@@ -61,6 +80,9 @@ const navigateToChat = () => {
 
 <template>
   <div class="layout-page">
+    <!-- Auth Required Modal -->
+    <AuthRequiredModal ref="authModal" />
+
     <!-- Notification -->
     <transition name="slide">
       <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
@@ -188,6 +210,9 @@ const navigateToChat = () => {
               </span>
             </div>
           </div>
+
+          <!-- Chat Requests Section (only for the companion themselves) -->
+          <CompanionChatRequests v-if="isCurrentUserCompanion" :companion-id="companion.id" />
 
           <!-- How It Works -->
           <div class="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-3xl p-8 shadow-card">

@@ -412,6 +412,7 @@ export async function approveCompanionApplication(applicationId: string) {
           image: application.image,
           topics: application.topics,
           is_available: true,
+          user_id: application.user_id,
           created_at: new Date().toISOString(),
         }
       ])
