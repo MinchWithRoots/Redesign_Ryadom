@@ -177,6 +177,13 @@ onMounted(async () => {
                 Мои чаты
               </button>
               <button
+                @click="navigate('/recommendations')"
+                class="w-full text-left px-4 py-3 rounded-xl font-medium transition-all bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10"
+              >
+                <span class="text-lg inline mr-2">⭐</span>
+                Рекомендации
+              </button>
+              <button
                 @click="activeTab = 'history'"
                 :class="[
                   'text-left px-4 py-3 rounded-xl font-medium transition-all',

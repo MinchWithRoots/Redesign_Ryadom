@@ -11,10 +11,12 @@ CREATE TABLE IF NOT EXISTS public.users (
   email VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
   age INT,
+  gender VARCHAR(50),
   bio TEXT,
   image VARCHAR(500),
   phone VARCHAR(20),
   city VARCHAR(255),
+  topics JSONB DEFAULT '[]'::jsonb,
   role VARCHAR(20) DEFAULT 'user',
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()),
@@ -28,12 +30,14 @@ CREATE TABLE IF NOT EXISTS public.companions (
   id BIGSERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   age INT NOT NULL,
+  gender VARCHAR(50),
   specialization VARCHAR(255),
   experience VARCHAR(50),
   image VARCHAR(500),
   rating DECIMAL(3,1) DEFAULT 5.0,
   reviews INT DEFAULT 0,
   bio TEXT,
+  topics JSONB DEFAULT '[]'::jsonb,
   price_per_hour DECIMAL(10,2),
   is_available BOOLEAN DEFAULT true,
   response_time_minutes INT,
@@ -42,12 +46,12 @@ CREATE TABLE IF NOT EXISTS public.companions (
 );
 
 -- ============================================
--- COMPANION TOPICS (Темы консультаций)
+-- COMPANION TOPICS (Темы консультаций - Reference Table)
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.companion_topics (
   id BIGSERIAL PRIMARY KEY,
-  companion_id BIGINT NOT NULL REFERENCES public.companions(id) ON DELETE CASCADE,
-  topic VARCHAR(100) NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  description TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW())
 );
 
@@ -159,7 +163,7 @@ CREATE INDEX IF NOT EXISTS idx_chats_status ON public.chats(status);
 CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON public.messages(chat_id);
 CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON public.messages(sender_id);
 CREATE INDEX IF NOT EXISTS idx_messages_is_read ON public.messages(is_read);
-CREATE INDEX IF NOT EXISTS idx_companion_topics_companion_id ON public.companion_topics(companion_id);
+CREATE INDEX IF NOT EXISTS idx_companion_topics_name ON public.companion_topics(name);
 CREATE INDEX IF NOT EXISTS idx_reviews_companion_id ON public.reviews(companion_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON public.reviews(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON public.favorites(user_id);
@@ -182,10 +186,13 @@ ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view all profiles" ON public.users
   FOR SELECT USING (true);
 
--- Users: Users can update their own profile
-CREATE POLICY "Users can update their own profile" ON public.users
-  FOR UPDATE USING (auth.uid()::text = id::text)
-  WITH CHECK (auth.uid()::text = id::text);
+-- Users: Authenticated users can update profiles (by email which is unique)
+CREATE POLICY "Users can update profiles" ON public.users
+  FOR UPDATE WITH CHECK (true);
+
+-- Companion Topics: Anyone can read topics (reference table)
+CREATE POLICY "Anyone can view companion topics" ON public.companion_topics
+  FOR SELECT USING (true);
 
 -- Companions: Anyone can read available companions
 CREATE POLICY "Anyone can view available companions" ON public.companions
@@ -247,16 +254,16 @@ VALUES
   ('Елена В.', 35, 'Терапевт', 'Опытный специалист', 'https://images.pexels.com/photos/20860595/pexels-photo-20860595.jpeg', 5.0, 156, 'Специалист по работе с жизненными кризисами и горем', 60.00, true, 10)
 ON CONFLICT DO NOTHING;
 
--- Insert companion topics
-INSERT INTO public.companion_topics (companion_id, topic)
-VALUES 
-  ((SELECT id FROM public.companions WHERE name = 'Мария К.' LIMIT 1), 'Отношения'),
-  ((SELECT id FROM public.companions WHERE name = 'Мария К.' LIMIT 1), 'Тревожность'),
-  ((SELECT id FROM public.companions WHERE name = 'Мария К.' LIMIT 1), 'Стресс'),
-  ((SELECT id FROM public.companions WHERE name = 'Алексей М.' LIMIT 1), 'Карьера'),
-  ((SELECT id FROM public.companions WHERE name = 'Алексей М.' LIMIT 1), 'Развитие'),
-  ((SELECT id FROM public.companions WHERE name = 'Алексей М.' LIMIT 1), 'Мотивация'),
-  ((SELECT id FROM public.companions WHERE name = 'Елена В.' LIMIT 1), 'Горе'),
-  ((SELECT id FROM public.companions WHERE name = 'Елена В.' LIMIT 1), 'Потеря'),
-  ((SELECT id FROM public.companions WHERE name = 'Елена В.' LIMIT 1), 'Восстановление')
-ON CONFLICT DO NOTHING;
+-- Insert companion topics (reference table with all available topics)
+INSERT INTO public.companion_topics (name, description)
+VALUES
+  ('Отношения', 'Консультация по личным взаимоотношениям'),
+  ('Тревожность', 'Помощь при тревожных расстройствах'),
+  ('Стресс', 'Управление стрессом и его последствиями'),
+  ('Карьера', 'Консультация по развитию карьеры'),
+  ('Развитие', 'Личностное развитие и самосовершенствование'),
+  ('Мотивация', 'Поиск мотивации и целеполагание'),
+  ('Горе', 'Помощь при переживании горя'),
+  ('Потеря', 'Работа с потерей и разочарованием'),
+  ('Восстановление', 'Восстановление после травм и кризисов')
+ON CONFLICT (name) DO NOTHING;

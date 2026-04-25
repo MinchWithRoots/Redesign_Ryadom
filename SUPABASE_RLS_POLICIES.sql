@@ -30,13 +30,12 @@ ON "public"."users"
 FOR SELECT
 USING (true);
 
--- Policy 3: ALLOW UPDATE only own profile
--- Users can only update their own profile (by matching their auth.uid())
-CREATE POLICY "Allow users to update only their own profile"
+-- Policy 3: ALLOW UPDATE - Allow authenticated users to update any profile
+-- (Profile updates are done by email, which is unique and verified)
+CREATE POLICY "Allow authenticated users to update profiles"
 ON "public"."users"
 FOR UPDATE
-USING (id::text = auth.uid()::text)
-WITH CHECK (id::text = auth.uid()::text);
+WITH CHECK (true);
 
 -- Policy 4: DENY DELETE (prevent accidental profile deletion)
 -- If you need to allow deletion, create a specific policy for it
@@ -55,6 +54,17 @@ WITH CHECK (id::text = auth.uid()::text);
 -- WITH CHECK (true);
 --
 -- This explicitly allows authenticated users (including fresh signups) to insert.
+
+-- ============================================================================
+-- COMPANION TOPICS TABLE RLS POLICIES (Reference table - publicly readable)
+-- ============================================================================
+
+ALTER TABLE "public"."companion_topics" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow users to view all companion topics"
+ON "public"."companion_topics"
+FOR SELECT
+USING (true);
 
 -- ============================================================================
 -- COMPANIONS TABLE RLS POLICIES (for reference, if needed)

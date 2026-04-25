@@ -76,12 +76,12 @@ export const signUp = async (email: string, password: string, name: string) => {
 
     console.log('Supabase Auth user created successfully')
 
-    // Create user profile with the same ID as auth.users
+    // Create user profile (let PostgreSQL auto-generate the ID)
+    // Note: we use email as the unique identifier for lookups
     const { error: profileError } = await supabase
       .from('users')
       .insert([
         {
-          id: data.user.id,
           email: normalizedEmail,
           name: normalizedName,
         },
@@ -99,15 +99,20 @@ export const signUp = async (email: string, password: string, name: string) => {
 
     console.log('User profile created in database')
 
-    // Fetch the created user profile to get the correct ID
+    // Fetch the created user profile
     const { data: profile, error: fetchError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
-      .single()
+      .eq('email', normalizedEmail)
+      .maybeSingle()
 
-    if (fetchError || !profile) {
+    if (fetchError) {
+      console.error('Error fetching user profile:', fetchError)
       throw new Error('Failed to fetch created user profile')
+    }
+
+    if (!profile) {
+      throw new Error('User profile not found after creation')
     }
 
     currentUser.value = {
@@ -115,8 +120,10 @@ export const signUp = async (email: string, password: string, name: string) => {
       email: profile.email,
       name: profile.name,
       age: profile.age,
+      gender: profile.gender,
       bio: profile.bio,
       image: profile.image,
+      topics: profile.topics,
     }
 
     return data.user
@@ -160,7 +167,7 @@ export const login = async (email: string, password: string) => {
       .from('users')
       .select('*')
       .eq('email', userEmail)
-      .single()
+      .maybeSingle()
 
     if (profileError) {
       const errorMessage = getErrorMessage(profileError)
@@ -168,11 +175,39 @@ export const login = async (email: string, password: string) => {
         message: errorMessage,
         code: profileError.code,
       })
-      // Profile might not exist yet, use auth data
+      throw new Error(errorMessage)
+    }
+
+    if (!profile) {
+      // Profile doesn't exist, create it
+      console.log('User profile does not exist, creating new one...')
+      const { data: newProfile, error: createError } = await supabase
+        .from('users')
+        .insert([
+          {
+            email: userEmail,
+            name: data.user.user_metadata?.full_name || 'User',
+          },
+        ])
+        .select()
+        .maybeSingle()
+
+      if (createError) {
+        throw new Error(getErrorMessage(createError))
+      }
+      if (!newProfile) {
+        throw new Error('Failed to create user profile')
+      }
+
       currentUser.value = {
-        id: userEmail, // Use email as fallback ID
-        email: userEmail,
-        name: data.user.user_metadata?.full_name || 'User',
+        id: newProfile.id,
+        email: newProfile.email,
+        name: newProfile.name,
+        age: newProfile.age,
+        gender: newProfile.gender,
+        bio: newProfile.bio,
+        image: newProfile.image,
+        topics: newProfile.topics,
       }
       return data.user
     }
@@ -182,8 +217,10 @@ export const login = async (email: string, password: string) => {
       email: profile.email,
       name: profile.name,
       age: profile.age,
+      gender: profile.gender,
       bio: profile.bio,
       image: profile.image,
+      topics: profile.topics,
     }
 
     return data.user

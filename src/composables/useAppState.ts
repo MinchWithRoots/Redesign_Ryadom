@@ -105,7 +105,7 @@ export const loadCurrentUser = async () => {
       .from('users')
       .select('*')
       .eq('email', userEmail)
-      .single()
+      .maybeSingle()
 
     if (profileError) {
       console.error('Error loading user profile:', {
@@ -117,6 +117,21 @@ export const loadCurrentUser = async () => {
       // This is normal for newly created users
       currentUser.value = {
         id: userEmail, // Use email as fallback
+        name: data.user.user_metadata?.full_name || 'User',
+        email: userEmail,
+        bio: '',
+        role: 'user',
+        gender: undefined,
+        topics: [],
+      }
+      return currentUser.value
+    }
+
+    // Handle case where profile doesn't exist yet
+    if (!profile) {
+      console.log('User profile not found, creating default...')
+      currentUser.value = {
+        id: userEmail,
         name: data.user.user_metadata?.full_name || 'User',
         email: userEmail,
         bio: '',
@@ -172,15 +187,46 @@ export const updateUserProfile = async (updates: {
     if (updates.gender !== undefined) updateData.gender = updates.gender
     if (updates.topics !== undefined) updateData.topics = updates.topics
 
+    console.log('Updating user profile with data:', updateData)
+    console.log('User email for update:', currentUser.value.email)
+
     // Update by email (not by id) to match our user lookup strategy
+    // Use maybeSingle() instead of single() to handle 0 or 1 results gracefully
     const { data: profile, error: updateProfileError } = await supabase
       .from('users')
       .update(updateData)
       .eq('email', currentUser.value.email)
       .select()
-      .single()
+      .maybeSingle()
 
-    if (updateProfileError) throw updateProfileError
+    if (updateProfileError) {
+      const errorMsg = updateProfileError instanceof Error
+        ? updateProfileError.message
+        : (updateProfileError as any)?.message || JSON.stringify(updateProfileError)
+      console.error('Supabase update error details:', {
+        code: (updateProfileError as any)?.code,
+        message: errorMsg,
+        hint: (updateProfileError as any)?.hint,
+        fullError: updateProfileError
+      })
+      throw new Error(errorMsg)
+    }
+
+    if (!profile) {
+      // If no profile was returned, try to fetch it instead
+      console.warn('Update did not return profile, fetching updated user...')
+      const { data: fetchedProfile, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', currentUser.value.email)
+        .maybeSingle()
+
+      if (fetchError) throw new Error(fetchError.message)
+      if (!fetchedProfile) throw new Error('User not found after update')
+
+      currentUser.value = fetchedProfile
+      return fetchedProfile
+    }
 
     currentUser.value = {
       ...currentUser.value,
@@ -191,7 +237,7 @@ export const updateUserProfile = async (updates: {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
     error.value = errorMessage
-    console.error('Update profile error:', err)
+    console.error('Update profile error:', errorMessage)
     throw err
   } finally {
     isLoading.value = false

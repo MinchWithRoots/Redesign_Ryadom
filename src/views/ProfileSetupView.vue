@@ -117,8 +117,8 @@ const handleCompleteSetup = async () => {
 
     successMessage.value = 'Анкета успешно создана!'
     setTimeout(() => {
-      // Redirect to recommendations page (using search page with auto-loaded companions)
-      router.push('/search')
+      // Redirect to recommendations page with personalized suggestions
+      router.push('/recommendations')
     }, 500)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка при сохранении анкеты'

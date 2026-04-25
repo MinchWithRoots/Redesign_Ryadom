@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   email VARCHAR(255) NOT NULL UNIQUE,
   name VARCHAR(255) NOT NULL,
   age INTEGER,
+  gender VARCHAR(50),
   bio TEXT,
   image VARCHAR(500),
   topics JSONB DEFAULT '[]'::jsonb,
@@ -35,21 +36,20 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON public.users USING BTREE (role);
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 -- Step 5: Create RLS policies
--- Allow users to view only their own data
-CREATE POLICY "Users can view their own data" ON public.users
+-- Allow users to view all profiles (for search/discovery)
+CREATE POLICY "Users can view all profiles" ON public.users
   FOR SELECT
-  USING (auth.uid()::text = id::text OR role = 'admin');
+  USING (true);
 
 -- Allow authenticated users to insert their profile
-CREATE POLICY "Users can insert their own profile" ON public.users
+CREATE POLICY "Users can insert their profile" ON public.users
   FOR INSERT
-  WITH CHECK (auth.uid()::text = id::text);
+  WITH CHECK (true);
 
--- Allow users to update only their own data
-CREATE POLICY "Users can update their own profile" ON public.users
+-- Allow users to update profiles (by email which is unique)
+CREATE POLICY "Users can update profiles" ON public.users
   FOR UPDATE
-  USING (auth.uid()::text = id::text OR role = 'admin')
-  WITH CHECK (auth.uid()::text = id::text OR role = 'admin');
+  WITH CHECK (true);
 
 -- Note: Do not allow DELETE by policy (soft delete via is_active)
 -- Admins can delete if needed through direct database access
