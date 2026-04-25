@@ -189,13 +189,13 @@ onMounted(async () => {
               <!-- Stats -->
               <div v-if="userProfile" class="grid grid-cols-2 gap-4 mb-6 p-4 bg-light-bg rounded-2xl">
                 <div>
-                  <p class="text-2xl font-bold text-primary">12</p>
+                  <p class="text-2xl font-bold text-primary">0</p>
                   <p class="text-xs text-secondary/60">сессий</p>
                 </div>
                 <div>
                   <div class="flex items-center justify-center gap-1 mb-1">
                     <img src="../images/support.svg" alt="Thanks" class="w-[24px] h-[24px] object-contain" />
-                    <span class="font-bold text-primary">8</span>
+                    <span class="font-bold text-primary">0</span>
                   </div>
                   <p class="text-xs text-secondary/60">благодарностей</p>
                 </div>
