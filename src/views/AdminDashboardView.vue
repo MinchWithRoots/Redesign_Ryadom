@@ -202,6 +202,16 @@ const handleApproveApplication = async (applicationId: string | number) => {
       throw new Error('Missing required fields in application')
     }
 
+    // Handle image field - the database VARCHAR(500) limit applies to image column
+    // If image is a long base64 string from file upload, use default image instead
+    let imageUrl = app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+
+    // Check if image is a very long string (likely base64), and replace with default
+    if (imageUrl && imageUrl.length > 500) {
+      console.log(`Image too long (${imageUrl.length} chars), using default instead`)
+      imageUrl = 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+    }
+
     // Prepare companion data
     const companionData = {
       name: app.name,
@@ -209,7 +219,7 @@ const handleApproveApplication = async (applicationId: string | number) => {
       gender: app.gender,
       experience: app.experience,
       bio: app.bio,
-      image: app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
+      image: imageUrl,
       topics: app.topics || [],
       is_available: true,
     }
