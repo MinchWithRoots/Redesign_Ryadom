@@ -1,3 +1,22 @@
+# Database Migrations
+
+## 🔴 IMPORTANT: RLS Policy Error on companion_applications
+
+If you see error: `new row violates row-level security policy for table "companion_applications"`
+
+### Quick Fix (Temporary):
+1. Go to [Supabase Dashboard](https://app.supabase.com) → SQL Editor
+2. Run: `backend/migrations/006-TEMPORARY-disable-rls-companion-applications.sql`
+3. Users can now submit applications
+
+### Proper Fix (Recommended):
+1. Run: `backend/migrations/006-add-rls-policies-companion-applications.sql`
+2. This enables RLS with proper policies:
+   - Users can INSERT/SELECT their own applications
+   - Admins can SELECT/UPDATE/DELETE all applications
+
+---
+
 # Database Setup - Companions
 
 Инструкция по добавлению тестовых данных спутников.

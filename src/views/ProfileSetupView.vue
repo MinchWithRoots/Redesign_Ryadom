@@ -210,10 +210,10 @@ const handleSkip = () => {
               <label class="form-label">Ваш пол *</label>
               <div class="grid grid-cols-2 gap-4">
                 <button
-                  @click="profileSetup.gender = 'female'"
+                  @click="profileSetup.gender = 'Женщина'"
                   :class="[
                     'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
-                    profileSetup.gender === 'female'
+                    profileSetup.gender === 'Женщина'
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-white text-secondary hover:border-primary/50'
                   ]"
@@ -221,10 +221,10 @@ const handleSkip = () => {
                   Женщина
                 </button>
                 <button
-                  @click="profileSetup.gender = 'male'"
+                  @click="profileSetup.gender = 'Мужчина'"
                   :class="[
                     'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
-                    profileSetup.gender === 'male'
+                    profileSetup.gender === 'Мужчина'
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-white text-secondary hover:border-primary/50'
                   ]"

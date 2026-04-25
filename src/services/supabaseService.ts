@@ -307,6 +307,16 @@ export async function submitCompanionApplication(
   applicationData: any
 ) {
   try {
+    console.log('Submitting companion application with data:', {
+      userId,
+      name: applicationData.name,
+      age: applicationData.age,
+      gender: applicationData.gender,
+      experience: applicationData.experience,
+      bio: applicationData.bio?.substring(0, 50),
+      topics: applicationData.topics,
+    })
+
     const { data, error } = await supabase
       .from('companion_applications')
       .insert([
@@ -326,11 +336,24 @@ export async function submitCompanionApplication(
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', {
+        message: error.message,
+        code: error.code,
+        hint: (error as any).hint,
+        details: (error as any).details,
+      })
+      throw error
+    }
+
+    console.log('Application submitted successfully:', data)
     return data
   } catch (error) {
-    console.error('Error submitting companion application:', error)
-    return null
+    const errorMsg = error instanceof Error ? error.message : JSON.stringify(error)
+    console.error('Error submitting companion application:', errorMsg)
+    console.error('Full error:', error)
+    // Re-throw the error so the caller can handle it
+    throw error
   }
 }
 
