@@ -28,8 +28,8 @@ const form = ref({
 onMounted(async () => {
   try {
     isLoading.value = true
-    const user = currentUser()
-    
+    const user = currentUser.value
+
     if (!user) {
       router.push('/auth')
       return
@@ -123,7 +123,7 @@ const submitApplication = async () => {
 
     isSubmitting.value = true
 
-    const user = currentUser()
+    const user = currentUser.value
     if (!user) {
       router.push('/auth')
       return
