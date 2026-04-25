@@ -45,8 +45,6 @@ const userProfile = computed(() => currentUser.value || {})
 
 const userEditForm = ref({
   bio: userProfile.value?.bio || '',
-  age: userProfile.value?.age || null,
-  gender: userProfile.value?.gender || '',
   image: userProfile.value?.image || '',
   selectedTopics: (userProfile.value?.topics as string[]) || [],
 })
@@ -56,8 +54,6 @@ watch(currentUser, (newUser) => {
   if (newUser) {
     userEditForm.value = {
       bio: newUser.bio || '',
-      age: newUser.age || null,
-      gender: newUser.gender || '',
       image: newUser.image || '',
       selectedTopics: (newUser.topics as string[]) || [],
     }
@@ -97,14 +93,6 @@ const toggleTopic = (topic: string) => {
 const handleSaveProfile = async () => {
   errorMessage.value = ''
 
-  if (!userEditForm.value.age) {
-    errorMessage.value = 'Пожалуйста, укажите ваш возраст'
-    return
-  }
-  if (!userEditForm.value.gender) {
-    errorMessage.value = 'Пожалуйста, выберите ваш пол'
-    return
-  }
   if (!userEditForm.value.bio.trim()) {
     errorMessage.value = 'Пожалуйста, расскажите о себе'
     return
@@ -118,8 +106,6 @@ const handleSaveProfile = async () => {
   try {
     await updateUserProfile({
       bio: userEditForm.value.bio,
-      age: userEditForm.value.age || undefined,
-      gender: userEditForm.value.gender || undefined,
       image: userEditForm.value.image || undefined,
       topics: userEditForm.value.selectedTopics,
     })
@@ -381,45 +367,19 @@ onMounted(async () => {
                   />
                 </div>
 
-                <!-- Age -->
+                <!-- Age (Display Only) -->
                 <div>
-                  <label class="form-label">Возраст *</label>
-                  <input
-                    v-model.number="userEditForm.age"
-                    type="number"
-                    min="18"
-                    max="120"
-                    placeholder="Введите возраст"
-                    class="input"
-                  />
+                  <label class="form-label">Возраст</label>
+                  <div class="px-4 py-3 border border-border rounded-xl bg-light-bg text-secondary/70 rounded-xl">
+                    {{ userProfile?.age }} {{ getAgeForm(userProfile?.age) }}
+                  </div>
                 </div>
 
-                <!-- Gender -->
+                <!-- Gender (Display Only) -->
                 <div>
-                  <label class="form-label">Пол *</label>
-                  <div class="grid grid-cols-2 gap-4">
-                    <button
-                      @click="userEditForm.gender = 'female'"
-                      :class="[
-                        'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
-                        userEditForm.gender === 'female'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border bg-white text-secondary hover:border-primary/50'
-                      ]"
-                    >
-                      👩 Женщина
-                    </button>
-                    <button
-                      @click="userEditForm.gender = 'male'"
-                      :class="[
-                        'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
-                        userEditForm.gender === 'male'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border bg-white text-secondary hover:border-primary/50'
-                      ]"
-                    >
-                      👨 Мужчина
-                    </button>
+                  <label class="form-label">Пол</label>
+                  <div class="px-4 py-3 border border-border rounded-xl bg-light-bg text-secondary/70">
+                    {{ userProfile?.gender === 'female' ? '👩 Женщина' : userProfile?.gender === 'male' ? '👨 Мужчина' : '—' }}
                   </div>
                 </div>
 
