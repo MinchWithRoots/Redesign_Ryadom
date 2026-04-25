@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser } from '@/composables/useAppState'
+import { currentUser, loadCurrentUser } from '@/composables/useAppState'
 import { submitCompanionApplication, getUserApplication } from '@/services/supabaseService'
 import { supabase } from '@/utils/supabase'
 
@@ -28,6 +28,12 @@ const form = ref({
 onMounted(async () => {
   try {
     isLoading.value = true
+
+    // Ensure current user is loaded
+    if (!currentUser.value) {
+      await loadCurrentUser()
+    }
+
     const user = currentUser.value
 
     if (!user) {
@@ -48,6 +54,38 @@ onMounted(async () => {
       }
     }
 
+    // Test connection to companion_applications table
+    try {
+      const { data: testData, error: testError } = await supabase
+        .from('companion_applications')
+        .select('id')
+        .limit(1)
+
+      if (testError) {
+        console.warn('companion_applications table access error:', testError)
+      } else {
+        console.log('companion_applications table accessible, found', testData?.length || 0, 'records')
+      }
+    } catch (e) {
+      console.error('Error accessing companion_applications table:', e)
+    }
+
+    // Fetch available topics first
+    const { data: topicsData, error: topicsError } = await supabase
+      .from('companion_topics')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (topicsError) {
+      console.error('Error loading topics:', topicsError)
+      errorMessage.value = 'Ошибка при загрузке областей поддержки'
+    }
+
+    if (topicsData) {
+      topics.value = topicsData
+      console.log('Loaded topics:', topicsData)
+    }
+
     // Prefill form with user data from currentUser (which already has the gender from profile setup)
     if (user) {
       form.value.name = user.name || ''
@@ -55,17 +93,18 @@ onMounted(async () => {
       form.value.gender = user.gender || ''
       form.value.bio = user.bio || ''
       form.value.image = user.image || ''
-      form.value.topics = user.topics || []
-    }
 
-    // Fetch available topics
-    const { data: topicsData } = await supabase
-      .from('companion_topics')
-      .select('*')
-      .order('name', { ascending: true })
-
-    if (topicsData) {
-      topics.value = topicsData
+      // Convert topic names (strings) to topic IDs (numbers)
+      if (user.topics && user.topics.length > 0 && topicsData && topicsData.length > 0) {
+        const topicNameToId = new Map(topicsData.map((t: any) => [t.name, t.id]))
+        console.log('Topic name to ID map:', topicNameToId)
+        console.log('User topics to convert:', user.topics)
+        const convertedTopics = user.topics
+          .map((topicName: string) => topicNameToId.get(topicName))
+          .filter((id: number | undefined) => id !== undefined) as number[]
+        form.value.topics = convertedTopics
+        console.log('Converted topics:', convertedTopics)
+      }
     }
   } catch (error) {
     console.error('Error loading application:', error)
@@ -115,29 +154,88 @@ const submitApplication = async () => {
       return
     }
 
-    isSubmitting.value = true
-
     const user = currentUser.value
     if (!user) {
+      errorMessage.value = 'Ошибка: пользователь не авторизован'
       router.push('/auth')
       return
     }
+
+    if (!user.id) {
+      errorMessage.value = 'Ошибка: ID пользователя не найден'
+      return
+    }
+
+    // Check if user is still authenticated with Supabase
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (!authUser) {
+      errorMessage.value = 'Ошибка: сессия истекла. Пожалуйста, повторно войдите'
+      router.push('/auth')
+      return
+    }
+
+    console.log('Submitting application for user:', user.id)
+    console.log('Auth user:', authUser.id)
+    console.log('Form data before submission:', {
+      name: form.value.name,
+      age: form.value.age,
+      gender: form.value.gender,
+      experience: form.value.experience,
+      bio: form.value.bio?.substring(0, 50),
+      image: form.value.image?.substring(0, 50),
+      topics: form.value.topics,
+      message: form.value.message,
+    })
+
+    // Validate types
+    if (typeof form.value.name !== 'string') {
+      throw new Error('Name must be a string')
+    }
+    if (typeof form.value.age !== 'number') {
+      throw new Error('Age must be a number')
+    }
+    if (typeof form.value.gender !== 'string') {
+      throw new Error('Gender must be a string')
+    }
+    if (!Array.isArray(form.value.topics)) {
+      throw new Error('Topics must be an array')
+    }
+
+    isSubmitting.value = true
 
     const result = await submitCompanionApplication(user.id, form.value)
 
     if (result) {
       successMessage.value = 'Спасибо! Ваша заявка подана на рассмотрение. Администратор свяжется с вами в ближайшее время.'
       existingApplication.value = result
+      console.log('Application submitted successfully:', result)
       // Reset form
       setTimeout(() => {
         router.push('/profile')
       }, 2000)
-    } else {
-      errorMessage.value = 'Ошибка при отправке заявки. Пожалуйста, попробуйте позже.'
     }
   } catch (error) {
-    console.error('Error submitting application:', error)
-    errorMessage.value = 'Ошибка при отправке заявки'
+    let errorMsg = 'Неизвестная ошибка'
+    if (error instanceof Error) {
+      errorMsg = error.message
+    } else if (typeof error === 'object' && error !== null) {
+      const err = error as any
+      if (err.message) {
+        errorMsg = err.message
+      } else if (err.error_description) {
+        errorMsg = err.error_description
+      } else if (err.hint) {
+        errorMsg = err.hint
+      } else {
+        errorMsg = JSON.stringify(err)
+      }
+    } else if (typeof error === 'string') {
+      errorMsg = error
+    }
+
+    console.error('Error submitting application:', errorMsg)
+    console.error('Full error object:', error)
+    errorMessage.value = `Ошибка при отправке заявки: ${errorMsg}`
   } finally {
     isSubmitting.value = false
   }
