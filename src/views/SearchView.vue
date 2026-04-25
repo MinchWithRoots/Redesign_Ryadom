@@ -34,35 +34,6 @@ const specializations = computed(() => {
   return Array.from(uniqueSpecializations.values()).sort()
 })
 
-// Get recommended companions based on user's topics
-const recommendedCompanions = computed(() => {
-  if (!currentUser.value) return []
-
-  // If user has selected topics, find companions that match
-  const userTopics = Array.isArray(currentUser.value.topics) ? currentUser.value.topics : []
-
-  if (userTopics.length === 0) {
-    // If no topics selected, show top companions
-    return companions.value.slice(0, 6)
-  }
-
-  // Find companions that have matching topics
-  const matched = companions.value.filter(companion => {
-    if (!companion.topics || companion.topics.length === 0) return false
-    return companion.topics.some(topic => userTopics.includes(topic))
-  })
-
-  // Sort by number of matching topics
-  return matched
-    .map(companion => ({
-      companion,
-      matchCount: (companion.topics || []).filter(topic => userTopics.includes(topic)).length
-    }))
-    .sort((a, b) => b.matchCount - a.matchCount)
-    .map(item => item.companion)
-    .slice(0, 6) // Show top 6
-})
-
 const filteredCompanions = computed(() => {
   let filteredCompanionList = [...companions.value]
 
@@ -167,66 +138,6 @@ const navigateToProfile = (companionId: string | number) => {
         </p>
       </div>
 
-      <!-- Recommendations Section -->
-      <div v-if="recommendedCompanions.length > 0" class="mb-12">
-        <div class="mb-6">
-          <h2 class="text-2xl lg:text-3xl font-bold text-secondary mb-2">
-            <span class="text-primary">⭐ Рекомендации</span> для вас
-          </h2>
-          <p class="text-secondary/60">
-            Собеседники, которые подходят по вашим интересам
-          </p>
-        </div>
-
-        <!-- Recommendations Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div
-            v-for="companion in recommendedCompanions"
-            :key="companion.id"
-            class="group bg-white border border-primary/20 rounded-3xl overflow-hidden shadow-card hover:shadow-hover hover:translate-y-[-4px] transition-all cursor-pointer"
-            @click="selectedCompanion = companion"
-          >
-            <!-- Image -->
-            <div class="h-48 overflow-hidden bg-light-bg relative">
-              <img
-                :src="companion.image"
-                :alt="companion.name"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-              <!-- Match Badge -->
-              <div class="absolute top-3 right-3 px-3 py-1 bg-primary text-white text-xs font-bold rounded-full">
-                ⭐ Подходит
-              </div>
-            </div>
-
-            <!-- Info -->
-            <div class="p-4">
-              <div class="mb-3">
-                <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
-                <div class="flex items-center gap-2">
-                  <p class="text-sm text-secondary/60">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
-                  <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
-                  <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
-                </div>
-              </div>
-
-              <p class="text-xs text-primary font-semibold mb-2">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-              <p class="text-sm text-secondary/70 leading-relaxed mb-3 line-clamp-2">{{ companion.bio }}</p>
-
-              <!-- Button -->
-              <button
-                @click.stop="selectedCompanion = companion"
-                class="w-full py-2 bg-gradient-to-r from-primary to-primary/90 text-white text-sm font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-              >
-                Связаться
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="border-t border-border/30 pt-8 mb-12"></div>
-      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-6">
         <!-- Filters Sidebar -->
