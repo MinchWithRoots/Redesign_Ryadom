@@ -12,33 +12,8 @@ const errorMessage = ref('')
 const editBio = ref('')
 const previewImage = ref<string>('')
 
-// Mock history data (in real app would come from API)
-const sessionHistory = ref([
-  {
-    id: 1,
-    companionName: 'Анна М.',
-    topic: 'Отношения',
-    date: '2024-01-15',
-    duration: '45 мин',
-    feedback: 5,
-  },
-  {
-    id: 2,
-    companionName: 'Виктор П.',
-    topic: 'Карьера',
-    date: '2024-01-10',
-    duration: '30 мин',
-    feedback: 4,
-  },
-  {
-    id: 3,
-    companionName: 'Елена К.',
-    topic: 'Тревожность',
-    date: '2024-01-05',
-    duration: '50 мин',
-    feedback: 5,
-  },
-])
+// Session history (in real app would come from API)
+const sessionHistory = ref([])
 
 // Initialize with current user data
 const userProfile = computed(() => currentUser.value || {})
