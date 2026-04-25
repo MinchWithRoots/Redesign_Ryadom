@@ -117,8 +117,8 @@ const handleCompleteSetup = async () => {
 
     successMessage.value = 'Анкета успешно создана!'
     setTimeout(() => {
-      // Redirect to recommendations page with personalized suggestions
-      router.push('/recommendations')
+      // Redirect to search page
+      router.push('/search')
     }, 500)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка при сохранении анкеты'
@@ -218,7 +218,7 @@ const handleSkip = () => {
                       : 'border-border bg-white text-secondary hover:border-primary/50'
                   ]"
                 >
-                  👩 Женщина
+                  Женщина
                 </button>
                 <button
                   @click="profileSetup.gender = 'male'"
@@ -229,7 +229,7 @@ const handleSkip = () => {
                       : 'border-border bg-white text-secondary hover:border-primary/50'
                   ]"
                 >
-                  👨 Мужчина
+                  Мужчина
                 </button>
               </div>
             </div>

@@ -101,15 +101,17 @@ const resetFilters = async () => {
 
 const handleConnectionRequest = async (companionId: string | number) => {
   try {
-    await sendConnectionRequest(companionId.toString())
-    showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
+    const chat = await sendConnectionRequest(companionId.toString())
+    showNotification.value = `Чат с ${selectedCompanion.value?.name} создан!`
     setTimeout(() => {
       showNotification.value = ''
       selectedCompanion.value = null
-    }, 2000)
+      // Navigate to the new chat
+      router.push(`/chat?id=${chat.id}`)
+    }, 500)
   } catch (err) {
     console.error('Failed to send connection request:', err)
-    showNotification.value = 'Ошибка при отправке запроса'
+    showNotification.value = 'Ошибка при создании чата'
   }
 }
 
