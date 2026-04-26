@@ -809,16 +809,21 @@ export const endSession = async (chatId: string) => {
 }
 
 // Chat Requests operations
-export const loadChatRequests = async (companionId: string | number) => {
+export const loadChatRequests = async (companionId: string | number, statusFilter: string = 'pending') => {
   try {
     isLoading.value = true
     error.value = ''
 
-    const { data: requests, error: loadError } = await supabase
+    let query = supabase
       .from('companion_chat_requests')
       .select('*')
       .eq('companion_id', parseInt(companionId.toString()))
-      .eq('status', 'pending')
+
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter)
+    }
+
+    const { data: requests, error: loadError } = await query
       .order('created_at', { ascending: false })
 
     if (loadError) throw loadError
@@ -956,6 +961,9 @@ export const approveChatRequest = async (requestId: string) => {
     if (index > -1) {
       chatRequests.value.splice(index, 1)
     }
+
+    // Reload chats so the new chat appears in the list
+    await loadChats()
 
     return { request: updatedRequest, chat }
   } catch (err) {

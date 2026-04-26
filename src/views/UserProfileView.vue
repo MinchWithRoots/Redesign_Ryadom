@@ -122,6 +122,19 @@ const navigateToChat = () => {
         </div>
       </div>
 
+      <!-- Companion Profile Badge (only visible to companion and admin) -->
+      <div v-else-if="companion && isCurrentUserCompanion" class="mb-6 p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary rounded-2xl">
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p class="font-bold text-primary">Это ваш профиль спутника</p>
+            <p class="text-sm text-primary/70">Только вы видите раздел с входящими заявками на чат</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Profile Content -->
       <div v-else-if="companion" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Sidebar with Basic Info -->
