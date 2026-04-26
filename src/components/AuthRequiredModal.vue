@@ -71,13 +71,19 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const isOpen = ref(false)
 
-export const openModal = () => {
+const openModal = () => {
   isOpen.value = true
 }
 
-export const close = () => {
+const close = () => {
   isOpen.value = false
 }
+
+// Expose methods to parent components
+defineExpose({
+  openModal,
+  close
+})
 
 const handleLogin = () => {
   close()
