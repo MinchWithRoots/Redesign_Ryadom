@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics } from '../composables/useAppState'
+import UserChatRequests from '../components/UserChatRequests.vue'
 import { getAgeForm } from '../utils/ageForm'
 
 const router = useRouter()
@@ -210,6 +211,20 @@ onMounted(async () => {
               >
                 <img src="../images/message-add-alt.svg" alt="Chats" class="w-5 h-5 inline mr-2 object-contain" />
                 Мои чаты
+              </button>
+              <button
+                @click="activeTab = 'requests'"
+                :class="[
+                  'text-left px-4 py-3 rounded-xl font-medium transition-all',
+                  activeTab === 'requests'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-secondary/70 hover:bg-light-bg'
+                ]"
+              >
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m0 0h6m0 0l-6-6m0 0l6 6" />
+                </svg>
+                Мои заявки
               </button>
               <button
                 @click="activeTab = 'history'"
@@ -457,6 +472,14 @@ onMounted(async () => {
                   <span class="text-lg">🗑</span>
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Chat Requests Tab -->
+          <div v-if="activeTab === 'requests'" class="space-y-6">
+            <h2 class="text-2xl font-bold text-secondary mb-6">Мои заявки на чат</h2>
+            <div class="card">
+              <UserChatRequests />
             </div>
           </div>
 

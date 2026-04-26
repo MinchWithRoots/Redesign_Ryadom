@@ -82,6 +82,7 @@ export const chats = ref<Chat[]>([])
 export const messages = ref<Message[]>([])
 export const currentChatId = ref<string | null>(null)
 export const chatRequests = ref<ChatRequest[]>([])
+export const userChatRequests = ref<ChatRequest[]>([])
 export const isLoading = ref(false)
 export const error = ref('')
 
@@ -855,6 +856,58 @@ export const loadChatRequests = async (companionId: string | number) => {
     error.value = errorMessage
     console.error('Load chat requests error:', errorMessage)
     chatRequests.value = []
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const loadUserChatRequests = async (userId: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    const { data: requests, error: loadError } = await supabase
+      .from('companion_chat_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (loadError) throw loadError
+
+    // Fetch companion info for each request
+    const requestsWithCompanionInfo = await Promise.all(
+      (requests || []).map(async (request: any) => {
+        try {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('name, image')
+            .eq('id', request.companion_id)
+            .single()
+
+          return {
+            ...request,
+            user_name: companionData?.name || 'Unknown',
+            user_image: companionData?.image || '',
+          }
+        } catch (err) {
+          console.error(`Error fetching companion info for request ${request.id}:`, err)
+          return {
+            ...request,
+            user_name: 'Unknown',
+            user_image: '',
+          }
+        }
+      })
+    )
+
+    userChatRequests.value = requestsWithCompanionInfo
+    return requestsWithCompanionInfo
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load user chat requests'
+    error.value = errorMessage
+    console.error('Load user chat requests error:', errorMessage)
+    userChatRequests.value = []
     throw err
   } finally {
     isLoading.value = false
