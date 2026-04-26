@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.companion_chat_requests (
   id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   companion_id BIGINT NOT NULL REFERENCES public.companions(id) ON DELETE CASCADE,
   status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected
   rejection_reason TEXT,
