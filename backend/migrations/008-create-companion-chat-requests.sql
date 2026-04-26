@@ -15,12 +15,12 @@ CREATE TABLE IF NOT EXISTS public.companion_chat_requests (
   rejected_at TIMESTAMP WITH TIME ZONE
 );
 
--- Create unique constraint to prevent duplicate pending requests
-CREATE UNIQUE INDEX idx_companion_chat_requests_unique_pending 
-ON public.companion_chat_requests(user_id, companion_id) 
+-- Create unique constraint to prevent duplicate pending requests (if not exists)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_companion_chat_requests_unique_pending
+ON public.companion_chat_requests(user_id, companion_id)
 WHERE status = 'pending';
 
--- Create indexes for queries
-CREATE INDEX idx_companion_chat_requests_companion_id ON public.companion_chat_requests(companion_id);
-CREATE INDEX idx_companion_chat_requests_user_id ON public.companion_chat_requests(user_id);
-CREATE INDEX idx_companion_chat_requests_status ON public.companion_chat_requests(status);
+-- Create indexes for queries (if not exists)
+CREATE INDEX IF NOT EXISTS idx_companion_chat_requests_companion_id ON public.companion_chat_requests(companion_id);
+CREATE INDEX IF NOT EXISTS idx_companion_chat_requests_user_id ON public.companion_chat_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_companion_chat_requests_status ON public.companion_chat_requests(status);
