@@ -83,13 +83,25 @@ const handleConnectionRequest = async (companionId: string | number) => {
       selectedCompanion.value = null
     }, 3000)
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err)
-    if (error === 'NOT_LOGGED_IN') {
-      authModal.value?.openModal()
-    } else {
-      console.error('Failed to send connection request:', err)
-      showNotification.value = 'Ошибка при отправке запроса'
+    let errorMessage = 'Ошибка при отправке запроса'
+
+    if (err instanceof Error) {
+      errorMessage = err.message
+
+      if (errorMessage === 'NOT_LOGGED_IN') {
+        authModal.value?.openModal()
+        return
+      }
     }
+
+    console.error('Failed to send connection request:', {
+      error: err,
+      message: errorMessage
+    })
+    showNotification.value = errorMessage
+    setTimeout(() => {
+      showNotification.value = ''
+    }, 4000)
   }
 }
 

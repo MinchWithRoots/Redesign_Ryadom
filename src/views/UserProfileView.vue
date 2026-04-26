@@ -57,14 +57,26 @@ const handleSendConnectionRequest = async () => {
       showNotification.value = ''
     }, 3000)
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err)
-    if (error === 'NOT_LOGGED_IN') {
-      // Show auth modal instead of error
-      authModal.value?.openModal()
-    } else {
-      console.error('Error sending connection request:', err)
-      showNotification.value = 'Ошибка при отправке запроса'
+    let errorMessage = 'Ошибка при отправке запроса'
+
+    if (err instanceof Error) {
+      errorMessage = err.message
+
+      if (errorMessage === 'NOT_LOGGED_IN') {
+        // Show auth modal instead of error
+        authModal.value?.openModal()
+        return
+      }
     }
+
+    console.error('Error sending connection request:', {
+      error: err,
+      message: errorMessage
+    })
+    showNotification.value = errorMessage
+    setTimeout(() => {
+      showNotification.value = ''
+    }, 4000)
   }
 }
 

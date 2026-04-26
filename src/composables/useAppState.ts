@@ -482,14 +482,34 @@ export const sendConnectionRequest = async (companionId: string | number) => {
       .select()
       .single()
 
-    if (createRequestError) throw createRequestError
+    if (createRequestError) {
+      const errorMsg = (createRequestError as any)?.message || JSON.stringify(createRequestError)
+      console.error('Supabase error details:', {
+        message: errorMsg,
+        code: (createRequestError as any)?.code,
+        hint: (createRequestError as any)?.hint,
+        details: (createRequestError as any)?.details,
+      })
+      throw new Error(errorMsg)
+    }
 
     return chatRequest
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Failed to send connection request'
+    let errorMessage = 'Failed to send connection request'
+
+    if (err instanceof Error) {
+      errorMessage = err.message
+    } else if (typeof err === 'object' && err !== null) {
+      errorMessage = (err as any)?.message || JSON.stringify(err)
+    }
+
     error.value = errorMessage
-    console.error('Connection request error:', err)
-    throw err
+    console.error('Connection request error details:', {
+      errorMessage,
+      fullError: err,
+      stack: err instanceof Error ? err.stack : undefined
+    })
+    throw new Error(errorMessage)
   } finally {
     isLoading.value = false
   }
