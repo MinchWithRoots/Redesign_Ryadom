@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, isAdmin, companions, loadCompanions } from '../composables/useAppState'
+import { currentUser, isAdmin, companions, loadCompanions, loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import { getGenderInRussian } from '@/utils/genderForm'
 
@@ -276,26 +276,46 @@ const handleApproveApplication = async (applicationId: string | number) => {
 
     // CRITICAL: Change user role from 'user' to 'companion'
     console.log('Changing user role to companion for user:', app.user_id)
-    const { error: updateUserRoleError } = await supabase
+    const { data: updateData, error: updateUserRoleError } = await supabase
       .from('users')
-      .update({ role: 'companion' })
+      .update({ role: 'companion', updated_at: new Date().toISOString() })
       .eq('id', app.user_id)
+      .select()
 
     if (updateUserRoleError) {
-      console.error('User role update error:', updateUserRoleError.message)
+      console.error('User role update error details:', {
+        message: updateUserRoleError.message,
+        code: updateUserRoleError.code,
+        hint: updateUserRoleError.hint,
+        details: (updateUserRoleError as any).details,
+      })
       throw new Error(`Failed to update user role to companion: ${updateUserRoleError.message}`)
     }
 
-    console.log('User role changed to companion successfully')
+    if (!updateData || updateData.length === 0) {
+      console.warn('User role update returned no data. This may indicate the user was not found.')
+      // Don't throw - the update might still have worked even if no data returned
+    }
+
+    console.log('User role changed to companion successfully', updateData)
 
     successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
 
     // Reload both applications and companions lists to reflect changes globally
     // This is critical: loadCompanions() updates the global companions ref so new companion appears everywhere
-    await Promise.all([
+    const reloadTasks = [
       loadApplications(),
       loadCompanions()
-    ])
+    ]
+
+    // If the currently logged-in user was approved, reload their profile to show the new role
+    if (currentUser.value?.id === app.user_id) {
+      console.log('Reloading current user profile due to approval')
+      reloadTasks.push(loadCurrentUser())
+    }
+
+    await Promise.all(reloadTasks)
+
     setTimeout(() => (successMessage.value = ''), 3000)
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Неизвестная ошибка'
