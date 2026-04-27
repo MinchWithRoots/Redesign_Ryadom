@@ -599,38 +599,98 @@ export const loadChats = async () => {
 
     if (!currentUser.value) throw new Error('No user logged in')
 
-    const { data: result, error: loadChatsError } = await supabase
+    console.log('Loading chats for user:', currentUser.value.id, 'Role:', currentUser.value.role)
+
+    // Fetch chats where user is the "user" side
+    const { data: userChats, error: userChatsError } = await supabase
       .from('chats')
       .select('*')
       .eq('user_id', currentUser.value.id)
       .order('updated_at', { ascending: false })
 
-    if (loadChatsError) {
-      console.error('Supabase error loading chats:', {
-        message: loadChatsError.message,
-        code: loadChatsError.code,
-        hint: loadChatsError.hint,
+    if (userChatsError) {
+      console.error('Supabase error loading user chats:', {
+        message: userChatsError.message,
+        code: userChatsError.code,
+        hint: userChatsError.hint,
       })
-      throw loadChatsError
+      throw userChatsError
     }
 
-    // Fetch companion info for each chat separately
-    const chatsWithCompanions = await Promise.all(
-      (result || []).map(async (chat: any) => {
+    let allChats = userChats || []
+
+    // If user is a companion, also fetch chats where they are the "companion" side
+    if (currentUser.value.role === 'companion') {
+      console.log('User is a companion, fetching companion-side chats')
+
+      try {
+        const companionId = await getCurrentCompanionId()
+        if (companionId) {
+          const { data: companionChats, error: companionChatsError } = await supabase
+            .from('chats')
+            .select('*')
+            .eq('companion_id', parseInt(companionId))
+            .order('updated_at', { ascending: false })
+
+          if (companionChatsError) {
+            console.error('Error loading companion chats:', companionChatsError)
+            // Don't throw - continue with user chats only
+          } else {
+            console.log('Loaded companion chats:', companionChats?.length || 0)
+            // Merge and deduplicate chats
+            allChats = [...(userChats || []), ...(companionChats || [])]
+            // Sort by updated_at
+            allChats.sort((a: any, b: any) =>
+              new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+            )
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching companion chats:', err)
+        // Continue with user chats only
+      }
+    }
+
+    console.log('Total chats loaded:', allChats.length)
+
+    // Fetch companion/user info for each chat
+    const chatsWithInfo = await Promise.all(
+      allChats.map(async (chat: any) => {
         try {
-          const { data: companionData } = await supabase
-            .from('companions')
-            .select('name, image')
-            .eq('id', chat.companion_id)
-            .single()
+          // If chat.user_id is current user, fetch companion info
+          // If chat.companion_id belongs to current user, fetch user info
+          const isCurrentUserTheUser = chat.user_id === currentUser.value?.id
+
+          let name = ''
+          let image = ''
+
+          if (isCurrentUserTheUser) {
+            // Current user is the user side, fetch companion info
+            const { data: companionData } = await supabase
+              .from('companions')
+              .select('name, image')
+              .eq('id', chat.companion_id)
+              .single()
+            name = companionData?.name || ''
+            image = companionData?.image || ''
+          } else {
+            // Current user is the companion side, fetch user info
+            const { data: userData } = await supabase
+              .from('users')
+              .select('name, image')
+              .eq('id', chat.user_id)
+              .single()
+            name = userData?.name || ''
+            image = userData?.image || ''
+          }
 
           return {
             id: chat.id,
-            name: companionData?.name || '',
+            name: name,
             lastMessage: chat.last_message || '',
             time: new Date(chat.updated_at).toLocaleString('ru-RU'),
             unread_count: chat.unread_count || 0,
-            image: companionData?.image || '',
+            image: image,
             status: chat.status || 'active',
             companion_id: chat.companion_id,
             user_id: chat.user_id,
@@ -638,7 +698,7 @@ export const loadChats = async () => {
             updated_at: chat.updated_at,
           }
         } catch (err) {
-          console.error(`Error fetching companion info for chat ${chat.id}:`, err)
+          console.error(`Error fetching info for chat ${chat.id}:`, err)
           return {
             id: chat.id,
             name: '',
@@ -656,9 +716,9 @@ export const loadChats = async () => {
       })
     )
 
-    chats.value = chatsWithCompanions
+    chats.value = chatsWithInfo
 
-    return result
+    return allChats
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load chats'
     error.value = errorMessage
@@ -1000,23 +1060,52 @@ export const approveChatRequest = async (requestId: string) => {
     isLoading.value = true
     error.value = ''
 
+    console.log('Starting to approve chat request:', requestId)
+
     // Get the request details
     const request = chatRequests.value.find(r => r.id === requestId)
-    if (!request) throw new Error('Request not found')
+    if (!request) {
+      throw new Error('Request not found in local state')
+    }
+
+    console.log('Found request:', {
+      id: request.id,
+      user_id: request.user_id,
+      companion_id: request.companion_id,
+      status: request.status,
+    })
 
     // Create a chat for both users
+    const chatData = {
+      user_id: request.user_id,
+      companion_id: request.companion_id,
+      status: 'active',
+      total_messages: 0,
+    }
+
+    console.log('Creating chat with data:', chatData)
+
     const { data: chat, error: createChatError } = await supabase
       .from('chats')
-      .insert([
-        {
-          user_id: request.user_id,
-          companion_id: request.companion_id,
-        },
-      ])
+      .insert([chatData])
       .select()
       .single()
 
-    if (createChatError) throw createChatError
+    if (createChatError) {
+      console.error('Chat creation error details:', {
+        message: createChatError.message,
+        code: (createChatError as any).code,
+        hint: (createChatError as any).hint,
+        details: (createChatError as any).details,
+      })
+      throw new Error(`Failed to create chat: ${createChatError.message}`)
+    }
+
+    if (!chat) {
+      throw new Error('Chat creation returned no data')
+    }
+
+    console.log('Chat created successfully:', chat)
 
     // Update the request status and link the chat
     const { data: updatedRequest, error: updateError } = await supabase
@@ -1030,7 +1119,16 @@ export const approveChatRequest = async (requestId: string) => {
       .select()
       .single()
 
-    if (updateError) throw updateError
+    if (updateError) {
+      console.error('Request update error details:', {
+        message: updateError.message,
+        code: (updateError as any).code,
+        hint: (updateError as any).hint,
+      })
+      throw new Error(`Failed to update request: ${updateError.message}`)
+    }
+
+    console.log('Request updated successfully:', updatedRequest)
 
     // Update local state - remove from pending list
     const index = chatRequests.value.findIndex(r => r.id === requestId)
@@ -1039,13 +1137,19 @@ export const approveChatRequest = async (requestId: string) => {
     }
 
     // Reload chats so the new chat appears in the list
+    console.log('Reloading chats...')
     await loadChats()
 
+    console.log('Chat request approved successfully')
     return { request: updatedRequest, chat }
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to approve request'
     error.value = errorMessage
-    console.error('Approve request error:', err)
+    console.error('Full approve request error:', {
+      message: errorMessage,
+      error: err,
+      stack: err instanceof Error ? err.stack : undefined,
+    })
     throw err
   } finally {
     isLoading.value = false
