@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, updateUserProfile, loadTopics, topics } from '../composables/useAppState'
 import { isLoggedIn } from '../composables/useAppState'
+import { supabase } from '@/utils/supabase'
 
 const router = useRouter()
 const step = ref(1) // Step 1: Age & Gender, Step 2: Bio & Topics, Step 3: Photo
@@ -50,16 +51,53 @@ onMounted(async () => {
   }
 })
 
-const handleImageUpload = (event: Event) => {
+const handleImageUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const imageData = e.target?.result as string
-      profileSetup.value.image = imageData
-      previewImage.value = imageData
+  if (!file) return
+
+  // Show preview immediately
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const preview = e.target?.result as string
+    previewImage.value = preview
+  }
+  reader.readAsDataURL(file)
+
+  try {
+    errorMessage.value = ''
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      throw new Error('Размер файла не должен превышать 5MB')
     }
-    reader.readAsDataURL(file)
+
+    // Upload to Supabase Storage
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+    const filePath = `profile-images/${Date.now()}-${fileName}`
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file)
+
+    if (uploadError) {
+      console.error('Upload error details:', uploadError)
+      throw uploadError
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath)
+
+    profileSetup.value.image = publicUrlData.publicUrl
+    console.log('Image uploaded successfully:', profileSetup.value.image)
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Ошибка при загрузке фото'
+    errorMessage.value = `Ошибка: ${errorMsg}. Убедитесь, что бакет 'avatars' создан в Supabase Storage.`
+    console.error('Image upload error:', err)
+    previewImage.value = ''
   }
 }
 
