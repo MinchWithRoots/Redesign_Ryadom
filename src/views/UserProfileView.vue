@@ -236,8 +236,8 @@ const navigateToChat = () => {
             </div>
           </div>
 
-          <!-- Chat Requests Section (only for the companion themselves) -->
-          <CompanionChatRequests v-if="isCurrentUserCompanion" :companion-id="companion.id" />
+          <!-- Incoming Chat Requests Section (only for the companion themselves) -->
+          <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
           <!-- How It Works -->
           <div class="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-3xl p-8 shadow-card">
