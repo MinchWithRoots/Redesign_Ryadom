@@ -222,6 +222,7 @@ const formatDate = (dateString: string | undefined) => {
 const handleApprove = async (requestId: string) => {
   isLoading.value = true
   try {
+    console.log('handleApprove called with requestId:', requestId)
     await approveChatRequest(requestId)
     notification.value = 'Заявка принята! Чат создан.'
     setTimeout(() => {
@@ -230,8 +231,16 @@ const handleApprove = async (requestId: string) => {
     // Reload requests
     await loadChatRequests(props.companionId, 'all')
   } catch (err) {
-    console.error('Error approving request:', err)
-    notification.value = 'Ошибка при принятии заявки'
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    console.error('Error approving request:', {
+      error: err,
+      message: errorMsg,
+      stack: err instanceof Error ? err.stack : undefined,
+    })
+    notification.value = `Ошибка: ${errorMsg}`
+    setTimeout(() => {
+      notification.value = ''
+    }, 5000)
   } finally {
     isLoading.value = false
   }
