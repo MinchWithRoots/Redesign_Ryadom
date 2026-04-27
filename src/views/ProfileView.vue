@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics, getCompanionById } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics, getCompanionById, getCurrentCompanionId } from '../composables/useAppState'
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import { getAgeForm } from '../utils/ageForm'
+import { supabase } from '@/utils/supabase'
 
 const router = useRouter()
 const activeTab = ref('chats')
@@ -17,6 +18,7 @@ const previewImage = ref<string>('')
 // Session history - loaded from chats table where status = 'offline'
 const sessionHistory = ref<any[]>([])
 const companionData = ref<any>(null)
+const companionId = ref<string | null>(null)
 
 // Initialize with current user data
 const userProfile = computed(() => currentUser.value || {})
@@ -140,23 +142,82 @@ const handleSaveSettings = async () => {
   }
 }
 
+// Load session history (completed chats)
+const loadSessionHistory = async () => {
+  try {
+    if (!currentUser.value) return
+
+    const { data: completedChats, error } = await supabase
+      .from('chats')
+      .select(`
+        id,
+        user_id,
+        companion_id,
+        status,
+        created_at,
+        updated_at,
+        companions (name, image)
+      `)
+      .eq('user_id', currentUser.value.id)
+      .eq('status', 'offline')
+      .order('updated_at', { ascending: false })
+
+    if (error) {
+      console.error('Error loading session history:', error)
+      return
+    }
+
+    // Transform the data for display
+    sessionHistory.value = (completedChats || []).map((chat: any) => ({
+      id: chat.id,
+      companionName: chat.companions?.name || 'Unknown',
+      topic: '', // We don't have topic info in the chat yet
+      date: new Date(chat.updated_at).toLocaleDateString('ru-RU'),
+      duration: '—', // Calculate duration if needed
+      feedback: 0,
+    }))
+
+    console.log('Session history loaded:', sessionHistory.value)
+  } catch (err) {
+    console.error('Error in loadSessionHistory:', err)
+  }
+}
+
 // Load chats and topics on mount
 onMounted(async () => {
   await loadChats()
   await loadTopics()
+  await loadSessionHistory()
 
-  // If user is a companion, load companion data for chat requests
+  // If user is a companion, load companion ID for chat requests
   if (currentUser.value?.role === 'companion') {
-    // Find companion record for this user
     try {
-      // We need to search for the companion by user_id in the companions table
-      // This requires a query, but for now we'll load it when the requests tab is accessed
-      console.log('User is a companion, ready to load chat requests')
+      const id = await getCurrentCompanionId()
+      companionId.value = id
+      console.log('Companion ID loaded:', id)
     } catch (err) {
       console.error('Error loading companion data:', err)
     }
   }
 })
+
+// Watch for changes to currentUser role and load companion ID if needed
+watch(
+  () => currentUser.value?.role,
+  async (newRole) => {
+    if (newRole === 'companion') {
+      try {
+        const id = await getCurrentCompanionId()
+        companionId.value = id
+        console.log('Companion ID loaded after role change:', id)
+      } catch (err) {
+        console.error('Error loading companion data:', err)
+      }
+    } else {
+      companionId.value = null
+    }
+  }
+)
 </script>
 
 <template>
@@ -496,9 +557,12 @@ onMounted(async () => {
             <h2 class="text-2xl font-bold text-secondary mb-6">Мои заявки на чат</h2>
             <div class="card">
               <CompanionChatRequests
-                v-if="userProfile.id"
-                :companion-id="userProfile.id"
+                v-if="companionId"
+                :companion-id="companionId"
               />
+              <div v-else class="text-center py-8">
+                <p class="text-secondary/60">Загрузка...</p>
+              </div>
             </div>
           </div>
 
