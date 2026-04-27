@@ -102,14 +102,14 @@ const handleSaveProfile = async () => {
   }
 }
 
-const handleDeleteChat = (chatId: number) => {
+const handleDeleteChat = (chatId: string | number) => {
   if (confirm('Вы уверены, что хотите удалить этот чат?')) {
-    deleteChat(chatId)
+    deleteChat(chatId.toString())
   }
 }
 
-const handleOpenChat = (chatId: number) => {
-  markChatAsRead(chatId)
+const handleOpenChat = (chatId: string | number) => {
+  markChatAsRead(chatId.toString())
   router.push(`/chat?id=${chatId}`)
 }
 
@@ -290,10 +290,10 @@ watch(
               <!-- Show "Мои заявки" only for companions -->
               <button
                 v-if="userProfile.role === 'companion'"
-                @click="activeTab = 'requests'"
+                @click="activeTab = 'companion-requests'"
                 :class="[
                   'text-left px-4 py-3 rounded-xl font-medium transition-all',
-                  activeTab === 'requests'
+                  activeTab === 'companion-requests'
                     ? 'bg-primary/10 text-primary'
                     : 'text-secondary/70 hover:bg-light-bg'
                 ]"
@@ -303,6 +303,24 @@ watch(
                 </svg>
                 Мои заявки
               </button>
+
+              <!-- Show "Мои запросы" for regular users -->
+              <button
+                v-if="userProfile.role !== 'companion'"
+                @click="activeTab = 'user-requests'"
+                :class="[
+                  'text-left px-4 py-3 rounded-xl font-medium transition-all',
+                  activeTab === 'user-requests'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-secondary/70 hover:bg-light-bg'
+                ]"
+              >
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Мои запросы
+              </button>
+
               <button
                 @click="activeTab = 'history'"
                 :class="[
@@ -499,7 +517,22 @@ watch(
           <div v-if="activeTab === 'chats'" class="space-y-4">
             <h2 class="text-2xl font-bold text-secondary mb-6">Мои чаты</h2>
 
-            <div v-if="chats.length > 0" class="space-y-3">
+            <!-- Empty State -->
+            <div v-if="chats.length === 0" class="bg-white border border-border/50 rounded-3xl p-12 shadow-card text-center">
+              <svg class="w-20 h-20 mx-auto mb-6 text-secondary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <h3 class="text-xl font-bold text-secondary mb-2">Чатов нет</h3>
+              <p class="text-secondary/60 mb-6">Найдите компаньона и отправьте запрос на подключение</p>
+              <router-link
+                to="/search"
+                class="inline-block px-8 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-all font-medium"
+              >
+                Найти компаньона
+              </router-link>
+            </div>
+
+            <div v-else class="space-y-3">
               <div
                 v-for="chat in chats"
                 :key="chat.id"
@@ -553,7 +586,7 @@ watch(
           </div>
 
           <!-- Chat Requests Tab (only for companions) -->
-          <div v-if="activeTab === 'requests' && userProfile.role === 'companion'" class="space-y-6">
+          <div v-if="activeTab === 'companion-requests' && userProfile.role === 'companion'" class="space-y-6">
             <h2 class="text-2xl font-bold text-secondary mb-6">Мои заявки на чат</h2>
             <div class="card">
               <CompanionChatRequests
@@ -563,6 +596,14 @@ watch(
               <div v-else class="text-center py-8">
                 <p class="text-secondary/60">Загрузка...</p>
               </div>
+            </div>
+          </div>
+
+          <!-- User Chat Requests Tab (for regular users) -->
+          <div v-if="activeTab === 'user-requests' && userProfile.role !== 'companion'" class="space-y-6">
+            <h2 class="text-2xl font-bold text-secondary mb-6">Мои запросы на чат</h2>
+            <div class="card">
+              <UserChatRequests />
             </div>
           </div>
 

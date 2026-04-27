@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { messages, getChatById, sendMessage as sendChatMessage, endSession, getChatMessages, loadChats } from '../composables/useAppState'
+import { currentUser, messages, getChatById, endSession, loadChats } from '../composables/useAppState'
+import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 
 const router = useRouter()
@@ -15,10 +16,15 @@ const reportMessage = ref('')
 const isReporting = ref(false)
 const reportSuccess = ref('')
 const isLoadingMessages = ref(false)
+const isSending = ref(false)
+const messagesContainer = ref<HTMLElement | null>(null)
 
 const chatId = computed(() => (route.query.id as string) || null)
 
-const chat = computed(() => getChatById(chatId.value))
+const chat = computed(() => {
+  if (!chatId.value) return null
+  return chats.value.find(c => c.id.toString() === chatId.value)
+})
 
 const chatMessages = computed(() => messages.value)
 
@@ -33,11 +39,49 @@ const currentCompanion = computed(() => {
   return null
 })
 
+// Local state for chats since we might not have them from global state
+const chats = ref<any[]>([])
+
+// Format time for display
+const formatTime = (date: string | Date) => {
+  const d = new Date(date)
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
 const loadMessages = async () => {
   if (chatId.value) {
     isLoadingMessages.value = true
     try {
-      await getChatMessages(chatId.value)
+      const { data: messagesData, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('chat_id', chatId.value)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('Error loading messages:', error)
+        return
+      }
+
+      // Transform messages to include proper formatting
+      const transformedMessages = (messagesData || []).map((msg: any) => ({
+        id: msg.id,
+        sender_id: msg.sender_id,
+        text: msg.text,
+        created_at: msg.created_at,
+        author: msg.sender_id === currentUser.value?.id ? 'You' : 'Companion',
+        isMine: msg.sender_id === currentUser.value?.id,
+        chat_id: msg.chat_id,
+        time: formatTime(msg.created_at),
+      }))
+
+      messages.value = transformedMessages
+
+      // Scroll to bottom after messages load
+      await nextTick()
+      scrollToBottom()
     } catch (err) {
       console.error('Error loading messages:', err)
     } finally {
@@ -46,45 +90,144 @@ const loadMessages = async () => {
   }
 }
 
-// Load chats and messages when chatId changes
-watch(chatId, async () => {
-  if (chatId.value) {
-    try {
-      await loadChats()
-      await loadMessages()
-    } catch (err) {
-      console.error('Error loading chat data:', err)
-    }
-  }
-})
-
-// Load chats and messages on mount
-onMounted(async () => {
+const loadChatsLocal = async () => {
   try {
-    await loadChats()
-    if (chatId.value) {
-      await loadMessages()
-    }
-  } catch (err) {
-    console.error('Error during chat initialization:', err)
-  }
-})
+    if (!currentUser.value) return
 
-const sendMessage = () => {
-  if (messageInput.value.trim() && chatId.value) {
-    sendChatMessage(chatId.value, messageInput.value)
+    const { data: chatsData, error } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('user_id', currentUser.value.id)
+      .order('updated_at', { ascending: false })
+
+    if (error) {
+      console.error('Error loading chats:', error)
+      return
+    }
+
+    // Fetch companion info for each chat
+    const chatsWithInfo = await Promise.all(
+      (chatsData || []).map(async (c: any) => {
+        try {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('name, image')
+            .eq('id', c.companion_id)
+            .single()
+
+          return {
+            id: c.id,
+            name: companionData?.name || 'Unknown',
+            lastMessage: c.last_message || '',
+            time: new Date(c.updated_at).toLocaleString('ru-RU'),
+            unread_count: c.unread_count || 0,
+            image: companionData?.image || '',
+            status: c.status || 'active',
+            companion_id: c.companion_id,
+            user_id: c.user_id,
+            created_at: c.created_at,
+            updated_at: c.updated_at,
+          }
+        } catch (err) {
+          console.error(`Error fetching info for chat ${c.id}:`, err)
+          return c
+        }
+      })
+    )
+
+    chats.value = chatsWithInfo
+  } catch (err) {
+    console.error('Error loading chats:', err)
+  }
+}
+
+const scrollToBottom = () => {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+const sendMessage = async () => {
+  if (!messageInput.value.trim() || !chatId.value || !currentUser.value) {
+    return
+  }
+
+  isSending.value = true
+  try {
+    const { data: messageData, error } = await supabase
+      .from('messages')
+      .insert([
+        {
+          chat_id: chatId.value,
+          sender_id: currentUser.value.id,
+          text: messageInput.value.trim(),
+        },
+      ])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error sending message:', error)
+      return
+    }
+
+    // Update chat last_message
+    const { error: updateErr } = await supabase
+      .from('chats')
+      .update({
+        last_message: messageInput.value.trim(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', chatId.value)
+
+    if (updateErr) {
+      console.error('Error updating chat:', updateErr)
+    }
+
+    // Add message to local state
+    const newMessage = {
+      id: messageData.id,
+      sender_id: messageData.sender_id,
+      text: messageData.text,
+      created_at: messageData.created_at,
+      author: currentUser.value.name || 'You',
+      isMine: true,
+      chat_id: messageData.chat_id,
+      time: formatTime(messageData.created_at),
+    }
+
+    messages.value.push(newMessage)
     messageInput.value = ''
+
+    // Scroll to bottom after new message
+    await nextTick()
+    scrollToBottom()
+  } catch (err) {
+    console.error('Error in sendMessage:', err)
+  } finally {
+    isSending.value = false
   }
 }
 
 const handleEndSession = async () => {
   isEndingSession.value = true
   try {
-    endSession(chatId.value)
+    const { error } = await supabase
+      .from('chats')
+      .update({ status: 'offline' })
+      .eq('id', chatId.value)
+
+    if (error) {
+      console.error('Error ending session:', error)
+      return
+    }
+
     sessionEnded.value = true
     setTimeout(() => {
       router.push('/profile')
     }, 2000)
+  } catch (err) {
+    console.error('Error ending session:', err)
   } finally {
     isEndingSession.value = false
   }
@@ -98,8 +241,8 @@ const handleReportUser = async () => {
 
   isReporting.value = true
   try {
-    const chat = getChatById(chatId.value)
-    if (!chat) {
+    const chatData = chat.value
+    if (!chatData) {
       alert('Chat not found')
       return
     }
@@ -107,8 +250,8 @@ const handleReportUser = async () => {
     // Submit report to Supabase
     await supabaseService.submitReport(
       chatId.value,
-      chat.user_id,
-      chat.companion_id,
+      chatData.user_id,
+      chatData.companion_id,
       reportReason.value,
       reportMessage.value
     )
@@ -127,34 +270,97 @@ const handleReportUser = async () => {
     isReporting.value = false
   }
 }
+
+// Subscribe to real-time messages
+const subscribeToMessages = () => {
+  if (!chatId.value) return
+
+  const subscription = supabase
+    .channel(`messages:${chatId.value}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `chat_id=eq.${chatId.value}`,
+      },
+      (payload) => {
+        const newMsg = payload.new as any
+        // Only add if not already in messages
+        if (!messages.value.find(m => m.id === newMsg.id)) {
+          const transformedMsg = {
+            id: newMsg.id,
+            sender_id: newMsg.sender_id,
+            text: newMsg.text,
+            created_at: newMsg.created_at,
+            author: newMsg.sender_id === currentUser.value?.id ? 'You' : 'Companion',
+            isMine: newMsg.sender_id === currentUser.value?.id,
+            chat_id: newMsg.chat_id,
+            time: formatTime(newMsg.created_at),
+          }
+          messages.value.push(transformedMsg)
+          scrollToBottom()
+        }
+      }
+    )
+    .subscribe()
+
+  return subscription
+}
+
+// Load data on mount and when chatId changes
+watch(chatId, async () => {
+  if (chatId.value) {
+    messages.value = []
+    await loadChatsLocal()
+    await loadMessages()
+    subscribeToMessages()
+  }
+})
+
+onMounted(async () => {
+  await loadChatsLocal()
+  if (chatId.value) {
+    await loadMessages()
+    subscribeToMessages()
+  }
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16 flex flex-col">
     <div class="container mx-auto px-4 lg:px-8 max-w-4xl flex-1 flex flex-col">
       <!-- Loading or Chat Header -->
-      <div v-if="!currentCompanion && isLoadingMessages" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
-        <p class="text-secondary/60">Загрузка чата...</p>
+      <div v-if="!chat && isLoadingMessages" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
+        <div class="flex items-center justify-center gap-3">
+          <div class="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
+          <p class="text-secondary/60">Загрузка чата...</p>
+        </div>
       </div>
 
-      <div v-else-if="!currentCompanion" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
-        <p class="text-secondary/60 mb-4">Чат не найден</p>
+      <div v-else-if="!chat && !isLoadingMessages" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
+        <svg class="w-16 h-16 mx-auto mb-4 text-secondary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <p class="text-secondary/60 mb-4 text-lg">Чат не найден</p>
+        <p class="text-secondary/50 mb-6 text-sm">Пожалуйста, выберите чат из списка или вернитесь в профиль</p>
         <button
-          @click="$router.push('/profile')"
-          class="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-all"
+          @click="router.push('/profile')"
+          class="px-8 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-all font-medium"
         >
           Вернуться в профиль
         </button>
       </div>
 
       <!-- Chat Header -->
-      <div v-else class="bg-white border border-border/50 rounded-3xl p-4 mb-6 shadow-card flex items-center justify-between sticky top-[140px] z-40">
+      <div v-else-if="currentCompanion" class="bg-white border border-border/50 rounded-3xl p-4 mb-6 shadow-card flex items-center justify-between sticky top-[140px] z-40">
         <div class="flex items-center gap-4">
           <!-- Avatar -->
           <div class="relative">
             <img
-              :src="currentCompanion.image"
-              :alt="currentCompanion.name"
+              :src="currentCompanion?.image || 'https://via.placeholder.com/100'"
+              :alt="currentCompanion?.name || 'Companion'"
               class="w-12 h-12 rounded-full object-cover"
             />
             <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -162,8 +368,8 @@ const handleReportUser = async () => {
 
           <!-- Info -->
           <div>
-            <h2 class="font-bold text-secondary">{{ currentCompanion.name }}</h2>
-            <p class="text-xs text-green-500 font-medium">{{ currentCompanion.status }}</p>
+            <h2 class="font-bold text-secondary">{{ currentCompanion?.name }}</h2>
+            <p class="text-xs text-green-500 font-medium">{{ currentCompanion?.status }}</p>
           </div>
         </div>
 
@@ -282,50 +488,72 @@ const handleReportUser = async () => {
 
       <!-- Messages Container (only show if chat is loaded) -->
       <template v-if="currentCompanion">
-      <div class="flex-1 overflow-y-auto mb-6 space-y-4 px-2">
+      <div
+        ref="messagesContainer"
+        class="flex-1 overflow-y-auto mb-6 space-y-3 px-2 py-4 scroll-smooth"
+        style="scroll-behavior: smooth;"
+      >
+        <!-- Empty state -->
+        <div v-if="chatMessages.length === 0" class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <p class="text-secondary/60 text-sm">Начните разговор с {{ currentCompanion.name }}</p>
+          </div>
+        </div>
+
+        <!-- Messages -->
         <div
           v-for="message in chatMessages"
           :key="message.id"
           :class="[
-            'flex gap-3',
+            'flex gap-2 animate-fadeIn',
             message.isMine ? 'justify-end' : 'justify-start'
           ]"
         >
           <!-- Avatar (for other) -->
-          <div v-if="!message.isMine" class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm">
-            М
+          <div v-if="!message.isMine" class="flex-shrink-0 mt-1">
+            <img
+              :src="currentCompanion.image"
+              :alt="currentCompanion.name"
+              class="w-7 h-7 rounded-full object-cover"
+            />
           </div>
 
           <!-- Message Bubble -->
           <div
             :class="[
-              'max-w-xs lg:max-w-md px-4 py-3 rounded-2xl',
+              'max-w-xs lg:max-w-md px-4 py-3 rounded-3xl break-words',
               message.isMine
                 ? 'bg-gradient-to-r from-primary to-primary/90 text-white rounded-br-none'
-                : 'bg-light-bg text-secondary rounded-bl-none'
+                : 'bg-light-bg text-secondary rounded-bl-none shadow-sm'
             ]"
           >
-            <p class="text-sm leading-relaxed">{{ message.text }}</p>
+            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ message.text }}</p>
             <p :class="[
-              'text-xs mt-1',
+              'text-xs mt-1 font-medium',
               message.isMine ? 'text-white/70' : 'text-secondary/50'
             ]">
-              {{ message.time }}
+              {{ formatTime(message.created_at) }}
             </p>
           </div>
 
           <!-- Avatar (for me) -->
-          <div v-if="message.isMine" class="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white text-sm">
-            Я
+          <div v-if="message.isMine" class="flex-shrink-0 mt-1">
+            <div class="w-7 h-7 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-bold text-secondary">
+              Я
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Input Area -->
-      <div class="bg-white border border-border/50 rounded-3xl p-4 shadow-card">
-        <div class="flex gap-3">
+      <div class="bg-white border border-border/50 rounded-3xl p-4 shadow-card sticky bottom-0">
+        <div class="flex gap-3 items-end">
           <!-- Attachment Button -->
-          <button class="flex-shrink-0 p-2 text-secondary/60 hover:text-secondary transition-colors">
+          <button
+            type="button"
+            class="flex-shrink-0 p-2 text-secondary/60 hover:text-secondary hover:bg-light-bg rounded-lg transition-all"
+            title="Загрузить файл"
+          >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
@@ -337,24 +565,31 @@ const handleReportUser = async () => {
             type="text"
             placeholder="Напишите сообщение..."
             @keyup.enter="sendMessage"
-            class="flex-1 px-4 py-2 bg-light-bg rounded-full focus:outline-none text-secondary placeholder-secondary/50"
+            :disabled="isSending"
+            class="flex-1 px-4 py-2.5 bg-light-bg rounded-full focus:outline-none text-secondary placeholder-secondary/50 disabled:opacity-50 transition-all"
           />
 
           <!-- Send Button -->
           <button
             @click="sendMessage"
-            :disabled="!messageInput.trim()"
-            class="flex-shrink-0 px-4 py-2 bg-primary text-white rounded-full hover:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+            :disabled="!messageInput.trim() || isSending"
+            type="button"
+            class="flex-shrink-0 p-2.5 bg-primary text-white rounded-full hover:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium hover:bg-primary/90"
+            title="Отправить сообщение"
           >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <svg v-if="!isSending" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-2.976 5.951 2.976a1 1 0 001.169-1.409l-7-14z" />
+            </svg>
+            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </button>
         </div>
 
         <!-- Info -->
-        <p class="text-xs text-secondary/50 mt-3 text-center">
-          Сессия завершится через 45 минут
+        <p class="text-xs text-secondary/50 mt-3 text-center font-medium">
+          💬 Сессия активна
         </p>
       </div>
       </template>
@@ -389,5 +624,20 @@ div::-webkit-scrollbar-thumb:hover {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
 }
 </style>
