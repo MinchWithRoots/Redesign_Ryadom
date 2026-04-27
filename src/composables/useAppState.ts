@@ -96,6 +96,30 @@ export const isAdmin = () => {
   return currentUser.value?.role === 'admin'
 }
 
+// Get companion ID for current user (if they are a companion)
+export const getCurrentCompanionId = async (): Promise<string | null> => {
+  try {
+    if (!currentUser.value) return null
+
+    // Search for companion record where user_id matches current user
+    const { data, error } = await supabase
+      .from('companions')
+      .select('id')
+      .eq('user_id', currentUser.value.id)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching companion ID:', error)
+      return null
+    }
+
+    return data?.id ? data.id.toString() : null
+  } catch (err) {
+    console.error('Error in getCurrentCompanionId:', err)
+    return null
+  }
+}
+
 // Load current user
 export const loadCurrentUser = async () => {
   try {
