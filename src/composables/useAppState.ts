@@ -31,6 +31,7 @@ export interface Companion {
   bio: string
   is_available?: boolean
   topics?: string[]
+  user_id?: string
   created_at?: string
   updated_at?: string
 }
@@ -49,6 +50,21 @@ export interface Chat {
   updated_at: string
 }
 
+export interface ChatRequest {
+  id: string
+  user_id: string
+  companion_id: string
+  status: 'pending' | 'approved' | 'rejected'
+  rejection_reason?: string
+  chat_id?: string
+  created_at: string
+  updated_at: string
+  approved_at?: string
+  rejected_at?: string
+  user_name?: string
+  user_image?: string
+}
+
 export interface Message {
   id: string
   sender_id: string
@@ -65,6 +81,8 @@ export const companions = ref<Companion[]>([])
 export const chats = ref<Chat[]>([])
 export const messages = ref<Message[]>([])
 export const currentChatId = ref<string | null>(null)
+export const chatRequests = ref<ChatRequest[]>([])
+export const userChatRequests = ref<ChatRequest[]>([])
 export const isLoading = ref(false)
 export const error = ref('')
 
@@ -444,51 +462,55 @@ export const sendConnectionRequest = async (companionId: string | number) => {
     isLoading.value = true
     error.value = ''
 
-    if (!currentUser.value) throw new Error('No user logged in')
+    // Check if user is logged in BEFORE creating the request
+    if (!currentUser.value) {
+      const notLoggedInError = new Error('NOT_LOGGED_IN')
+      throw notLoggedInError
+    }
 
     const companionIdStr = companionId.toString()
 
-    // Create chat
-    const { data: chat, error: createChatError } = await supabase
-      .from('chats')
+    // Create a chat request (pending approval from companion)
+    const { data: chatRequest, error: createRequestError } = await supabase
+      .from('companion_chat_requests')
       .insert([
         {
           user_id: currentUser.value.id,
           companion_id: parseInt(companionIdStr),
+          status: 'pending',
         },
       ])
       .select()
       .single()
 
-    if (createChatError) throw createChatError
-
-    // Get companion info
-    const selectedCompanion = companions.value.find(companionItem => companionItem.id === companionIdStr)
-
-    const newChat: Chat = {
-      id: chat.id,
-      name: selectedCompanion?.name || '',
-      lastMessage: 'Новое соединение',
-      time: 'только что',
-      unread_count: 0,
-      image: selectedCompanion?.image || '',
-      status: 'active' as const,
-      companion_id: companionIdStr,
-      user_id: currentUser.value.id,
-      created_at: chat.created_at,
-      updated_at: chat.updated_at,
+    if (createRequestError) {
+      const errorMsg = (createRequestError as any)?.message || JSON.stringify(createRequestError)
+      console.error('Supabase error details:', {
+        message: errorMsg,
+        code: (createRequestError as any)?.code,
+        hint: (createRequestError as any)?.hint,
+        details: (createRequestError as any)?.details,
+      })
+      throw new Error(errorMsg)
     }
 
-    if (!chats.value.find(chatItem => chatItem.id === chat.id)) {
-      chats.value.push(newChat)
-    }
-
-    return chat
+    return chatRequest
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Failed to send connection request'
+    let errorMessage = 'Failed to send connection request'
+
+    if (err instanceof Error) {
+      errorMessage = err.message
+    } else if (typeof err === 'object' && err !== null) {
+      errorMessage = (err as any)?.message || JSON.stringify(err)
+    }
+
     error.value = errorMessage
-    console.error('Connection request error:', err)
-    throw err
+    console.error('Connection request error details:', {
+      errorMessage,
+      fullError: err,
+      stack: err instanceof Error ? err.stack : undefined
+    })
+    throw new Error(errorMessage)
   } finally {
     isLoading.value = false
   }
@@ -780,6 +802,210 @@ export const endSession = async (chatId: string) => {
     const errorMessage = err instanceof Error ? err.message : 'Failed to end session'
     error.value = errorMessage
     console.error('End session error:', err)
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Chat Requests operations
+export const loadChatRequests = async (companionId: string | number, statusFilter: string = 'pending') => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    let query = supabase
+      .from('companion_chat_requests')
+      .select('*')
+      .eq('companion_id', parseInt(companionId.toString()))
+
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter)
+    }
+
+    const { data: requests, error: loadError } = await query
+      .order('created_at', { ascending: false })
+
+    if (loadError) throw loadError
+
+    // Fetch user info for each request
+    const requestsWithUserInfo = await Promise.all(
+      (requests || []).map(async (request: any) => {
+        try {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('name, image')
+            .eq('id', request.user_id)
+            .single()
+
+          return {
+            ...request,
+            user_name: userData?.name || 'Unknown',
+            user_image: userData?.image || '',
+          }
+        } catch (err) {
+          console.error(`Error fetching user info for request ${request.id}:`, err)
+          return {
+            ...request,
+            user_name: 'Unknown',
+            user_image: '',
+          }
+        }
+      })
+    )
+
+    chatRequests.value = requestsWithUserInfo
+    return requestsWithUserInfo
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load chat requests'
+    error.value = errorMessage
+    console.error('Load chat requests error:', errorMessage)
+    chatRequests.value = []
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const loadUserChatRequests = async (userId: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    const { data: requests, error: loadError } = await supabase
+      .from('companion_chat_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (loadError) throw loadError
+
+    // Fetch companion info for each request
+    const requestsWithCompanionInfo = await Promise.all(
+      (requests || []).map(async (request: any) => {
+        try {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('name, image')
+            .eq('id', request.companion_id)
+            .single()
+
+          return {
+            ...request,
+            user_name: companionData?.name || 'Unknown',
+            user_image: companionData?.image || '',
+          }
+        } catch (err) {
+          console.error(`Error fetching companion info for request ${request.id}:`, err)
+          return {
+            ...request,
+            user_name: 'Unknown',
+            user_image: '',
+          }
+        }
+      })
+    )
+
+    userChatRequests.value = requestsWithCompanionInfo
+    return requestsWithCompanionInfo
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load user chat requests'
+    error.value = errorMessage
+    console.error('Load user chat requests error:', errorMessage)
+    userChatRequests.value = []
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const approveChatRequest = async (requestId: string) => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    // Get the request details
+    const request = chatRequests.value.find(r => r.id === requestId)
+    if (!request) throw new Error('Request not found')
+
+    // Create a chat for both users
+    const { data: chat, error: createChatError } = await supabase
+      .from('chats')
+      .insert([
+        {
+          user_id: request.user_id,
+          companion_id: request.companion_id,
+        },
+      ])
+      .select()
+      .single()
+
+    if (createChatError) throw createChatError
+
+    // Update the request status and link the chat
+    const { data: updatedRequest, error: updateError } = await supabase
+      .from('companion_chat_requests')
+      .update({
+        status: 'approved',
+        chat_id: chat.id,
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', requestId)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+
+    // Update local state - remove from pending list
+    const index = chatRequests.value.findIndex(r => r.id === requestId)
+    if (index > -1) {
+      chatRequests.value.splice(index, 1)
+    }
+
+    // Reload chats so the new chat appears in the list
+    await loadChats()
+
+    return { request: updatedRequest, chat }
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to approve request'
+    error.value = errorMessage
+    console.error('Approve request error:', err)
+    throw err
+  } finally {
+    isLoading.value = false
+  }
+}
+
+export const rejectChatRequest = async (requestId: string, reason: string = '') => {
+  try {
+    isLoading.value = true
+    error.value = ''
+
+    // Update the request status
+    const { data: updatedRequest, error: updateError } = await supabase
+      .from('companion_chat_requests')
+      .update({
+        status: 'rejected',
+        rejection_reason: reason,
+        rejected_at: new Date().toISOString(),
+      })
+      .eq('id', requestId)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+
+    // Update local state - remove from pending list
+    const index = chatRequests.value.findIndex(r => r.id === requestId)
+    if (index > -1) {
+      chatRequests.value.splice(index, 1)
+    }
+
+    return updatedRequest
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to reject request'
+    error.value = errorMessage
+    console.error('Reject request error:', err)
     throw err
   } finally {
     isLoading.value = false

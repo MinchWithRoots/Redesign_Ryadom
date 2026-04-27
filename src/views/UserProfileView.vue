@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { companions, getCompanionById, sendConnectionRequest } from '../composables/useAppState'
+import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
+import AuthRequiredModal from '../components/AuthRequiredModal.vue'
+import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import supportIcon from '../images/support.svg'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
 const route = useRoute()
+const authModal = ref<InstanceType<typeof AuthRequiredModal> | null>(null)
 const companion = ref<(typeof companions)['value'][0] | null>(null)
 const isLoading = ref(true)
 const showNotification = ref('')
 const hasRequestSent = ref(false)
+
+const isCurrentUserCompanion = computed(() => {
+  // Спутник это тот, у кого роль 'companion' и это его профиль
+  return currentUser.value && companion.value && 
+         currentUser.value.role === 'companion' && 
+         currentUser.value.id === companion.value.user_id
+})
 
 // Get companion ID from route params
 const companionId = computed(() => {
@@ -21,6 +31,11 @@ const companionId = computed(() => {
 
 onMounted(async () => {
   try {
+    // Load current user if not already loaded
+    if (!currentUser.value) {
+      await loadCurrentUser()
+    }
+
     const comp = await getCompanionById(companionId.value.toString())
     if (comp) {
       companion.value = comp
@@ -45,7 +60,26 @@ const handleSendConnectionRequest = async () => {
       showNotification.value = ''
     }, 3000)
   } catch (err) {
-    console.error('Error sending connection request:', err)
+    let errorMessage = 'Ошибка при отправке запроса'
+
+    if (err instanceof Error) {
+      errorMessage = err.message
+
+      if (errorMessage === 'NOT_LOGGED_IN') {
+        // Show auth modal instead of error
+        authModal.value?.openModal()
+        return
+      }
+    }
+
+    console.error('Error sending connection request:', {
+      error: err,
+      message: errorMessage
+    })
+    showNotification.value = errorMessage
+    setTimeout(() => {
+      showNotification.value = ''
+    }, 4000)
   }
 }
 
@@ -61,6 +95,9 @@ const navigateToChat = () => {
 
 <template>
   <div class="layout-page">
+    <!-- Auth Required Modal -->
+    <AuthRequiredModal ref="authModal" />
+
     <!-- Notification -->
     <transition name="slide">
       <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
@@ -89,138 +126,157 @@ const navigateToChat = () => {
       </div>
 
       <!-- Profile Content -->
-      <div v-else-if="companion" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Sidebar with Basic Info -->
-        <div class="lg:col-span-1">
-          <div class="bg-white border border-border/50 rounded-3xl p-6 shadow-card sticky top-[140px]">
-            <!-- Profile Image -->
-            <div class="mb-6">
-              <img
-                :src="companion.image"
-                :alt="companion.name"
-                class="w-full h-72 rounded-2xl object-cover"
-              />
-            </div>
-
-            <!-- Basic Info -->
-            <div class="text-center mb-6">
-              <h1 class="text-2xl font-bold text-secondary mb-2">{{ companion.name }}</h1>
-              <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
-            </div>
-
-            <!-- Stats -->
-            <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
-              <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                  <img :src="supportIcon" alt="благодарности" class="w-5 h-5" />
-                  <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
-                </div>
-                <p class="text-xs text-secondary/60">благодарностей</p>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="space-y-3">
-              <button
-                v-if="!hasRequestSent"
-                @click="handleSendConnectionRequest"
-                class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-              >
-                Предложить связь
-              </button>
-              <button
-                v-else
-                @click="navigateToChat"
-                class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-              >
-                Перейти в чаты
-              </button>
-              <button
-                @click="goBack"
-                class="w-full py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
-              >
-                Отмена
-              </button>
+      <div v-else-if="companion" class="space-y-6">
+        <!-- Companion Badge (only visible to the companion themselves) -->
+        <div v-if="isCurrentUserCompanion" class="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary rounded-2xl">
+          <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p class="font-bold text-primary">👤 Это ваш профиль спутника</p>
+              <p class="text-sm text-primary/70">Только вы видите раздел с входящими заявками на чат</p>
             </div>
           </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Experience Section -->
-          <div class="card">
-            <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
+        <!-- Main Profile Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Sidebar with Basic Info -->
+          <div class="lg:col-span-1">
+            <div class="bg-white border border-border/50 rounded-3xl p-6 shadow-card sticky top-[140px]">
+              <!-- Profile Image -->
+              <div class="mb-6">
+                <img
+                  :src="companion.image"
+                  :alt="companion.name"
+                  class="w-full h-72 rounded-2xl object-cover"
+                />
+              </div>
 
-            <div class="space-y-4">
-              <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
-                <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+              <!-- Basic Info -->
+              <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-secondary mb-2">{{ companion.name }}</h1>
+                <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
+              </div>
+
+              <!-- Stats -->
+              <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
+                <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
+                  <div class="flex items-center justify-center gap-2 mb-2">
+                    <img :src="supportIcon" alt="благодарности" class="w-5 h-5" />
+                    <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+                  </div>
+                  <p class="text-xs text-secondary/60">благодарностей</p>
                 </div>
-                <div>
-                  <p class="text-sm font-semibold text-secondary mb-1">Время в пути</p>
-                  <p class="text-secondary/70">{{ getExperienceText(companion.experience) }}</p>
-                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="space-y-3">
+                <button
+                  v-if="!hasRequestSent && !isCurrentUserCompanion"
+                  @click="handleSendConnectionRequest"
+                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                >
+                  Предложить связь
+                </button>
+                <button
+                  v-else-if="hasRequestSent && !isCurrentUserCompanion"
+                  @click="navigateToChat"
+                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                >
+                  Перейти в чаты
+                </button>
+                <button
+                  @click="goBack"
+                  class="w-full py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+                >
+                  Отмена
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- Bio Section -->
-          <div class="card">
-            <h2 class="text-2xl font-bold text-secondary mb-6">О себе</h2>
-            <p class="text-secondary/70 leading-relaxed text-lg">
-              {{ companion.bio }}
-            </p>
-          </div>
+          <!-- Main Content -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Experience Section -->
+            <div class="card">
+              <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
 
-          <!-- Topics Section -->
-          <div class="card">
-            <h2 class="text-2xl font-bold text-secondary mb-6">Темы для обсуждения</h2>
-
-            <div class="flex flex-wrap gap-3">
-              <span
-                v-for="topic in companion.topics"
-                :key="topic"
-                class="px-6 py-2.5 bg-primary/10 text-primary font-semibold rounded-full text-sm hover:bg-primary/20 transition-colors"
-              >
-                {{ topic }}
-              </span>
+              <div class="space-y-4">
+                <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
+                  <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-secondary mb-1">Время в пути</p>
+                    <p class="text-secondary/70">{{ getExperienceText(companion.experience) }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- How It Works -->
-          <div class="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-3xl p-8 shadow-card">
-            <h2 class="text-2xl font-bold text-secondary mb-6">Как это работает</h2>
+            <!-- Bio Section -->
+            <div class="card">
+              <h2 class="text-2xl font-bold text-secondary mb-6">О себе</h2>
+              <p class="text-secondary/70 leading-relaxed text-lg">
+                {{ companion.bio }}
+              </p>
+            </div>
 
-            <div class="space-y-4">
-              <div class="flex gap-4">
-                <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  1
-                </div>
-                <div>
-                  <p class="font-semibold text-secondary mb-1">Отправьте запрос</p>
-                  <p class="text-sm text-secondary/70">Нажмите кнопку "Предложить связь"</p>
-                </div>
+            <!-- Topics Section -->
+            <div class="card">
+              <h2 class="text-2xl font-bold text-secondary mb-6">Темы для обсуждения</h2>
+
+              <div class="flex flex-wrap gap-3">
+                <span
+                  v-for="topic in companion.topics"
+                  :key="topic"
+                  class="px-6 py-2.5 bg-primary/10 text-primary font-semibold rounded-full text-sm hover:bg-primary/20 transition-colors"
+                >
+                  {{ topic }}
+                </span>
               </div>
+            </div>
 
-              <div class="flex gap-4">
-                <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  2
-                </div>
-                <div>
-                  <p class="font-semibold text-secondary mb-1">Дождитесь ответа</p>
-                  <p class="text-sm text-secondary/70">{{ companion.name }} ответит на ваш запрос в течение 24 часов</p>
-                </div>
-              </div>
+            <!-- Incoming Chat Requests Section (only for the companion themselves) -->
+            <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
-              <div class="flex gap-4">
-                <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  3
+            <!-- How It Works -->
+            <div class="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-3xl p-8 shadow-card">
+              <h2 class="text-2xl font-bold text-secondary mb-6">Как это работает</h2>
+
+              <div class="space-y-4">
+                <div class="flex gap-4">
+                  <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    1
+                  </div>
+                  <div>
+                    <p class="font-semibold text-secondary mb-1">Отправьте запрос</p>
+                    <p class="text-sm text-secondary/70">Нажмите кнопку "Предложить связь"</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="font-semibold text-secondary mb-1">Начните общение</p>
-                  <p class="text-sm text-secondary/70">Обсудите важные для вас темы и поддерживайте друг друга</p>
+
+                <div class="flex gap-4">
+                  <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    2
+                  </div>
+                  <div>
+                    <p class="font-semibold text-secondary mb-1">Дождитесь ответа</p>
+                    <p class="text-sm text-secondary/70">{{ companion.name }} ответит на ваш запрос в течение 24 часов</p>
+                  </div>
+                </div>
+
+                <div class="flex gap-4">
+                  <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    3
+                  </div>
+                  <div>
+                    <p class="font-semibold text-secondary mb-1">Начните общение</p>
+                    <p class="text-sm text-secondary/70">Обсудите важные для вас темы и поддерживайте друг друга</p>
+                  </div>
                 </div>
               </div>
             </div>

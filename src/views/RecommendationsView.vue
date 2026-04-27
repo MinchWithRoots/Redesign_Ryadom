@@ -2,10 +2,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, companions, chats, sendConnectionRequest, loadCompanions } from '../composables/useAppState'
+import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 
 const router = useRouter()
+const authModal = ref<InstanceType<typeof AuthRequiredModal> | null>(null)
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
 const showNotification = ref('')
 
@@ -47,17 +49,32 @@ onMounted(async () => {
 
 const handleConnectionRequest = async (companionId: string | number) => {
   try {
-    const chat = await sendConnectionRequest(companionId.toString())
-    showNotification.value = `Чат с ${selectedCompanion.value?.name} создан!`
+    await sendConnectionRequest(companionId.toString())
+    showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
     setTimeout(() => {
       showNotification.value = ''
       selectedCompanion.value = null
-      // Navigate to the new chat
-      router.push(`/chat?id=${chat.id}`)
-    }, 500)
+    }, 3000)
   } catch (err) {
-    console.error('Failed to send connection request:', err)
-    showNotification.value = 'Ошибка при создании чата'
+    let errorMessage = 'Ошибка при отправке запроса'
+
+    if (err instanceof Error) {
+      errorMessage = err.message
+
+      if (errorMessage === 'NOT_LOGGED_IN') {
+        authModal.value?.openModal()
+        return
+      }
+    }
+
+    console.error('Failed to send connection request:', {
+      error: err,
+      message: errorMessage
+    })
+    showNotification.value = errorMessage
+    setTimeout(() => {
+      showNotification.value = ''
+    }, 4000)
   }
 }
 
@@ -72,6 +89,9 @@ const navigateToSearch = () => {
 
 <template>
   <div class="layout-page">
+    <!-- Auth Required Modal -->
+    <AuthRequiredModal ref="authModal" />
+
     <div class="layout-container">
       <!-- Header -->
       <div class="mb-12 lg:mb-16">
