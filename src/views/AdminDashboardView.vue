@@ -222,6 +222,7 @@ const handleApproveApplication = async (applicationId: string | number) => {
       image: imageUrl,
       topics: app.topics || [],
       is_available: true,
+      user_id: app.user_id, // Link companion to user
     }
 
     console.log('Inserting companion with data:', companionData)
@@ -260,7 +261,7 @@ const handleApproveApplication = async (applicationId: string | number) => {
     console.log('Companion created successfully:', companionInsertData)
 
     // Update the application status
-    const { error: updateError } = await supabase
+    const { error: updateAppError } = await supabase
       .from('companion_applications')
       .update({
         status: 'approved',
@@ -268,10 +269,24 @@ const handleApproveApplication = async (applicationId: string | number) => {
       })
       .eq('id', applicationId)
 
-    if (updateError) {
-      console.error('Application update error:', updateError.message)
-      throw new Error(`Failed to update application status: ${updateError.message}`)
+    if (updateAppError) {
+      console.error('Application update error:', updateAppError.message)
+      throw new Error(`Failed to update application status: ${updateAppError.message}`)
     }
+
+    // CRITICAL: Change user role from 'user' to 'companion'
+    console.log('Changing user role to companion for user:', app.user_id)
+    const { error: updateUserRoleError } = await supabase
+      .from('users')
+      .update({ role: 'companion' })
+      .eq('id', app.user_id)
+
+    if (updateUserRoleError) {
+      console.error('User role update error:', updateUserRoleError.message)
+      throw new Error(`Failed to update user role to companion: ${updateUserRoleError.message}`)
+    }
+
+    console.log('User role changed to companion successfully')
 
     successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
 

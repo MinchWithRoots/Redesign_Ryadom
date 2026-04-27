@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics, getCompanionById } from '../composables/useAppState'
 import UserChatRequests from '../components/UserChatRequests.vue'
+import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import { getAgeForm } from '../utils/ageForm'
 
 const router = useRouter()
@@ -13,8 +14,9 @@ const errorMessage = ref('')
 const editBio = ref('')
 const previewImage = ref<string>('')
 
-// Session history (in real app would come from API)
-const sessionHistory = ref([])
+// Session history - loaded from chats table where status = 'offline'
+const sessionHistory = ref<any[]>([])
+const companionData = ref<any>(null)
 
 // Initialize with current user data
 const userProfile = computed(() => currentUser.value || {})
@@ -142,6 +144,18 @@ const handleSaveSettings = async () => {
 onMounted(async () => {
   await loadChats()
   await loadTopics()
+
+  // If user is a companion, load companion data for chat requests
+  if (currentUser.value?.role === 'companion') {
+    // Find companion record for this user
+    try {
+      // We need to search for the companion by user_id in the companions table
+      // This requires a query, but for now we'll load it when the requests tab is accessed
+      console.log('User is a companion, ready to load chat requests')
+    } catch (err) {
+      console.error('Error loading companion data:', err)
+    }
+  }
 })
 </script>
 
@@ -212,7 +226,9 @@ onMounted(async () => {
                 <img src="../images/message-add-alt.svg" alt="Chats" class="w-5 h-5 inline mr-2 object-contain" />
                 Мои чаты
               </button>
+              <!-- Show "Мои заявки" only for companions -->
               <button
+                v-if="userProfile.role === 'companion'"
                 @click="activeTab = 'requests'"
                 :class="[
                   'text-left px-4 py-3 rounded-xl font-medium transition-all',
@@ -475,11 +491,14 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- Chat Requests Tab -->
-          <div v-if="activeTab === 'requests'" class="space-y-6">
+          <!-- Chat Requests Tab (only for companions) -->
+          <div v-if="activeTab === 'requests' && userProfile.role === 'companion'" class="space-y-6">
             <h2 class="text-2xl font-bold text-secondary mb-6">Мои заявки на чат</h2>
             <div class="card">
-              <UserChatRequests />
+              <CompanionChatRequests
+                v-if="userProfile.id"
+                :companion-id="userProfile.id"
+              />
             </div>
           </div>
 
