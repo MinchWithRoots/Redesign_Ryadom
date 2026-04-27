@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, isAdmin } from '../composables/useAppState'
+import { currentUser, isAdmin, companions, loadCompanions } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import { getGenderInRussian } from '@/utils/genderForm'
 
@@ -202,15 +202,15 @@ const handleApproveApplication = async (applicationId: string | number) => {
       throw new Error('Missing required fields in application')
     }
 
-    // Handle image field - the database VARCHAR(500) limit applies to image column
-    // If image is a long base64 string from file upload, use default image instead
-    let imageUrl = app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+    // Handle image field - use provided image or default
+    // Images from profile uploads are now URLs (from Supabase Storage) instead of base64
+    const imageUrl = app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
 
-    // Check if image is a very long string (likely base64), and replace with default
-    if (imageUrl && imageUrl.length > 500) {
-      console.log(`Image too long (${imageUrl.length} chars), using default instead`)
-      imageUrl = 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
-    }
+    console.log('Using image URL:', {
+      appImage: app.image?.substring(0, 50),
+      imageUrl: imageUrl.substring(0, 50),
+      length: imageUrl.length
+    })
 
     // Prepare companion data
     const companionData = {
@@ -222,6 +222,7 @@ const handleApproveApplication = async (applicationId: string | number) => {
       image: imageUrl,
       topics: app.topics || [],
       is_available: true,
+      user_id: app.user_id, // Link companion to user
     }
 
     console.log('Inserting companion with data:', companionData)
@@ -260,7 +261,7 @@ const handleApproveApplication = async (applicationId: string | number) => {
     console.log('Companion created successfully:', companionInsertData)
 
     // Update the application status
-    const { error: updateError } = await supabase
+    const { error: updateAppError } = await supabase
       .from('companion_applications')
       .update({
         status: 'approved',
@@ -268,13 +269,29 @@ const handleApproveApplication = async (applicationId: string | number) => {
       })
       .eq('id', applicationId)
 
-    if (updateError) {
-      console.error('Application update error:', updateError.message)
-      throw new Error(`Failed to update application status: ${updateError.message}`)
+    if (updateAppError) {
+      console.error('Application update error:', updateAppError.message)
+      throw new Error(`Failed to update application status: ${updateAppError.message}`)
     }
 
+    // CRITICAL: Change user role from 'user' to 'companion'
+    console.log('Changing user role to companion for user:', app.user_id)
+    const { error: updateUserRoleError } = await supabase
+      .from('users')
+      .update({ role: 'companion' })
+      .eq('id', app.user_id)
+
+    if (updateUserRoleError) {
+      console.error('User role update error:', updateUserRoleError.message)
+      throw new Error(`Failed to update user role to companion: ${updateUserRoleError.message}`)
+    }
+
+    console.log('User role changed to companion successfully')
+
     successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
-    // Reload both applications and companions lists to reflect changes
+
+    // Reload both applications and companions lists to reflect changes globally
+    // This is critical: loadCompanions() updates the global companions ref so new companion appears everywhere
     await Promise.all([
       loadApplications(),
       loadCompanions()
