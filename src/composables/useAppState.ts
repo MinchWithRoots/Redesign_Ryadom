@@ -265,12 +265,23 @@ export const updateUserProfile = async (updates: {
       if (!fetchedProfile) throw new Error('User not found after update')
 
       currentUser.value = fetchedProfile
+
+      // If this user is a companion, also update their companion record
+      if (fetchedProfile.role === 'companion' && updates.image !== undefined) {
+        await syncCompanionPhoto(fetchedProfile.id, updates.image)
+      }
+
       return fetchedProfile
     }
 
     currentUser.value = {
       ...currentUser.value,
       ...profile,
+    }
+
+    // If this user is a companion, also update their companion record
+    if (profile.role === 'companion' && updates.image !== undefined) {
+      await syncCompanionPhoto(profile.id, updates.image)
     }
 
     return profile
@@ -281,6 +292,47 @@ export const updateUserProfile = async (updates: {
     throw err
   } finally {
     isLoading.value = false
+  }
+}
+
+// Sync companion photo when user updates their profile photo
+const syncCompanionPhoto = async (userId: string, imageUrl: string) => {
+  try {
+    console.log('Syncing companion photo for user:', userId)
+
+    // Find companion record by user_id
+    const { data: companion, error: fetchError } = await supabase
+      .from('companions')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (fetchError) {
+      console.error('Error fetching companion:', fetchError)
+      return
+    }
+
+    if (!companion) {
+      console.log('No companion record found for user:', userId)
+      return
+    }
+
+    // Update companion's image
+    const { error: updateError } = await supabase
+      .from('companions')
+      .update({ image: imageUrl, updated_at: new Date().toISOString() })
+      .eq('id', companion.id)
+
+    if (updateError) {
+      console.error('Error syncing companion photo:', updateError)
+      // Don't throw - this is a secondary update
+      return
+    }
+
+    console.log('Companion photo synced successfully')
+  } catch (err) {
+    console.error('Error in syncCompanionPhoto:', err)
+    // Don't throw - this is a secondary operation
   }
 }
 
