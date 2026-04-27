@@ -421,6 +421,17 @@ export async function approveCompanionApplication(applicationId: string) {
 
     if (companionError) throw companionError
 
+    // Update user role to 'companion'
+    const { error: userRoleError } = await supabase
+      .from('users')
+      .update({ role: 'companion' })
+      .eq('id', application.user_id)
+
+    if (userRoleError) {
+      console.error('Error updating user role:', userRoleError)
+      // Don't throw - companion was created, role update is secondary
+    }
+
     // Update the application status
     const { data: updatedApp, error: updateError } = await supabase
       .from('companion_applications')
