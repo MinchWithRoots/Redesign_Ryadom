@@ -102,14 +102,14 @@ const handleSaveProfile = async () => {
   }
 }
 
-const handleDeleteChat = (chatId: number) => {
+const handleDeleteChat = (chatId: string | number) => {
   if (confirm('Вы уверены, что хотите удалить этот чат?')) {
-    deleteChat(chatId)
+    deleteChat(chatId.toString())
   }
 }
 
-const handleOpenChat = (chatId: number) => {
-  markChatAsRead(chatId)
+const handleOpenChat = (chatId: string | number) => {
+  markChatAsRead(chatId.toString())
   router.push(`/chat?id=${chatId}`)
 }
 
