@@ -42,6 +42,16 @@ const routes = [
     component: () => import('../views/AuthView.vue'),
   },
   {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('../views/ResetPasswordView.vue'),
+  },
+  {
+    path: '/auth/callback',
+    name: 'AuthCallback',
+    component: () => import('../views/AuthCallbackView.vue'),
+  },
+  {
     path: '/admin',
     name: 'AdminDashboard',
     component: () => import('../views/AdminDashboardView.vue'),
