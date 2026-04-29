@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
+import ReviewSlider from '@/components/ReviewSlider.vue'
 
 const router = useRouter()
 const reviews = ref<any[]>([])
@@ -12,7 +13,7 @@ const navigate = (path: string) => {
   window.scrollTo(0, 0)
 }
 
-// Fetch reviews from Supabase
+// Fetch reviews from Supabase or use defaults
 const fetchReviews = async () => {
   try {
     isLoadingReviews.value = true
@@ -21,63 +22,98 @@ const fetchReviews = async () => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.warn('⚠️ Supabase not configured. Using default reviews.')
-      throw new Error('Supabase credentials missing - see .env.local')
+    if (supabaseUrl && supabaseKey) {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*, users (name, image)')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(6)
+
+      if (!error && data && data.length > 0) {
+        reviews.value = data.map((review: any) => ({
+          id: review.id,
+          name: review.users?.name || 'Анонимно',
+          title: review.title || 'Пользователь платформы',
+          text: review.comment,
+          avatar: review.users?.image || getPlaceholderAvatar(review.users?.name || 'User'),
+        }))
+        return
+      }
     }
 
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*, users (name, image)')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(3)
-
-    if (error) {
-      console.error('Supabase error details:', {
-        message: error.message,
-        code: error.code,
-        hint: error.hint,
-      })
-      throw error
-    }
-
-    reviews.value = (data || []).map((review: any) => ({
-      id: review.id,
-      name: review.users?.name || 'Анонимно',
-      title: review.title || 'Пользователь платформы',
-      text: review.comment,
-      avatar: review.users?.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
-    }))
+    // Fallback to default reviews
+    loadDefaultReviews()
   } catch (err) {
-    console.warn('Failed to fetch reviews from Supabase, using defaults:', err instanceof Error ? err.message : err)
-    // Fallback to default reviews if fetch fails
-    reviews.value = [
-      {
-        id: 1,
-        name: 'Мария К.',
-        title: 'В процессе терапии',
-        text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
-        avatar: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-      },
-      {
-        id: 2,
-        name: 'Алексей М.',
-        title: 'Рос свой опыт в терапии',
-        text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
-        avatar: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
-      },
-      {
-        id: 3,
-        name: 'Елена В.',
-        title: 'Путь выздоровления',
-        text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
-        avatar: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
-      },
-    ]
+    console.warn('Failed to fetch reviews, using defaults:', err instanceof Error ? err.message : err)
+    loadDefaultReviews()
   } finally {
     isLoadingReviews.value = false
   }
+}
+
+// Generate placeholder avatars with initials
+const getPlaceholderAvatar = (name: string) => {
+  const initials = name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  const colors = ['FF6B9D', '6B5DFF', '00BCD4', '4CAF50', 'FF9800', 'E91E63']
+  const colorIndex = name.length % colors.length
+  const bgColor = colors[colorIndex]
+
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bgColor}&color=fff&size=200&bold=true`
+}
+
+// Load default reviews
+const loadDefaultReviews = () => {
+  reviews.value = [
+    {
+      id: 1,
+      name: 'Мария Кузнецова',
+      title: 'В процессе терапии',
+      text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
+      avatar: '/src/images/users/id1-image.jpg',
+    },
+    {
+      id: 2,
+      name: 'Алексей Морозов',
+      title: 'Прошел курс терапии',
+      text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
+      avatar: '/src/images/users/id2-image.jpg',
+    },
+    {
+      id: 3,
+      name: 'Елена Волкова',
+      title: 'Путь выздоровления',
+      text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
+      avatar: '/src/images/users/id3-image.jpg',
+    },
+    {
+      id: 4,
+      name: 'Дмитрий Петров',
+      title: 'Активный участник',
+      text: 'Сервис действительно поддерживает. Нашел здесь не только понимание, но и новых друзей. Рекомендую всем, кто ищет настоящую поддержку.',
+      avatar: '/src/images/users/id4-image.jpg',
+    },
+    {
+      id: 5,
+      name: 'Анна Сидорова',
+      title: 'Консультант',
+      text: 'Работаю в сфере психического здоровья и с уверенностью говорю — эта платформа создает действительно безопасное пространство для людей.',
+      avatar: '/src/images/users/id5-image.jpg',
+    },
+    {
+      id: 6,
+      name: 'Иван Новиков',
+      title: 'Пользователь',
+      text: 'Благодарен за эту платформу. Здесь я нашел поддержку, которую не мог найти нигде. Каждый день общения здесь помогает мне становиться лучше.',
+      avatar: '/src/images/users/id1-image.jpg',
+    },
+  ]
 }
 
 onMounted(() => {
@@ -312,46 +348,8 @@ onMounted(() => {
             </p>
           </div>
 
-          <!-- Reviews Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            <div
-              v-for="review in reviews"
-              :key="review.id"
-              class="group bg-white border border-border/50 rounded-3xl p-8 shadow-card hover:shadow-hover hover:translate-y-[-8px] transition-all duration-300 relative overflow-hidden"
-            >
-              <!-- Gradient overlay on hover -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-
-              <!-- Stars -->
-              <div class="flex gap-1 mb-6">
-                <img v-for="starIndex in 5" :key="starIndex" src="../images/star.svg" alt="Star" class="w-5 h-5 object-contain" />
-              </div>
-
-              <!-- Quote with icon -->
-              <div class="relative mb-8">
-                <div class="w-8 h-8 absolute -top-2 -left-2">
-                  <img src="../images/heart-add.svg" alt="Quote" class="w-full h-full object-contain opacity-30" />
-                </div>
-                <p class="text-secondary/70 text-lg leading-relaxed">{{ review.text }}</p>
-              </div>
-
-              <!-- Bottom divider -->
-              <div class="border-t border-border/50 pt-6">
-                <!-- Avatar and Info -->
-                <div class="flex items-center gap-4">
-                  <img
-                    :src="review.avatar"
-                    :alt="review.name"
-                    class="w-14 h-14 rounded-full object-cover flex-shrink-0 shadow-soft border-2 border-primary/20"
-                  />
-                  <div class="flex-1">
-                    <h4 class="font-bold text-secondary text-lg">{{ review.name }}</h4>
-                    <p class="text-sm text-secondary/60">{{ review.title }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Reviews Slider -->
+          <ReviewSlider :reviews="reviews" />
         </div>
       </div>
     </section>

@@ -37,12 +37,19 @@ const registerForm = ref({
   acceptTerms: false,
 })
 
+// Check if we should show registration form
+const updateFormMode = () => {
+  isLogin.value = route.query.mode !== 'register'
+}
+
+// Watch for changes in route query
+watch(() => route.query.mode, () => {
+  updateFormMode()
+})
+
 // Load remembered credentials on component mount
 onMounted(() => {
-  // Check if we should show registration form
-  if (route.query.mode === 'register') {
-    isLogin.value = false
-  }
+  updateFormMode()
 
   const remembered = localStorage.getItem('rememberMe')
   if (remembered) {
