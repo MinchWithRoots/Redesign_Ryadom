@@ -92,7 +92,7 @@ const handleLogin = () => {
 
 const handleRegister = () => {
   close()
-  router.push('/auth')
+  router.push({ path: '/auth', query: { mode: 'register' } })
 }
 </script>
 

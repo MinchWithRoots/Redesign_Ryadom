@@ -410,6 +410,67 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <!-- Contacts Section -->
+    <section id="contacts" class="py-24 lg:py-32 px-4 lg:px-8 bg-gradient-to-b from-light-bg to-white relative">
+      <div class="container mx-auto max-w-2xl">
+        <div class="text-center space-y-8">
+          <div class="space-y-4">
+            <p class="text-primary font-semibold text-lg">Контакты</p>
+            <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
+              Свяжитесь с нами
+            </h2>
+            <p class="text-xl text-secondary/60">
+              У вас есть вопросы или предложения? Мы всегда готовы помочь
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+            <!-- Email -->
+            <a
+              href="mailto:info@ryandom.ru"
+              class="p-6 bg-white rounded-2xl border-2 border-border hover:border-primary hover:shadow-hover transition-all group"
+            >
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <p class="font-semibold text-secondary mb-1">Электронная почта</p>
+                  <p class="text-secondary/60 group-hover:text-primary transition-colors">info@ryandom.ru</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Phone -->
+            <a
+              href="tel:+79000000000"
+              class="p-6 bg-white rounded-2xl border-2 border-border hover:border-primary hover:shadow-hover transition-all group"
+            >
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.73 1.365a1 1 0 001.006-.19c.235-.172.482-.311.735-.427a1 1 0 00.503-1.35l-1.498-4.493a1 1 0 00-.948-.684H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.73 1.365a1 1 0 001.006-.19c.235-.172.482-.311.735-.427a1 1 0 00.503-1.35l-1.498-4.493" />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <p class="font-semibold text-secondary mb-1">Телефон</p>
+                  <p class="text-secondary/60 group-hover:text-primary transition-colors">+7 (900) 000-00-00</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="mt-12 p-6 bg-primary/5 border border-primary/20 rounded-2xl">
+            <p class="text-secondary/70">
+              Мы стараемся ответить на все запросы в течение 24 часов
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
