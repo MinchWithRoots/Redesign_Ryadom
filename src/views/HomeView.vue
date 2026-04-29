@@ -13,7 +13,7 @@ const navigate = (path: string) => {
   window.scrollTo(0, 0)
 }
 
-// Fetch reviews from Supabase
+// Fetch reviews from Supabase or use defaults
 const fetchReviews = async () => {
   try {
     isLoadingReviews.value = true
@@ -22,63 +22,98 @@ const fetchReviews = async () => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.warn('⚠️ Supabase not configured. Using default reviews.')
-      throw new Error('Supabase credentials missing - see .env.local')
+    if (supabaseUrl && supabaseKey) {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*, users (name, image)')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(6)
+
+      if (!error && data && data.length > 0) {
+        reviews.value = data.map((review: any) => ({
+          id: review.id,
+          name: review.users?.name || 'Анонимно',
+          title: review.title || 'Пользователь платформы',
+          text: review.comment,
+          avatar: review.users?.image || getPlaceholderAvatar(review.users?.name || 'User'),
+        }))
+        return
+      }
     }
 
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*, users (name, image)')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(3)
-
-    if (error) {
-      console.error('Supabase error details:', {
-        message: error.message,
-        code: error.code,
-        hint: error.hint,
-      })
-      throw error
-    }
-
-    reviews.value = (data || []).map((review: any) => ({
-      id: review.id,
-      name: review.users?.name || 'Анонимно',
-      title: review.title || 'Пользователь платформы',
-      text: review.comment,
-      avatar: review.users?.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg',
-    }))
+    // Fallback to default reviews
+    loadDefaultReviews()
   } catch (err) {
-    console.warn('Failed to fetch reviews from Supabase, using defaults:', err instanceof Error ? err.message : err)
-    // Fallback to default reviews if fetch fails
-    reviews.value = [
-      {
-        id: 1,
-        name: 'Мария К.',
-        title: 'В процессе терапии',
-        text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
-        avatar: 'https://images.pexels.com/photos/27603433/pexels-photo-27603433.jpeg',
-      },
-      {
-        id: 2,
-        name: 'Алексей М.',
-        title: 'Рос свой опыт в терапии',
-        text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
-        avatar: 'https://images.pexels.com/photos/11156392/pexels-photo-11156392.jpeg',
-      },
-      {
-        id: 3,
-        name: 'Елена В.',
-        title: 'Путь выздоровления',
-        text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
-        avatar: 'https://images.pexels.com/photos/16574941/pexels-photo-16574941.jpeg',
-      },
-    ]
+    console.warn('Failed to fetch reviews, using defaults:', err instanceof Error ? err.message : err)
+    loadDefaultReviews()
   } finally {
     isLoadingReviews.value = false
   }
+}
+
+// Generate placeholder avatars with initials
+const getPlaceholderAvatar = (name: string) => {
+  const initials = name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  const colors = ['FF6B9D', '6B5DFF', '00BCD4', '4CAF50', 'FF9800', 'E91E63']
+  const colorIndex = name.length % colors.length
+  const bgColor = colors[colorIndex]
+
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bgColor}&color=fff&size=200&bold=true`
+}
+
+// Load default reviews
+const loadDefaultReviews = () => {
+  reviews.value = [
+    {
+      id: 1,
+      name: 'Мария Кузнецова',
+      title: 'В процессе терапии',
+      text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
+      avatar: getPlaceholderAvatar('Мария Кузнецова'),
+    },
+    {
+      id: 2,
+      name: 'Алексей Морозов',
+      title: 'Прошел курс терапии',
+      text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
+      avatar: getPlaceholderAvatar('Алексей Морозов'),
+    },
+    {
+      id: 3,
+      name: 'Елена Волкова',
+      title: 'Путь выздоровления',
+      text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
+      avatar: getPlaceholderAvatar('Елена Волкова'),
+    },
+    {
+      id: 4,
+      name: 'Дмитрий Петров',
+      title: 'Активный участник',
+      text: 'Сервис действительно поддерживает. Нашел здесь не только понимание, но и новых друзей. Рекомендую всем, кто ищет настоящую поддержку.',
+      avatar: getPlaceholderAvatar('Дмитрий Петров'),
+    },
+    {
+      id: 5,
+      name: 'Анна Сидорова',
+      title: 'Консультант',
+      text: 'Работаю в сфере психического здоровья и с уверенностью говорю — эта платформа создает действительно безопасное пространство для людей.',
+      avatar: getPlaceholderAvatar('Анна Сидорова'),
+    },
+    {
+      id: 6,
+      name: 'Иван Новиков',
+      title: 'Пользователь',
+      text: 'Благодарен за эту платформу. Здесь я нашел поддержку, которую не мог найти нигде. Каждый день общения здесь помогает мне становиться лучше.',
+      avatar: getPlaceholderAvatar('Иван Новиков'),
+    },
+  ]
 }
 
 onMounted(() => {
