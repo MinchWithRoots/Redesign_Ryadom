@@ -17,8 +17,8 @@ onMounted(async () => {
 
 const isActive = (path: string) => route.path === path
 
-const navigate = (path: string) => {
-  router.push(path)
+const navigate = (path: string, query?: Record<string, string>) => {
+  router.push({ path, query })
   isMobileMenuOpen.value = false
 }
 
@@ -115,7 +115,7 @@ const navItems = [
             Логин
           </button>
           <button
-            @click="navigate('/auth')"
+            @click="navigate('/auth', { mode: 'register' })"
             class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
           >
             Регистрация
@@ -205,7 +205,7 @@ const navItems = [
               Логин
             </button>
             <button
-              @click="navigate('/auth')"
+              @click="navigate('/auth', { mode: 'register' })"
               class="w-full px-6 py-3 bg-primary text-white font-medium rounded-full shadow-soft hover:shadow-hover transition-all"
             >
               Регистрация

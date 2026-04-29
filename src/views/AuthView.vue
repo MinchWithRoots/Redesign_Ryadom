@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 
 const router = useRouter()
+const route = useRoute()
 const { login, signUp, error } = useAuth()
 
 const isLogin = ref(true)
@@ -38,6 +39,11 @@ const registerForm = ref({
 
 // Load remembered credentials on component mount
 onMounted(() => {
+  // Check if we should show registration form
+  if (route.query.mode === 'register') {
+    isLogin.value = false
+  }
+
   const remembered = localStorage.getItem('rememberMe')
   if (remembered) {
     try {
