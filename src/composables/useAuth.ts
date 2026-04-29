@@ -91,12 +91,17 @@ export const signUp = async (email: string, password: string, name: string) => {
 
     console.log('Supabase Auth user created successfully')
 
-    // Create user profile (let PostgreSQL auto-generate the ID)
-    // Note: we use email as the unique identifier for lookups
+    // Create user profile with the auth UUID as the ID (immutable identifier)
+    const authUUID = data.user.id
+    if (!authUUID) {
+      throw new Error('Failed to get auth UUID for new user')
+    }
+
     const { error: profileError } = await supabase
       .from('users')
       .insert([
         {
+          id: authUUID,
           email: normalizedEmail,
           name: normalizedName,
         },
@@ -112,13 +117,13 @@ export const signUp = async (email: string, password: string, name: string) => {
       throw new Error(errorMessage)
     }
 
-    console.log('User profile created in database')
+    console.log('User profile created in database with UUID:', authUUID)
 
     // Fetch the created user profile
     const { data: profile, error: fetchError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', normalizedEmail)
+      .eq('id', authUUID)
       .maybeSingle()
 
     if (fetchError) {
@@ -181,14 +186,18 @@ export const login = async (email: string, password: string) => {
     }
     if (!data.user) throw new Error('Failed to login')
 
-    // Fetch user profile from database by email
-    const userEmail = data.user.email
-    if (!userEmail) throw new Error('User email not found')
+    // Get the auth user UUID (sub) - this never changes even if email is updated
+    const authUUID = data.user.id
+    if (!authUUID) throw new Error('User UUID not found in auth session')
 
+    console.log('Auth successful, fetching user profile with UUID:', authUUID)
+
+    // Fetch user profile from database using auth UUID instead of email
+    // The UUID is immutable and is stored in the users table as the id
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', userEmail)
+      .eq('id', authUUID)
       .maybeSingle()
 
     if (profileError) {
@@ -201,13 +210,17 @@ export const login = async (email: string, password: string) => {
     }
 
     if (!profile) {
-      // Profile doesn't exist, create it
+      // Profile doesn't exist, create it with the auth email
       console.log('User profile does not exist, creating new one...')
+      const currentAuthEmail = data.user.email
+      if (!currentAuthEmail) throw new Error('User email not found in auth session')
+
       const { data: newProfile, error: createError } = await supabase
         .from('users')
         .insert([
           {
-            email: userEmail,
+            id: authUUID,
+            email: currentAuthEmail,
             name: data.user.user_metadata?.full_name || 'User',
           },
         ])
@@ -234,6 +247,7 @@ export const login = async (email: string, password: string) => {
       return data.user
     }
 
+    // Profile exists - use the latest data from database
     currentUser.value = {
       id: profile.id,
       email: profile.email,
@@ -289,21 +303,28 @@ export const getCurrentUser = async () => {
       return null
     }
 
-    // Fetch user profile from database by email
-    const userEmail = data.user.email
-    if (!userEmail) {
+    // Use auth UUID instead of email - UUID never changes even if email is updated in DB
+    const authUUID = data.user.id
+    if (!authUUID) {
       currentUser.value = null
       return null
     }
 
+    // Fetch user profile from database using auth UUID (immutable identifier)
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', userEmail)
-      .single()
+      .eq('id', authUUID)
+      .maybeSingle()
 
     if (profileError) {
       console.error('Error fetching user profile:', getErrorMessage(profileError))
+      currentUser.value = null
+      return null
+    }
+
+    if (!profile) {
+      console.log('User profile not found in database for UUID:', authUUID)
       currentUser.value = null
       return null
     }
@@ -337,11 +358,11 @@ export const updateProfile = async (updates: Partial<UserProfile>) => {
 
     if (!currentUser.value) throw new Error('No user logged in')
 
-    // Update by email to ensure we're updating the right user
+    // Update by UUID (immutable identifier) instead of email
     const { data, error: updateError } = await supabase
       .from('users')
       .update(updates)
-      .eq('email', currentUser.value.email)
+      .eq('id', currentUser.value.id)
       .select()
       .single()
 

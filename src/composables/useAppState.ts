@@ -133,18 +133,18 @@ export const loadCurrentUser = async () => {
       return null
     }
 
-    // Get user email from auth
-    const userEmail = data.user.email
-    if (!userEmail) {
+    // Use auth UUID (sub) instead of email - this is immutable even if email is changed in DB
+    const authUUID = data.user.id
+    if (!authUUID) {
       currentUser.value = null
       return null
     }
 
-    // Fetch user profile by email (not by UUID id)
+    // Fetch user profile by UUID (immutable identifier)
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', userEmail)
+      .eq('id', authUUID)
       .maybeSingle()
 
     if (profileError) {
@@ -152,11 +152,13 @@ export const loadCurrentUser = async () => {
         message: profileError.message,
         code: profileError.code,
         hint: profileError.hint,
+        authUUID,
       })
       // User is authenticated but profile doesn't exist yet (new user)
       // This is normal for newly created users
+      const userEmail = data.user.email || ''
       currentUser.value = {
-        id: userEmail, // Use email as fallback
+        id: authUUID,
         name: data.user.user_metadata?.full_name || 'User',
         email: userEmail,
         bio: '',
@@ -169,9 +171,10 @@ export const loadCurrentUser = async () => {
 
     // Handle case where profile doesn't exist yet
     if (!profile) {
-      console.log('User profile not found, creating default...')
+      console.log('User profile not found, creating default with UUID:', authUUID)
+      const userEmail = data.user.email || ''
       currentUser.value = {
-        id: userEmail,
+        id: authUUID,
         name: data.user.user_metadata?.full_name || 'User',
         email: userEmail,
         bio: '',
@@ -182,6 +185,7 @@ export const loadCurrentUser = async () => {
       return currentUser.value
     }
 
+    // Profile found - always use the latest data from database
     currentUser.value = {
       id: profile.id,
       name: profile.name,
@@ -228,14 +232,14 @@ export const updateUserProfile = async (updates: {
     if (updates.topics !== undefined) updateData.topics = updates.topics
 
     console.log('Updating user profile with data:', updateData)
-    console.log('User email for update:', currentUser.value.email)
+    console.log('User UUID for update:', currentUser.value.id)
 
-    // Update by email (not by id) to match our user lookup strategy
+    // Update by UUID (immutable identifier) instead of email
     // Use maybeSingle() instead of single() to handle 0 or 1 results gracefully
     const { data: profile, error: updateProfileError } = await supabase
       .from('users')
       .update(updateData)
-      .eq('email', currentUser.value.email)
+      .eq('id', currentUser.value.id)
       .select()
       .maybeSingle()
 
@@ -258,7 +262,7 @@ export const updateUserProfile = async (updates: {
       const { data: fetchedProfile, error: fetchError } = await supabase
         .from('users')
         .select('*')
-        .eq('email', currentUser.value.email)
+        .eq('id', currentUser.value.id)
         .maybeSingle()
 
       if (fetchError) throw new Error(fetchError.message)
