@@ -21,16 +21,27 @@ const isLoggedIn = computed(() => !!currentUser.value)
 
 // Helper function to extract error message
 const getErrorMessage = (err: any): string => {
-  if (typeof err === 'string') return err
-  if (err?.message) return err.message
-  if (err?.error_description) return err.error_description
-  if (err?.msg) return err.msg
+  try {
+    if (typeof err === 'string') return err
 
-  // For Supabase errors, try to extract from response
-  if (err?.response?.data?.msg) return err.response.data.msg
-  if (err?.response?.data?.error_description) return err.response.data.error_description
+    // Handle Error objects
+    if (err instanceof Error) return err.message
 
-  return 'An unknown error occurred'
+    // Handle Supabase auth errors
+    if (err?.message) return err.message
+    if (err?.error_description) return err.error_description
+    if (err?.msg) return err.msg
+    if (err?.error) return typeof err.error === 'string' ? err.error : err.error?.message || 'Unknown error'
+
+    // For Supabase errors, try to extract from response
+    if (err?.response?.data?.msg) return err.response.data.msg
+    if (err?.response?.data?.error_description) return err.response.data.error_description
+
+    // Last resort - try to stringify
+    return JSON.stringify(err)
+  } catch {
+    return 'An unknown error occurred'
+  }
 }
 
 // Sign up with email and password
@@ -65,11 +76,15 @@ export const signUp = async (email: string, password: string, name: string) => {
     if (signUpError) {
       const errorMessage = getErrorMessage(signUpError)
       console.error('Sign up error details:', {
+        originalError: signUpError,
         message: errorMessage,
         code: signUpError.code,
         status: signUpError.status,
-        fullError: signUpError,
       })
+      // Provide user-friendly error messages
+      if (errorMessage.includes('already registered')) {
+        throw new Error('Этот email уже зарегистрирован. Пожалуйста, войдите или используйте другой email.')
+      }
       throw new Error(errorMessage)
     }
     if (!data.user) throw new Error('Failed to create user')
@@ -130,7 +145,7 @@ export const signUp = async (email: string, password: string, name: string) => {
   } catch (err) {
     const message = getErrorMessage(err)
     error.value = message
-    console.error('Sign up error:', message)
+    console.error('Sign up error:', message, { originalError: err })
     throw new Error(message)
   } finally {
     isLoading.value = false
@@ -143,18 +158,25 @@ export const login = async (email: string, password: string) => {
     isLoading.value = true
     error.value = null
 
+    console.log('Attempting login with email:', email)
+
     const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     })
 
     if (signInError) {
       const errorMessage = getErrorMessage(signInError)
-      console.error('Sign in error:', {
+      console.error('Sign in error details:', {
+        originalError: signInError,
         message: errorMessage,
         code: signInError.code,
         status: signInError.status,
       })
+      // Provide user-friendly error messages
+      if (errorMessage.includes('Invalid login credentials')) {
+        throw new Error('Неверный email или пароль. Пожалуйста, проверьте ваши данные.')
+      }
       throw new Error(errorMessage)
     }
     if (!data.user) throw new Error('Failed to login')
@@ -227,7 +249,7 @@ export const login = async (email: string, password: string) => {
   } catch (err) {
     const message = getErrorMessage(err)
     error.value = message
-    console.error('Login error:', message)
+    console.error('Login error:', message, { originalError: err })
     throw new Error(message)
   } finally {
     isLoading.value = false

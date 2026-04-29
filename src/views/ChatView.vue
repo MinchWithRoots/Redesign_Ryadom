@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { currentUser, messages, getChatById, endSession, loadChats } from '../composables/useAppState'
+import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 
@@ -18,29 +18,33 @@ const reportSuccess = ref('')
 const isLoadingMessages = ref(false)
 const isSending = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
+const showActionMenu = ref(false)
+const isBlockingUser = ref(false)
+const blockSuccess = ref('')
 
 const chatId = computed(() => (route.query.id as string) || null)
 
 const chat = computed(() => {
   if (!chatId.value) return null
-  return chats.value.find(c => c.id.toString() === chatId.value)
+  return globalChats.value.find(c => c.id.toString() === chatId.value)
 })
 
 const chatMessages = computed(() => messages.value)
 
 const currentCompanion = computed(() => {
   if (chat.value) {
+    // Determine status - show as "Онлайн" for active status or "Оффлайн" otherwise
+    const statusText = chat.value.status === 'online' || chat.value.status === 'active' ? 'Онлайн' : 'Оффлайн'
     return {
       name: chat.value.name,
-      status: chat.value.status,
+      status: statusText,
       image: chat.value.image,
+      rawStatus: chat.value.status, // Keep raw status for internal comparisons
     }
   }
   return null
 })
 
-// Local state for chats since we might not have them from global state
-const chats = ref<any[]>([])
 
 // Format time for display
 const formatTime = (date: string | Date) => {
@@ -65,16 +69,36 @@ const loadMessages = async () => {
         return
       }
 
-      // Transform messages to include proper formatting
-      const transformedMessages = (messagesData || []).map((msg: any) => ({
-        id: msg.id,
-        sender_id: msg.sender_id,
-        text: msg.text,
-        created_at: msg.created_at,
-        author: msg.sender_id === currentUser.value?.id ? 'You' : 'Companion',
-        isMine: msg.sender_id === currentUser.value?.id,
-        chat_id: msg.chat_id,
-        time: formatTime(msg.created_at),
+      // Transform messages to include proper formatting and get sender names
+      const transformedMessages = await Promise.all((messagesData || []).map(async (msg: any) => {
+        let authorName = 'Unknown'
+
+        if (msg.sender_id === currentUser.value?.id) {
+          authorName = currentUser.value?.name || 'You'
+        } else {
+          // Fetch sender info for other users
+          try {
+            const { data: senderData } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', msg.sender_id)
+              .single()
+            authorName = senderData?.name || 'Unknown'
+          } catch (err) {
+            console.error('Error fetching sender name:', err)
+          }
+        }
+
+        return {
+          id: msg.id,
+          sender_id: msg.sender_id,
+          text: msg.text,
+          created_at: msg.created_at,
+          author: authorName,
+          isMine: msg.sender_id === currentUser.value?.id,
+          chat_id: msg.chat_id,
+          time: formatTime(msg.created_at),
+        }
       }))
 
       messages.value = transformedMessages
@@ -90,56 +114,6 @@ const loadMessages = async () => {
   }
 }
 
-const loadChatsLocal = async () => {
-  try {
-    if (!currentUser.value) return
-
-    const { data: chatsData, error } = await supabase
-      .from('chats')
-      .select('*')
-      .eq('user_id', currentUser.value.id)
-      .order('updated_at', { ascending: false })
-
-    if (error) {
-      console.error('Error loading chats:', error)
-      return
-    }
-
-    // Fetch companion info for each chat
-    const chatsWithInfo = await Promise.all(
-      (chatsData || []).map(async (c: any) => {
-        try {
-          const { data: companionData } = await supabase
-            .from('companions')
-            .select('name, image')
-            .eq('id', c.companion_id)
-            .single()
-
-          return {
-            id: c.id,
-            name: companionData?.name || 'Unknown',
-            lastMessage: c.last_message || '',
-            time: new Date(c.updated_at).toLocaleString('ru-RU'),
-            unread_count: c.unread_count || 0,
-            image: companionData?.image || '',
-            status: c.status || 'active',
-            companion_id: c.companion_id,
-            user_id: c.user_id,
-            created_at: c.created_at,
-            updated_at: c.updated_at,
-          }
-        } catch (err) {
-          console.error(`Error fetching info for chat ${c.id}:`, err)
-          return c
-        }
-      })
-    )
-
-    chats.value = chatsWithInfo
-  } catch (err) {
-    console.error('Error loading chats:', err)
-  }
-}
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
@@ -171,12 +145,13 @@ const sendMessage = async () => {
       return
     }
 
-    // Update chat last_message
+    // Update chat timestamps
     const { error: updateErr } = await supabase
       .from('chats')
       .update({
-        last_message: messageInput.value.trim(),
+        last_message_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        total_messages: (messages.value.length),
       })
       .eq('id', chatId.value)
 
@@ -271,6 +246,36 @@ const handleReportUser = async () => {
   }
 }
 
+const handleBlockUser = async () => {
+  if (!chatId.value || !chat.value) return
+
+  isBlockingUser.value = true
+  try {
+    // Add the companion to blocked list in user's profile
+    const { error } = await supabase
+      .from('chats')
+      .update({ status: 'blocked' })
+      .eq('id', chatId.value)
+
+    if (error) {
+      console.error('Error blocking user:', error)
+      alert('Ошибка при блокировке пользователя')
+      return
+    }
+
+    blockSuccess.value = 'Пользователь заблокирован'
+    showActionMenu.value = false
+    setTimeout(() => {
+      router.push('/profile')
+    }, 1500)
+  } catch (err) {
+    console.error('Error blocking user:', err)
+    alert('Ошибка при блокировке пользователя')
+  } finally {
+    isBlockingUser.value = false
+  }
+}
+
 // Subscribe to real-time messages
 const subscribeToMessages = () => {
   if (!chatId.value) return
@@ -313,14 +318,14 @@ const subscribeToMessages = () => {
 watch(chatId, async () => {
   if (chatId.value) {
     messages.value = []
-    await loadChatsLocal()
+    await loadChats()
     await loadMessages()
     subscribeToMessages()
   }
 })
 
 onMounted(async () => {
-  await loadChatsLocal()
+  await loadChats()
   if (chatId.value) {
     await loadMessages()
     subscribeToMessages()
@@ -363,7 +368,7 @@ onMounted(async () => {
               :alt="currentCompanion?.name || 'Companion'"
               class="w-12 h-12 rounded-full object-cover"
             />
-            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            <div v-if="currentCompanion?.status === 'Онлайн'" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
 
           <!-- Info -->
@@ -375,35 +380,62 @@ onMounted(async () => {
 
         <!-- Actions -->
         <div class="flex items-center gap-2">
-          <button class="p-2 hover:bg-light-bg rounded-lg transition-colors text-secondary/60 hover:text-secondary">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.04 1.318a11.042 11.042 0 005.516 5.516l1.318 2.04a1 1 0 00.756.502l4.493 1.498a1 1 0 00.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-          </button>
-          <button class="p-2 hover:bg-light-bg rounded-lg transition-colors text-secondary/60 hover:text-secondary">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button
-            @click="showReportModal = true"
-            class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500 hover:text-red-600"
-            title="SOS/Пожаловаться"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 6H2a1 1 0 00-1 1v1a6 6 0 006 6h8a6 6 0 006-6v-1a1 1 0 00-1-1h-1m-6-15a6 6 0 100 12 6 6 0 000-12z" />
-            </svg>
-          </button>
-          <button
-            @click="handleEndSession"
-            :disabled="isEndingSession"
-            class="p-2 hover:bg-light-bg rounded-lg transition-colors text-secondary/60 hover:text-secondary disabled:opacity-50"
-            title="Завершить сессию"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <!-- Kebab menu (3 dots) -->
+          <div class="relative">
+            <button
+              @click="showActionMenu = !showActionMenu"
+              class="p-2 hover:bg-light-bg rounded-lg transition-colors text-secondary/60 hover:text-secondary"
+              title="Ещё"
+            >
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8c1.1 0 2-0.9 2-2s-0.9-2-2-2-2 0.9-2 2 0.9 2 2 2zm0 2c-1.1 0-2 0.9-2 2s0.9 2 2 2 2-0.9 2-2-0.9-2-2-2zm0 6c-1.1 0-2 0.9-2 2s0.9 2 2 2 2-0.9 2-2-0.9-2-2-2z" />
+              </svg>
+            </button>
+
+            <!-- Dropdown menu -->
+            <transition name="fade">
+              <div v-if="showActionMenu" class="absolute right-0 mt-2 w-48 bg-white border border-border/50 rounded-xl shadow-hover z-50 py-2">
+                <!-- Report option -->
+                <button
+                  @click="showReportModal = true; showActionMenu = false"
+                  class="w-full text-left px-4 py-3 text-secondary/80 hover:bg-light-bg hover:text-secondary transition-colors flex items-center gap-3 text-sm"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 6H2a1 1 0 00-1 1v1a6 6 0 006 6h8a6 6 0 006-6v-1a1 1 0 00-1-1h-1m-6-15a6 6 0 100 12 6 6 0 000-12z" />
+                  </svg>
+                  <span>Пожаловаться</span>
+                </button>
+
+                <!-- Block option -->
+                <button
+                  @click="handleBlockUser"
+                  :disabled="isBlockingUser"
+                  class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4m0 0H3m0 0v8m0-8l8 8" />
+                  </svg>
+                  <span v-if="!isBlockingUser">Заблокировать</span>
+                  <span v-else>Блокировка...</span>
+                </button>
+
+                <!-- Divider -->
+                <div class="border-t border-border/30 my-2"></div>
+
+                <!-- End session option -->
+                <button
+                  @click="() => { handleEndSession(); showActionMenu = false }"
+                  :disabled="isEndingSession"
+                  class="w-full text-left px-4 py-3 text-secondary/80 hover:bg-light-bg hover:text-secondary transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Завершить сессию</span>
+                </button>
+              </div>
+            </transition>
+          </div>
         </div>
       </div>
 
@@ -413,6 +445,21 @@ onMounted(async () => {
           <div class="bg-white rounded-2xl p-8 text-center">
             <h2 class="text-2xl font-bold text-secondary mb-2">Сессия завершена</h2>
             <p class="text-secondary/60">Спасибо за использование нашего сервиса!</p>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Block Success Message -->
+      <transition name="fade">
+        <div v-if="blockSuccess" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
+          <div class="bg-white rounded-2xl p-8 text-center">
+            <div class="mb-4">
+              <svg class="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-secondary mb-2">{{ blockSuccess }}</h2>
+            <p class="text-secondary/60">Вы больше не сможете общаться с этим пользователем</p>
           </div>
         </div>
       </transition>
@@ -494,9 +541,43 @@ onMounted(async () => {
         style="scroll-behavior: smooth;"
       >
         <!-- Empty state -->
-        <div v-if="chatMessages.length === 0" class="flex items-center justify-center h-full">
-          <div class="text-center">
-            <p class="text-secondary/60 text-sm">Начните разговор с {{ currentCompanion.name }}</p>
+        <div v-if="chatMessages.length === 0" class="flex items-center justify-center h-full py-12">
+          <div class="text-center max-w-sm">
+            <!-- Avatar -->
+            <div class="mb-6 flex justify-center">
+              <div class="relative">
+                <img
+                  :src="currentCompanion?.image || 'https://via.placeholder.com/120'"
+                  :alt="currentCompanion?.name"
+                  class="w-24 h-24 rounded-full object-cover border-4 border-light-bg shadow-md"
+                />
+                <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-3 border-white"></div>
+              </div>
+            </div>
+
+            <!-- Greeting -->
+            <h3 class="text-2xl font-bold text-secondary mb-2">
+              Привет! 👋
+            </h3>
+            <p class="text-secondary/70 mb-2">
+              Вы в чате с <span class="font-semibold text-secondary">{{ currentCompanion.name }}</span>
+            </p>
+            <p class="text-secondary/60 text-sm mb-6">
+              Начните разговор - поделитесь интересующей вас темой или просто скажите привет!
+            </p>
+
+            <!-- Status indicator -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-light-bg rounded-full mb-6">
+              <div :class="['w-2 h-2 rounded-full', currentCompanion?.status === 'Онлайн' ? 'bg-green-500' : 'bg-gray-400']"></div>
+              <span class="text-xs font-medium text-secondary/70">
+                {{ currentCompanion?.status }}
+              </span>
+            </div>
+
+            <!-- Call to action -->
+            <p class="text-xs text-secondary/50">
+              💬 Отправьте первое сообщение, чтобы начать
+            </p>
           </div>
         </div>
 
