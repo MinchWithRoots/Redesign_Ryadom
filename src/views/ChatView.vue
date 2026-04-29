@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { currentUser, messages, getChatById, endSession, loadChats } from '../composables/useAppState'
+import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 
@@ -26,25 +26,25 @@ const chatId = computed(() => (route.query.id as string) || null)
 
 const chat = computed(() => {
   if (!chatId.value) return null
-  return chats.value.find(c => c.id.toString() === chatId.value)
+  return globalChats.value.find(c => c.id.toString() === chatId.value)
 })
 
 const chatMessages = computed(() => messages.value)
 
 const currentCompanion = computed(() => {
   if (chat.value) {
+    // Determine status - show as "Онлайн" for active status or "Оффлайн" otherwise
     const statusText = chat.value.status === 'online' || chat.value.status === 'active' ? 'Онлайн' : 'Оффлайн'
     return {
       name: chat.value.name,
       status: statusText,
       image: chat.value.image,
+      rawStatus: chat.value.status, // Keep raw status for internal comparisons
     }
   }
   return null
 })
 
-// Local state for chats since we might not have them from global state
-const chats = ref<any[]>([])
 
 // Format time for display
 const formatTime = (date: string | Date) => {
@@ -69,16 +69,36 @@ const loadMessages = async () => {
         return
       }
 
-      // Transform messages to include proper formatting
-      const transformedMessages = (messagesData || []).map((msg: any) => ({
-        id: msg.id,
-        sender_id: msg.sender_id,
-        text: msg.text,
-        created_at: msg.created_at,
-        author: msg.sender_id === currentUser.value?.id ? 'You' : 'Companion',
-        isMine: msg.sender_id === currentUser.value?.id,
-        chat_id: msg.chat_id,
-        time: formatTime(msg.created_at),
+      // Transform messages to include proper formatting and get sender names
+      const transformedMessages = await Promise.all((messagesData || []).map(async (msg: any) => {
+        let authorName = 'Unknown'
+
+        if (msg.sender_id === currentUser.value?.id) {
+          authorName = currentUser.value?.name || 'You'
+        } else {
+          // Fetch sender info for other users
+          try {
+            const { data: senderData } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', msg.sender_id)
+              .single()
+            authorName = senderData?.name || 'Unknown'
+          } catch (err) {
+            console.error('Error fetching sender name:', err)
+          }
+        }
+
+        return {
+          id: msg.id,
+          sender_id: msg.sender_id,
+          text: msg.text,
+          created_at: msg.created_at,
+          author: authorName,
+          isMine: msg.sender_id === currentUser.value?.id,
+          chat_id: msg.chat_id,
+          time: formatTime(msg.created_at),
+        }
       }))
 
       messages.value = transformedMessages
@@ -94,56 +114,6 @@ const loadMessages = async () => {
   }
 }
 
-const loadChatsLocal = async () => {
-  try {
-    if (!currentUser.value) return
-
-    const { data: chatsData, error } = await supabase
-      .from('chats')
-      .select('*')
-      .eq('user_id', currentUser.value.id)
-      .order('updated_at', { ascending: false })
-
-    if (error) {
-      console.error('Error loading chats:', error)
-      return
-    }
-
-    // Fetch companion info for each chat
-    const chatsWithInfo = await Promise.all(
-      (chatsData || []).map(async (c: any) => {
-        try {
-          const { data: companionData } = await supabase
-            .from('companions')
-            .select('name, image')
-            .eq('id', c.companion_id)
-            .single()
-
-          return {
-            id: c.id,
-            name: companionData?.name || 'Unknown',
-            lastMessage: '',
-            time: new Date(c.updated_at).toLocaleString('ru-RU'),
-            unread_count: 0,
-            image: companionData?.image || '',
-            status: c.status || 'online',
-            companion_id: c.companion_id,
-            user_id: c.user_id,
-            created_at: c.created_at,
-            updated_at: c.updated_at,
-          }
-        } catch (err) {
-          console.error(`Error fetching info for chat ${c.id}:`, err)
-          return c
-        }
-      })
-    )
-
-    chats.value = chatsWithInfo
-  } catch (err) {
-    console.error('Error loading chats:', err)
-  }
-}
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
@@ -175,12 +145,13 @@ const sendMessage = async () => {
       return
     }
 
-    // Update chat updated_at
+    // Update chat timestamps
     const { error: updateErr } = await supabase
       .from('chats')
       .update({
         last_message_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        total_messages: (messages.value.length),
       })
       .eq('id', chatId.value)
 
@@ -347,14 +318,14 @@ const subscribeToMessages = () => {
 watch(chatId, async () => {
   if (chatId.value) {
     messages.value = []
-    await loadChatsLocal()
+    await loadChats()
     await loadMessages()
     subscribeToMessages()
   }
 })
 
 onMounted(async () => {
-  await loadChatsLocal()
+  await loadChats()
   if (chatId.value) {
     await loadMessages()
     subscribeToMessages()
@@ -397,7 +368,7 @@ onMounted(async () => {
               :alt="currentCompanion?.name || 'Companion'"
               class="w-12 h-12 rounded-full object-cover"
             />
-            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            <div v-if="currentCompanion?.status === 'Онлайн'" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
 
           <!-- Info -->
@@ -597,7 +568,7 @@ onMounted(async () => {
 
             <!-- Status indicator -->
             <div class="inline-flex items-center gap-2 px-4 py-2 bg-light-bg rounded-full mb-6">
-              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div :class="['w-2 h-2 rounded-full', currentCompanion?.status === 'Онлайн' ? 'bg-green-500' : 'bg-gray-400']"></div>
               <span class="text-xs font-medium text-secondary/70">
                 {{ currentCompanion?.status }}
               </span>
