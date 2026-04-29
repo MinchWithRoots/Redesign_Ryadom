@@ -1,12 +1,33 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import heart from '../images/heart.svg'
 
 const router = useRouter()
+const route = useRoute()
 
 const navigate = (path: string) => {
   router.push(path)
   window.scrollTo(0, 0)
+}
+
+const scrollToSection = (sectionId: string) => {
+  // If not on home page, navigate there first
+  if (route.path !== '/') {
+    router.push('/').then(() => {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      }, 100)
+    })
+  } else {
+    // Already on home page, just scroll
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 }
 </script>
 
@@ -16,7 +37,7 @@ const navigate = (path: string) => {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12 lg:mb-16">
         <!-- Logo and description -->
         <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 group cursor-pointer hover:opacity-70 transition-opacity">
+          <div class="flex items-center gap-2 group cursor-pointer hover:opacity-70 transition-opacity" @click="navigate('/')">
             <img :src="heart" alt="Рядом" class="w-10 h-10" />
             <span class="text-xl font-bold text-secondary">Рядом</span>
           </div>
@@ -36,19 +57,19 @@ const navigate = (path: string) => {
               Главная
             </button>
             <button
-              @click="navigate('/')"
+              @click="scrollToSection('about')"
               class="text-sm text-secondary/70 hover:text-primary transition-colors text-left font-medium"
             >
               О нас
             </button>
             <button
-              @click="navigate('/')"
+              @click="scrollToSection('reviews')"
               class="text-sm text-secondary/70 hover:text-primary transition-colors text-left font-medium"
             >
               Отзывы
             </button>
             <button
-              @click="navigate('/')"
+              @click="scrollToSection('contacts')"
               class="text-sm text-secondary/70 hover:text-primary transition-colors text-left font-medium"
             >
               Контакты

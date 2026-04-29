@@ -22,6 +22,27 @@ const navigate = (path: string) => {
   isMobileMenuOpen.value = false
 }
 
+const scrollToSection = (sectionId: string) => {
+  // If not on home page, navigate there first
+  if (route.path !== '/') {
+    router.push('/').then(() => {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      }, 100)
+    })
+  } else {
+    // Already on home page, just scroll
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+  isMobileMenuOpen.value = false
+}
+
 const handleLogout = async () => {
   try {
     await logout()
@@ -63,33 +84,24 @@ const navItems = [
         >
           Главная
         </a>
-        <a
-          href="/#about"
-          @click.prevent="navigate('/')"
-          :class="[
-            'text-lg font-medium transition-colors text-secondary hover:text-primary'
-          ]"
+        <button
+          @click="scrollToSection('about')"
+          class="text-lg font-medium transition-colors text-secondary hover:text-primary"
         >
           О нас
-        </a>
-        <a
-          href="/#reviews"
-          @click.prevent="navigate('/')"
-          :class="[
-            'text-lg font-medium transition-colors text-secondary hover:text-primary'
-          ]"
+        </button>
+        <button
+          @click="scrollToSection('reviews')"
+          class="text-lg font-medium transition-colors text-secondary hover:text-primary"
         >
           Отзывы
-        </a>
-        <a
-          href="/#contacts"
-          @click.prevent="navigate('/')"
-          :class="[
-            'text-lg font-medium transition-colors text-secondary hover:text-primary'
-          ]"
+        </button>
+        <button
+          @click="scrollToSection('contacts')"
+          class="text-lg font-medium transition-colors text-secondary hover:text-primary"
         >
           Контакты
-        </a>
+        </button>
       </nav>
 
       <!-- Desktop Buttons -->
@@ -165,24 +177,24 @@ const navItems = [
         >
           Главная
         </a>
-        <a
-          href="/#about"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        <button
+          @click="scrollToSection('about')"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors text-left"
         >
           О нас
-        </a>
-        <a
-          href="/#reviews"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        </button>
+        <button
+          @click="scrollToSection('reviews')"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors text-left"
         >
           Отзывы
-        </a>
-        <a
-          href="/#contacts"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+        </button>
+        <button
+          @click="scrollToSection('contacts')"
+          class="text-secondary font-medium py-2 hover:text-primary transition-colors text-left"
         >
           Контакты
-        </a>
+        </button>
         <div class="flex flex-col gap-2 pt-2 border-t border-border">
           <!-- Not logged in -->
           <template v-if="!currentUser">
