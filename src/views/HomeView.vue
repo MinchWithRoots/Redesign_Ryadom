@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
+import ReviewSlider from '@/components/ReviewSlider.vue'
 
 const router = useRouter()
 const reviews = ref<any[]>([])
@@ -312,46 +313,8 @@ onMounted(() => {
             </p>
           </div>
 
-          <!-- Reviews Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            <div
-              v-for="review in reviews"
-              :key="review.id"
-              class="group bg-white border border-border/50 rounded-3xl p-8 shadow-card hover:shadow-hover hover:translate-y-[-8px] transition-all duration-300 relative overflow-hidden"
-            >
-              <!-- Gradient overlay on hover -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-
-              <!-- Stars -->
-              <div class="flex gap-1 mb-6">
-                <img v-for="starIndex in 5" :key="starIndex" src="../images/star.svg" alt="Star" class="w-5 h-5 object-contain" />
-              </div>
-
-              <!-- Quote with icon -->
-              <div class="relative mb-8">
-                <div class="w-8 h-8 absolute -top-2 -left-2">
-                  <img src="../images/heart-add.svg" alt="Quote" class="w-full h-full object-contain opacity-30" />
-                </div>
-                <p class="text-secondary/70 text-lg leading-relaxed">{{ review.text }}</p>
-              </div>
-
-              <!-- Bottom divider -->
-              <div class="border-t border-border/50 pt-6">
-                <!-- Avatar and Info -->
-                <div class="flex items-center gap-4">
-                  <img
-                    :src="review.avatar"
-                    :alt="review.name"
-                    class="w-14 h-14 rounded-full object-cover flex-shrink-0 shadow-soft border-2 border-primary/20"
-                  />
-                  <div class="flex-1">
-                    <h4 class="font-bold text-secondary text-lg">{{ review.name }}</h4>
-                    <p class="text-sm text-secondary/60">{{ review.title }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Reviews Slider -->
+          <ReviewSlider :reviews="reviews" />
         </div>
       </div>
     </section>
