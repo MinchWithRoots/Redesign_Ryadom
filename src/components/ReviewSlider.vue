@@ -128,9 +128,10 @@ const handleSwiperInit = (swiper: any) => {
 
 <style scoped>
 .emotions-slider {
-  --color-gray: #818181;
-  --color-gray-dark: #1e1e1e;
   --color-primary: #ff6b9d;
+  --color-secondary: #6b7280;
+  --color-text: #333333;
+  --color-border: #e5e7eb;
 
   padding-inline: 98px;
   position: relative;
@@ -187,7 +188,7 @@ const handleSwiperInit = (swiper: any) => {
   pointer-events: auto;
   cursor: pointer;
   transition: all 0.3s ease-out;
-  color: var(--color-gray);
+  color: var(--color-secondary);
 }
 
 .slider-nav__item.disabled {
@@ -237,7 +238,7 @@ const handleSwiperInit = (swiper: any) => {
   width: 8px;
   height: 8px;
   border-radius: 99px;
-  background: rgba(255, 107, 157, 0.2);
+  background: rgba(107, 114, 128, 0.2);
   transition: all 0.3s ease-out;
   opacity: 1;
   margin: 0 4px;
@@ -258,16 +259,17 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item {
-  --border-radius: 10px;
+  --border-radius: 16px;
 
   width: calc(100dvw - 60px);
   max-width: 400px;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 @media screen and (max-width: 767.9px) {
@@ -280,7 +282,7 @@ const handleSwiperInit = (swiper: any) => {
 .emotions-slider-item__image {
   aspect-ratio: 400 / 270;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
 }
 
 .emotions-slider-item__image img {
@@ -295,7 +297,7 @@ const handleSwiperInit = (swiper: any) => {
   flex-direction: column;
   gap: 20px;
   padding: 24px 20px;
-  color: var(--color-gray-dark);
+  color: var(--color-text);
 }
 
 .emotions-slider-item__header,
@@ -336,7 +338,7 @@ const handleSwiperInit = (swiper: any) => {
   width: 24px;
   border-radius: 100%;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--color-primary);
 }
 
 .emotions-slider-item__author-image img {
@@ -348,7 +350,7 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item__author-name {
-  color: var(--color-gray);
+  color: var(--color-secondary);
   font-size: 12px;
   line-height: 1.3;
 }
@@ -362,7 +364,7 @@ const handleSwiperInit = (swiper: any) => {
   font-size: 18px;
   line-height: 1.3;
   margin-bottom: 4px;
-  color: var(--color-gray-dark);
+  color: var(--color-text);
 }
 
 .emotions-slider-item__subtitle {
@@ -376,8 +378,8 @@ const handleSwiperInit = (swiper: any) => {
   font-weight: 400;
   font-size: 14px;
   line-height: 1.5;
-  opacity: 0.8;
-  color: var(--color-gray);
+  opacity: 0.75;
+  color: var(--color-secondary);
 }
 
 .emotions-slider-item__btn {
@@ -452,6 +454,10 @@ const handleSwiperInit = (swiper: any) => {
 
 /* Responsive adjustments */
 @media screen and (max-width: 1023px) {
+  .emotions-slider {
+    padding-inline: 60px;
+  }
+
   .emotions-slider-item {
     max-width: 350px;
   }
@@ -471,6 +477,11 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 @media screen and (max-width: 767.9px) {
+  .emotions-slider {
+    padding: 0;
+    margin-inline: -20px;
+  }
+
   .emotions-slider-item {
     max-width: 100%;
   }
