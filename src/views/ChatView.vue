@@ -33,9 +33,10 @@ const chatMessages = computed(() => messages.value)
 
 const currentCompanion = computed(() => {
   if (chat.value) {
+    const statusText = chat.value.status === 'online' || chat.value.status === 'active' ? 'Онлайн' : 'Оффлайн'
     return {
       name: chat.value.name,
-      status: chat.value.status,
+      status: statusText,
       image: chat.value.image,
     }
   }
@@ -121,11 +122,11 @@ const loadChatsLocal = async () => {
           return {
             id: c.id,
             name: companionData?.name || 'Unknown',
-            lastMessage: c.last_message || '',
+            lastMessage: '',
             time: new Date(c.updated_at).toLocaleString('ru-RU'),
-            unread_count: c.unread_count || 0,
+            unread_count: 0,
             image: companionData?.image || '',
-            status: c.status || 'active',
+            status: c.status || 'online',
             companion_id: c.companion_id,
             user_id: c.user_id,
             created_at: c.created_at,
@@ -174,11 +175,11 @@ const sendMessage = async () => {
       return
     }
 
-    // Update chat last_message
+    // Update chat updated_at
     const { error: updateErr } = await supabase
       .from('chats')
       .update({
-        last_message: messageInput.value.trim(),
+        last_message_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', chatId.value)
@@ -402,7 +403,7 @@ onMounted(async () => {
           <!-- Info -->
           <div>
             <h2 class="font-bold text-secondary">{{ currentCompanion?.name }}</h2>
-            <p class="text-xs text-green-500 font-medium">{{ currentCompanion?.status === 'online' ? 'Онлайн' : 'Оффлайн' }}</p>
+            <p class="text-xs text-green-500 font-medium">{{ currentCompanion?.status }}</p>
           </div>
         </div>
 
@@ -598,7 +599,7 @@ onMounted(async () => {
             <div class="inline-flex items-center gap-2 px-4 py-2 bg-light-bg rounded-full mb-6">
               <div class="w-2 h-2 bg-green-500 rounded-full"></div>
               <span class="text-xs font-medium text-secondary/70">
-                {{ currentCompanion?.status === 'online' ? 'Онлайн' : 'Оффлайн' }}
+                {{ currentCompanion?.status }}
               </span>
             </div>
 
