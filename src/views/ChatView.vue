@@ -374,7 +374,7 @@ onMounted(async () => {
           <!-- Info -->
           <div>
             <h2 class="font-bold text-secondary">{{ currentCompanion?.name }}</h2>
-            <p class="text-xs text-green-500 font-medium">{{ currentCompanion?.status }}</p>
+            <p :class="['text-xs font-medium', currentCompanion?.status === 'Онлайн' ? 'text-green-500' : 'text-secondary/70']">{{ currentCompanion?.status }}</p>
           </div>
         </div>
 
@@ -568,7 +568,7 @@ onMounted(async () => {
 
             <!-- Status indicator -->
             <div class="inline-flex items-center gap-2 px-4 py-2 bg-light-bg rounded-full mb-6">
-              <div :class="['w-2 h-2 rounded-full', currentCompanion?.status === 'Онлайн' ? 'bg-green-500' : 'bg-gray-400']"></div>
+              <div :class="['w-2 h-2 rounded-full', currentCompanion?.status === 'Онлайн' ? 'bg-green-500' : 'bg-secondary/30']"></div>
               <span class="text-xs font-medium text-secondary/70">
                 {{ currentCompanion?.status }}
               </span>
