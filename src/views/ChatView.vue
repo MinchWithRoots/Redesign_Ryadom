@@ -31,6 +31,8 @@ const chat = computed(() => {
 
 const chatMessages = computed(() => messages.value)
 
+const isBlocked = computed(() => chat.value?.status === 'blocked')
+
 const currentCompanion = computed(() => {
   if (chat.value) {
     // Determine status - show as "Онлайн" for active status or "Оффлайн" otherwise
@@ -276,6 +278,35 @@ const handleBlockUser = async () => {
   }
 }
 
+const handleUnblockUser = async () => {
+  if (!chatId.value || !chat.value) return
+
+  isBlockingUser.value = true
+  try {
+    const { error } = await supabase
+      .from('chats')
+      .update({ status: 'offline' })
+      .eq('id', chatId.value)
+
+    if (error) {
+      console.error('Error unblocking user:', error)
+      alert('Ошибка при разблокировке пользователя')
+      return
+    }
+
+    blockSuccess.value = 'Пользователь разблокирован'
+    showActionMenu.value = false
+    setTimeout(() => {
+      router.push('/profile')
+    }, 1500)
+  } catch (err) {
+    console.error('Error unblocking user:', err)
+    alert('Ошибка при разблокировке пользователя')
+  } finally {
+    isBlockingUser.value = false
+  }
+}
+
 // Subscribe to real-time messages
 const subscribeToMessages = () => {
   if (!chatId.value) return
@@ -406,8 +437,9 @@ onMounted(async () => {
                   <span>Пожаловаться</span>
                 </button>
 
-                <!-- Block option -->
+                <!-- Block/Unblock option -->
                 <button
+                  v-if="!isBlocked"
                   @click="handleBlockUser"
                   :disabled="isBlockingUser"
                   class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
@@ -417,6 +449,18 @@ onMounted(async () => {
                   </svg>
                   <span v-if="!isBlockingUser">Заблокировать</span>
                   <span v-else>Блокировка...</span>
+                </button>
+                <button
+                  v-else
+                  @click="handleUnblockUser"
+                  :disabled="isBlockingUser"
+                  class="w-full text-left px-4 py-3 text-green-600 hover:bg-green-50 transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span v-if="!isBlockingUser">Разблокировать</span>
+                  <span v-else>Разблокировка...</span>
                 </button>
 
                 <!-- Divider -->
@@ -449,7 +493,7 @@ onMounted(async () => {
         </div>
       </transition>
 
-      <!-- Block Success Message -->
+      <!-- Block/Unblock Success Message -->
       <transition name="fade">
         <div v-if="blockSuccess" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
           <div class="bg-white rounded-2xl p-8 text-center">
@@ -459,7 +503,8 @@ onMounted(async () => {
               </svg>
             </div>
             <h2 class="text-2xl font-bold text-secondary mb-2">{{ blockSuccess }}</h2>
-            <p class="text-secondary/60">Вы больше не сможете общаться с этим пользователем</p>
+            <p v-if="blockSuccess.includes('разблокир')" class="text-secondary/60">Вы сможете общаться с этим пользователем снова</p>
+            <p v-else class="text-secondary/60">Вы больше не сможете общаться с этим пользователем</p>
           </div>
         </div>
       </transition>
