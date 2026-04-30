@@ -12,6 +12,7 @@ const companions = ref<any[]>([])
 const reviews = ref<any[]>([])
 const chats = ref<any[]>([])
 const applications = ref<any[]>([])
+const reports = ref<any[]>([])
 const rejectionReasons = ref<{ [key: string]: string }>({})
 const isLoading = ref(false)
 const successMessage = ref('')
@@ -29,7 +30,7 @@ onMounted(async () => {
 const loadDashboardData = async () => {
   try {
     isLoading.value = true
-    await Promise.all([loadUsers(), loadCompanions(), loadReviews(), loadChats(), loadApplications()])
+    await Promise.all([loadUsers(), loadCompanions(), loadReviews(), loadChats(), loadApplications(), loadReports()])
   } finally {
     isLoading.value = false
   }
@@ -90,6 +91,17 @@ const loadApplications = async () => {
   }
 }
 
+const loadReports = async () => {
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (!error) {
+    reports.value = data || []
+  }
+}
+
 // Stats
 const stats = computed(() => ({
   totalUsers: users.value.length,
@@ -98,6 +110,8 @@ const stats = computed(() => ({
   totalReviews: reviews.value.length,
   activeChats: chats.value.filter((c: any) => c.status === 'active').length,
   pendingApplications: applications.value.filter((a: any) => a.status === 'pending').length,
+  totalReports: reports.value.length,
+  pendingReports: reports.value.filter((r: any) => r.status === 'pending').length,
 }))
 
 const handleDeleteUser = async (userId: string | number) => {
@@ -179,6 +193,44 @@ const handleDeleteReview = async (reviewId: string | number) => {
 
 const navigate = (path: string) => {
   router.push(path)
+}
+
+const handleResolveReport = async (reportId: string | number) => {
+  try {
+    const { error } = await supabase
+      .from('reports')
+      .update({ status: 'resolved' })
+      .eq('id', reportId)
+
+    if (error) throw error
+
+    successMessage.value = 'Жалоба отмечена как обработанная ✓'
+    await loadReports()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при обработке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
+}
+
+const handleDeleteReport = async (reportId: string | number) => {
+  if (!confirm('Удалить эту жалобу?')) return
+
+  try {
+    const { error } = await supabase
+      .from('reports')
+      .delete()
+      .eq('id', reportId)
+
+    if (error) throw error
+
+    successMessage.value = 'Жалоба удалена ✓'
+    await loadReports()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
 }
 
 const handleApproveApplication = async (applicationId: string | number) => {
@@ -437,6 +489,16 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
           <p class="text-secondary/60 text-sm">Отзывов</p>
         </div>
+        <div :class="['bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group', stats.pendingReports > 0 ? 'border-red-500 bg-red-50/30' : '']">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold" :class="stats.pendingReports > 0 ? 'text-red-600' : 'text-primary'">{{ stats.totalReports }}</div>
+            <svg v-if="stats.pendingReports > 0" class="w-6 h-6 text-red-600 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <img v-else src="../images/shield-tick.svg" alt="Reports" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <p class="text-secondary/60 text-sm">Жалоб <span v-if="stats.pendingReports > 0" class="font-bold text-red-600">({{ stats.pendingReports }} новых)</span></p>
+        </div>
       </div>
 
       <!-- Tabs -->
@@ -512,6 +574,20 @@ const handleRejectApplication = async (applicationId: string | number) => {
         >
           <img src="../images/send.svg" alt="Applications" class="w-5 h-5 inline mr-2 object-contain" />
           Заявки <span v-if="stats.pendingApplications > 0" class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">{{ stats.pendingApplications }}</span>
+        </button>
+        <button
+          @click="activeTab = 'reports'"
+          :class="[
+            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
+            activeTab === 'reports'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-secondary/60 hover:text-secondary'
+          ]"
+        >
+          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          Жалобы <span v-if="stats.pendingReports > 0" class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">{{ stats.pendingReports }}</span>
         </button>
       </div>
 
@@ -710,7 +786,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <th class="table-th">Пользователь</th>
                   <th class="table-th">Консультант</th>
                   <th class="table-th">Статус</th>
-                  <th class="table-th">Сообщений</th>
+                  <th class="table-th">Жалобы</th>
                   <th class="table-th">Дата</th>
                 </tr>
               </thead>
@@ -731,7 +807,15 @@ const handleRejectApplication = async (applicationId: string | number) => {
                       {{ chat.status === 'active' ? '✓ Активен' : '✗ Завершен' }}
                     </span>
                   </td>
-                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.total_messages || 0 }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">
+                    <span
+                      v-if="reports.filter((r: any) => r.chat_id === chat.id).length > 0"
+                      class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold"
+                    >
+                      🚩 {{ reports.filter((r: any) => r.chat_id === chat.id).length }}
+                    </span>
+                    <span v-else class="text-secondary/50">—</span>
+                  </td>
                   <td class="px-4 py-4 text-secondary text-sm">
                     {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
                   </td>
@@ -844,6 +928,105 @@ const handleRejectApplication = async (applicationId: string | number) => {
 
         <div v-else class="text-center py-12 text-secondary/60">
           Заявок не найдено
+        </div>
+      </div>
+
+      <!-- Reports Tab -->
+      <div v-if="activeTab === 'reports'" class="space-y-4">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-secondary">Жалобы ({{ reports.length }})</h2>
+          <div class="text-sm text-secondary/60">
+            <span class="font-semibold text-red-600">{{ stats.pendingReports }}</span> требуют внимания
+          </div>
+        </div>
+
+        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
+          Загрузка...
+        </div>
+
+        <div v-else-if="reports.length > 0" class="grid gap-6">
+          <div
+            v-for="report in reports"
+            :key="report.id"
+            :class="[
+              'bg-white border-l-4 rounded-2xl p-6 shadow-card',
+              report.status === 'pending' ? 'border-l-red-500 bg-red-50/30' : 'border-l-green-500 bg-green-50/30'
+            ]"
+          >
+            <div class="flex items-start justify-between gap-4 mb-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-3">
+                  <span
+                    :class="[
+                      'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+                      report.status === 'pending'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-green-100 text-green-700'
+                    ]"
+                  >
+                    {{ report.status === 'pending' ? '⏳ На рассмотрении' : '✅ Обработана' }}
+                  </span>
+                  <span class="text-xs font-medium text-secondary/60">ID: {{ report.id }}</span>
+                </div>
+
+                <div class="space-y-3">
+                  <div>
+                    <p class="text-xs text-secondary/60 font-semibold mb-1">Причина:</p>
+                    <p class="text-secondary font-semibold">{{ report.reason }}</p>
+                  </div>
+
+                  <div>
+                    <p class="text-xs text-secondary/60 font-semibold mb-1">Описание:</p>
+                    <p class="text-secondary text-sm">{{ report.message }}</p>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p class="text-xs text-secondary/60 font-semibold mb-1">ID чата:</p>
+                      <p class="text-secondary font-mono text-xs">{{ report.chat_id }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-secondary/60 font-semibold mb-1">От пользователя:</p>
+                      <p class="text-secondary font-mono text-xs">{{ report.reporter_id }}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p class="text-xs text-secondary/60 font-semibold mb-1">Дата:</p>
+                    <p class="text-secondary text-sm">{{ new Date(report.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div v-if="report.status === 'pending'" class="border-t border-border/50 pt-4 flex gap-3">
+              <button
+                @click="handleResolveReport(report.id)"
+                class="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors text-sm"
+              >
+                ✓ Отметить как обработанную
+              </button>
+              <button
+                @click="handleDeleteReport(report.id)"
+                class="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm"
+              >
+                ✕ Удалить
+              </button>
+            </div>
+            <div v-else class="border-t border-border/50 pt-4">
+              <button
+                @click="handleDeleteReport(report.id)"
+                class="w-full px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm"
+              >
+                ✕ Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-12 text-secondary/60">
+          Жалоб не найдено
         </div>
       </div>
     </div>
