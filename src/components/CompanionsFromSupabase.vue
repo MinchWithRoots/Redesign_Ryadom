@@ -51,7 +51,7 @@
             <!-- Testimonials -->
             <div class="mt-4 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="text-sm text-slate-400">{{ companion.reviews_count }} благодарностей</span>
+                <span class="text-sm text-slate-400">{{ companion.reviews_count }} отзывов</span>
               </div>
               <span class="text-sm font-semibold text-blue-400">
                 {{ getExperienceText(companion.experience) }}

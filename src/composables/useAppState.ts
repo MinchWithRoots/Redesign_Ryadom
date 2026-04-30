@@ -71,8 +71,25 @@ export interface Message {
   text: string
   created_at: string
   author: string
+  image?: string
   isMine: boolean
   chat_id: string
+}
+
+export interface Review {
+  id: string
+  companion_id: string
+  user_id: string
+  rating: number
+  title: string
+  comment: string
+  published: boolean
+  created_at: string
+  updated_at: string
+  user_name?: string
+  user_image?: string
+  chat_id?: string
+  chat_created_at?: string
 }
 
 // Global state
@@ -775,6 +792,7 @@ export const getChatMessages = async (chatId: string) => {
             text: messageItem.text,
             created_at: messageItem.created_at,
             author: senderData?.name || 'Unknown',
+            image: senderData?.image || '',
             isMine: messageItem.sender_id === currentUser.value?.id,
             chat_id: messageItem.chat_id,
           }
@@ -786,6 +804,7 @@ export const getChatMessages = async (chatId: string) => {
             text: messageItem.text,
             created_at: messageItem.created_at,
             author: 'Unknown',
+            image: '',
             isMine: messageItem.sender_id === currentUser.value?.id,
             chat_id: messageItem.chat_id,
           }
@@ -1231,6 +1250,66 @@ export const loadTopics = async () => {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load topics'
     console.error('Error loading topics:', errorMessage)
     topics.value = []
+    return []
+  }
+}
+
+export const getCompanionReviews = async (companionId: string): Promise<Review[]> => {
+  try {
+    const { data: reviews, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('companion_id', companionId)
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    const reviewsWithUsers = await Promise.all(
+      (reviews || []).map(async (review: any) => {
+        try {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('name, image')
+            .eq('id', review.user_id)
+            .single()
+
+          let chatCreatedAt = null
+          if (review.chat_id) {
+            try {
+              const { data: chatData } = await supabase
+                .from('chats')
+                .select('created_at')
+                .eq('id', review.chat_id)
+                .single()
+              chatCreatedAt = chatData?.created_at || null
+            } catch (chatErr) {
+              console.error(`Error fetching chat info for review ${review.id}:`, chatErr)
+            }
+          }
+
+          return {
+            ...review,
+            user_name: userData?.name || 'Unknown',
+            user_image: userData?.image || '',
+            chat_created_at: chatCreatedAt,
+          }
+        } catch (err) {
+          console.error(`Error enriching review ${review.id}:`, err)
+          return {
+            ...review,
+            user_name: 'Unknown',
+            user_image: '',
+            chat_created_at: null,
+          }
+        }
+      })
+    )
+
+    return reviewsWithUsers
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load reviews'
+    console.error('Error loading reviews:', errorMessage)
     return []
   }
 }

@@ -138,7 +138,7 @@ const navigateToSearch = () => {
               </div>
 
               <p class="text-xs text-primary font-semibold mb-2">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-              <p class="text-sm text-secondary/70 leading-relaxed mb-3 line-clamp-2">{{ companion.bio }}</p>
+              <p class="text-sm text-secondary/70 leading-relaxed mb-3 line-clamp-2 break-words">{{ companion.bio }}</p>
 
               <!-- Topics -->
               <div v-if="companion.topics && companion.topics.length > 0" class="mb-3 flex flex-wrap gap-1">
