@@ -321,7 +321,7 @@ const navigateToProfile = (companionId: string | number) => {
                   </div>
                   <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
                   <p v-if="companion.topics && companion.topics.length > 0" class="text-xs text-primary font-semibold mb-3">Темы: {{ companion.topics.join(', ') }}</p>
-                  <p class="text-sm text-secondary/70 leading-relaxed mb-4">{{ companion.bio }}</p>
+                  <p class="text-sm text-secondary/70 leading-relaxed mb-4 break-words overflow-hidden">{{ companion.bio }}</p>
                 </div>
 
                 <!-- Topics -->
@@ -338,7 +338,7 @@ const navigateToProfile = (companionId: string | number) => {
                 <!-- Testimonials -->
                 <div class="flex items-center gap-2 mb-4">
                   <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
-                  <p class="text-xs text-secondary/60">{{ companion.reviews_count }} благодарностей</p>
+                  <p class="text-xs text-secondary/60">{{ companion.reviews_count }} отзывов</p>
                 </div>
 
                 <!-- Button -->

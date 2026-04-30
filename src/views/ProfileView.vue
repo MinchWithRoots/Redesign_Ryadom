@@ -248,13 +248,13 @@ watch(
                     <img src="../images/support.svg" alt="Thanks" class="w-[24px] h-[24px] object-contain" />
                     <span class="font-bold text-primary">0</span>
                   </div>
-                  <p class="text-xs text-secondary/60">благодарностей</p>
+                  <p class="text-xs text-secondary/60">отзывов</p>
                 </div>
               </div>
             </div>
 
             <!-- Bio -->
-            <p v-if="userProfile" class="text-sm text-secondary/70 text-center mb-6 leading-relaxed">
+            <p v-if="userProfile" class="text-sm text-secondary/70 text-center mb-6 leading-relaxed break-words overflow-hidden">
               {{ userProfile.bio || 'Добавьте информацию о себе' }}
             </p>
 

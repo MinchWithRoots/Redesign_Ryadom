@@ -593,8 +593,8 @@ onMounted(async () => {
           <!-- Avatar (for other) -->
           <div v-if="!message.isMine" class="flex-shrink-0 mt-1">
             <img
-              :src="currentCompanion.image"
-              :alt="currentCompanion.name"
+              :src="message.image || currentCompanion?.image || 'https://via.placeholder.com/28'"
+              :alt="currentCompanion?.name || 'User'"
               class="w-7 h-7 rounded-full object-cover"
             />
           </div>

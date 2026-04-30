@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
+import ReviewsList from '../components/ReviewsList.vue'
 import supportIcon from '../images/support.svg'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
@@ -164,10 +165,10 @@ const navigateToChat = () => {
               <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
                 <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
                   <div class="flex items-center justify-center gap-2 mb-2">
-                    <img :src="supportIcon" alt="благодарности" class="w-5 h-5" />
+                    <img :src="supportIcon" alt="отзывы" class="w-5 h-5" />
                     <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
                   </div>
-                  <p class="text-xs text-secondary/60">благодарностей</p>
+                  <p class="text-xs text-secondary/60">отзывов</p>
                 </div>
               </div>
 
@@ -221,7 +222,7 @@ const navigateToChat = () => {
             <!-- Bio Section -->
             <div class="card">
               <h2 class="text-2xl font-bold text-secondary mb-6">О себе</h2>
-              <p class="text-secondary/70 leading-relaxed text-lg">
+              <p class="text-secondary/70 leading-relaxed text-lg break-words overflow-hidden">
                 {{ companion.bio }}
               </p>
             </div>
@@ -240,6 +241,9 @@ const navigateToChat = () => {
                 </span>
               </div>
             </div>
+
+            <!-- Reviews Section -->
+            <ReviewsList v-if="companion" :companion-id="companion.id" />
 
             <!-- Incoming Chat Requests Section (only for the companion themselves) -->
             <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
