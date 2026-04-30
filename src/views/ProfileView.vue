@@ -632,16 +632,10 @@ watch(
                 <div class="flex items-center gap-2 pt-3 border-t border-border/50">
                   <span class="text-xs text-secondary/60">Ваша оценка:</span>
                   <div class="flex gap-0.5">
-                    <img
-                      v-for="starIndex in 5"
-                      :key="starIndex"
-                      src="../images/smile.svg"
-                      :alt="`Star ${starIndex}`"
-                      :class="[
-                        'w-4 h-4 object-contain',
-                        starIndex <= session.feedback ? 'opacity-100' : 'opacity-20'
-                      ]"
-                    />
+                    <span v-for="starIndex in 5" :key="starIndex" class="text-lg">
+                      <span v-if="starIndex <= session.feedback" class="text-yellow-400">★</span>
+                      <span v-else class="text-secondary/20">★</span>
+                    </span>
                   </div>
                 </div>
               </div>
