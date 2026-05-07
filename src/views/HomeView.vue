@@ -134,22 +134,21 @@ onMounted(() => {
       />
 
       <!-- Content -->
-      <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
-        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-16">
+      <div class="relative z-10 w-full max-w-[1280px] mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-8">
           <!-- Left: text + buttons -->
-          <div class="flex flex-col gap-8 lg:gap-10">
+          <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
-            <div>
-              <h1 class="font-inter font-bold text-[#F8F7FC] leading-none">
-                <span class="block text-5xl sm:text-6xl lg:text-7xl xl:text-[72px] leading-tight">Найди свою</span>
-                <span class="block text-5xl sm:text-6xl lg:text-7xl xl:text-[72px] leading-tight">поддержку
-                  <span class="font-pacifico font-normal text-white text-5xl sm:text-7xl lg:text-8xl xl:text-[100px] leading-none align-middle">Рядом</span>
-                </span>
-              </h1>
-            </div>
+            <h1 class="font-inter font-bold text-[#F8F7FC] leading-none flex flex-wrap items-center gap-x-3 gap-y-0">
+              <span class="flex flex-col text-[52px] sm:text-[64px] lg:text-[72px] leading-[1.1]">
+                <span>Найди свою</span>
+                <span>поддержку</span>
+              </span>
+              <span class="font-pacifico font-normal text-white text-[80px] sm:text-[100px] lg:text-[128px] leading-none">Рядом</span>
+            </h1>
 
             <!-- Subtitle -->
-            <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-relaxed max-w-lg">
+            <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-8 max-w-[513px]">
               Безопасное пространство для общения с людьми, которые поймут и поддержат тебя
             </p>
 
@@ -157,16 +156,16 @@ onMounted(() => {
             <div class="flex flex-col sm:flex-row gap-4">
               <button
                 @click="navigate('/search')"
-                class="inline-flex items-center justify-center gap-3 px-10 py-[18px] font-inter font-semibold text-white text-lg rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.35)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.45)] hover:-translate-y-0.5 transition-all w-fit group"
+                class="inline-flex items-center justify-center gap-3 px-10 py-5 font-inter font-semibold text-white text-[18px] leading-7 rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.15)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.35)] hover:-translate-y-0.5 transition-all w-fit group"
               >
                 Начать поиск
-                <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M13 17L18 12L13 7M18 12H6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               <button
                 @click="navigate('/become-companion')"
-                class="inline-flex items-center justify-center px-8 py-[18px] font-inter font-semibold text-secondary text-base rounded-full border-2 border-[#FF725E] bg-white hover:bg-white/90 transition-all"
+                class="inline-flex items-center justify-center px-8 py-5 font-inter font-semibold text-[#5D5A88] text-[15px] rounded-full border-2 border-[#FF725E] bg-white hover:bg-white/90 transition-all"
               >
                 Стать спутником
               </button>
@@ -178,7 +177,7 @@ onMounted(() => {
             <img
               src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
-              class="w-full max-w-[560px] drop-shadow-xl"
+              class="w-full max-w-[643px] drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
             />
           </div>
         </div>
