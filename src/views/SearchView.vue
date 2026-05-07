@@ -125,119 +125,111 @@ const navigateToProfile = (companionId: string | number) => {
 
     <div class="layout-container">
       <!-- Header -->
-      <div class="mb-12 lg:mb-16">
-        <h1 class="text-4xl lg:text-5xl font-bold text-secondary mb-4">
+      <div class="search-header">
+        <h1>
           Найди своего <span class="text-primary">спутника</span>
         </h1>
-        <p class="text-xl text-secondary/60">
+        <p>
           Люди в терапии, готовые слушать и поддерживать друг друга
         </p>
       </div>
 
-
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-6">
+      <div class="grid-main">
         <!-- Filters Sidebar -->
-        <div class="lg:col-span-1">
-          <div class="bg-white border border-border/50 rounded-3xl p-6 shadow-card sticky top-[140px]">
-            <h3 class="text-lg font-bold text-secondary mb-6">Фильтры</h3>
+        <div>
+          <div class="filters-sidebar">
+            <h3>Фильтры</h3>
 
             <!-- Gender Filter -->
-            <div class="mb-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Пол</p>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-center gap-2 cursor-pointer">
+            <div class="filter-group">
+              <p>Пол</p>
+              <div class="filter-options">
+                <label class="filter-option">
                   <input
                     v-model="filters.gender"
                     type="radio"
                     value="all"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Все</span>
+                  <span>Все</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer">
+                <label class="filter-option">
                   <input
                     v-model="filters.gender"
                     type="radio"
                     value="female"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Женщина</span>
+                  <span>Женщина</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer">
+                <label class="filter-option">
                   <input
                     v-model="filters.gender"
                     type="radio"
                     value="male"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Мужчина</span>
+                  <span>Мужчина</span>
                 </label>
               </div>
             </div>
 
             <!-- Age Range -->
-            <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Возраст</p>
-              <div class="flex gap-2 mb-3">
+            <div class="filter-group">
+              <p>Возраст</p>
+              <div class="filter-range-inputs">
                 <input
                   v-model.number="filters.ageMin"
                   type="number"
                   min="18"
                   max="65"
-                  class="w-full px-3 py-2 border border-border rounded-xl text-sm text-secondary focus:outline-none focus:border-primary"
+                  class="filter-range-input"
                 />
                 <input
                   v-model.number="filters.ageMax"
                   type="number"
                   min="18"
                   max="65"
-                  class="w-full px-3 py-2 border border-border rounded-xl text-sm text-secondary focus:outline-none focus:border-primary"
+                  class="filter-range-input"
                 />
               </div>
-              <p class="text-xs text-secondary/60">
+              <p class="filter-range-label">
                 от {{ filters.ageMin }} {{ getAgeForm(filters.ageMin) }} до {{ filters.ageMax }} {{ getAgeForm(filters.ageMax) }}
               </p>
             </div>
 
             <!-- Experience -->
-            <div class="mb-6 border-t border-border/50 pt-6">
-              <p class="text-sm font-semibold text-secondary mb-3">Опыт в терапии</p>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-center gap-2 cursor-pointer">
+            <div class="filter-group">
+              <p>Опыт в терапии</p>
+              <div class="filter-options">
+                <label class="filter-option">
                   <input
                     v-model="filters.experience"
                     type="radio"
                     value="all"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">Все</span>
+                  <span>Все</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer">
+                <label class="filter-option">
                   <input
                     v-model="filters.experience"
                     type="radio"
                     value="beginner"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">До 1 года</span>
+                  <span>До 1 года</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer">
+                <label class="filter-option">
                   <input
                     v-model="filters.experience"
                     type="radio"
                     value="experienced"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">2+ года</span>
+                  <span>2+ года</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer">
+                <label class="filter-option">
                   <input
                     v-model="filters.experience"
                     type="radio"
                     value="expert"
-                    class="w-4 h-4 accent-primary"
                   />
-                  <span class="text-sm text-secondary/70">5+ лет</span>
+                  <span>5+ лет</span>
                 </label>
               </div>
             </div>
@@ -253,7 +245,7 @@ const navigateToProfile = (companionId: string | number) => {
         </div>
 
         <!-- Main Content -->
-        <div class="lg:col-span-3">
+        <div>
           <!-- Topic Tags -->
           <div class="topic-tags">
             <button
@@ -274,7 +266,7 @@ const navigateToProfile = (companionId: string | number) => {
 
           <!-- Notification -->
           <transition name="slide">
-            <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
+            <div v-if="showNotification" class="notification">
               {{ showNotification }}
             </div>
           </transition>
@@ -330,7 +322,7 @@ const navigateToProfile = (companionId: string | number) => {
                 <!-- Button -->
                 <button
                   @click.stop="selectedCompanion = companion"
-                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                  class="btn-companion"
                 >
                   Предложить связь
                 </button>
@@ -345,48 +337,48 @@ const navigateToProfile = (companionId: string | number) => {
     <transition name="fade">
       <div
         v-if="selectedCompanion"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 pt-[140px]"
+        class="modal-overlay"
         @click="selectedCompanion = null"
       >
         <div
-          class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-hover"
+          class="modal-content"
           @click.stop
         >
           <button
             @click="selectedCompanion = null"
-            class="ml-auto block text-secondary/50 hover:text-secondary transition-colors mb-4"
+            class="modal-close"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <div class="text-center mb-6">
+          <div class="modal-center">
             <img
               :src="selectedCompanion.image"
               :alt="selectedCompanion.name"
-              class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
+              class="modal-avatar"
             />
-            <h2 class="text-2xl font-bold text-secondary mb-2">{{ selectedCompanion.name }}</h2>
-            <p class="text-secondary/60">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
+            <h2 class="modal-title">{{ selectedCompanion.name }}</h2>
+            <p class="modal-subtitle">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
           </div>
 
-          <div class="space-y-3 mb-6">
+          <div class="modal-buttons">
             <button
               @click="handleConnectionRequest(selectedCompanion.id)"
-              class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+              class="btn-modal-primary"
             >
               Предложить связь
             </button>
             <button
               @click="navigateToProfile(selectedCompanion.id)"
-              class="w-full py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+              class="btn-modal-secondary"
             >
               Посмотреть профиль
             </button>
           </div>
 
-          <p class="text-xs text-secondary/60 text-center">
+          <p class="modal-notice">
             Ваш запрос будет отправлен {{ selectedCompanion.name }}. Они смогут ответить в течение 24 часов
           </p>
         </div>
