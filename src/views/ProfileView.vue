@@ -113,6 +113,34 @@ const handleOpenChat = (chatId: string | number) => {
   router.push(`/chat?id=${chatId}`)
 }
 
+const handleUnblockChat = async (chatId: string | number, event: Event) => {
+  event.stopPropagation()
+
+  try {
+    const { error } = await supabase
+      .from('chats')
+      .update({ status: 'offline' })
+      .eq('id', chatId)
+
+    if (error) {
+      console.error('Error unblocking chat:', error)
+      alert('Ошибка при разблокировке')
+      return
+    }
+
+    successMessage.value = 'Пользователь разблокирован'
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 3000)
+
+    // Reload chats to update the list
+    await loadChats()
+  } catch (err) {
+    console.error('Error in handleUnblockChat:', err)
+    alert('Ошибка при разблокировке')
+  }
+}
+
 const navigate = (path: string) => {
   router.push(path)
 }
@@ -536,11 +564,14 @@ watch(
               <div
                 v-for="chat in chats"
                 :key="chat.id"
-                class="bg-white border border-border/50 rounded-2xl p-4 shadow-card hover:shadow-hover hover:translate-y-[-2px] transition-all flex items-center justify-between group"
+                :class="[
+                  'bg-white border border-border/50 rounded-2xl p-4 shadow-card flex items-center justify-between group transition-all',
+                  chat.status === 'blocked' ? 'opacity-60 hover:shadow-card' : 'hover:shadow-hover hover:translate-y-[-2px]'
+                ]"
               >
                 <div
-                  @click="handleOpenChat(chat.id)"
-                  class="flex-1 flex items-center gap-4 cursor-pointer"
+                  @click="chat.status !== 'blocked' && handleOpenChat(chat.id)"
+                  :class="['flex-1 flex items-center gap-4', chat.status !== 'blocked' ? 'cursor-pointer' : 'cursor-not-allowed']"
                 >
                   <!-- Avatar -->
                   <div class="relative flex-shrink-0">
@@ -561,7 +592,11 @@ watch(
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                       <h3 class="font-bold text-secondary">{{ chat.name }}</h3>
-                      <span v-if="chat.unread_count > 0" class="ml-auto px-2 py-1 bg-primary text-white text-xs font-bold rounded-full">
+                      <!-- Blocked Badge -->
+                      <span v-if="chat.status === 'blocked'" class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                        заблокирован
+                      </span>
+                      <span v-else-if="chat.unread_count > 0" class="ml-auto px-2 py-1 bg-primary text-white text-xs font-bold rounded-full">
                         {{ chat.unread_count }}
                       </span>
                     </div>
@@ -569,18 +604,33 @@ watch(
                     <p class="text-xs text-secondary/50 mt-1">{{ chat.time }}</p>
                   </div>
 
-                  <!-- Arrow -->
-                  <img src="../images/send.svg" alt="Open" class="w-5 h-5 text-secondary/30 object-contain opacity-30" />
+                  <!-- Arrow (hidden for blocked) -->
+                  <img v-if="chat.status !== 'blocked'" src="../images/send.svg" alt="Open" class="w-5 h-5 text-secondary/30 object-contain opacity-30" />
                 </div>
 
-                <!-- Delete Button -->
-                <button
-                  @click.stop="handleDeleteChat(chat.id)"
-                  class="flex-shrink-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700"
-                  title="Удалить чат"
-                >
-                  <span class="text-lg">🗑</span>
-                </button>
+                <!-- Action Buttons -->
+                <div class="flex-shrink-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <!-- Unblock Button (for blocked chats) -->
+                  <button
+                    v-if="chat.status === 'blocked'"
+                    @click.stop="handleUnblockChat(chat.id, $event)"
+                    class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Разблокировать"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </button>
+
+                  <!-- Delete Button -->
+                  <button
+                    @click.stop="handleDeleteChat(chat.id)"
+                    class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Удалить чат"
+                  >
+                    <span class="text-lg">🗑</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -632,10 +682,14 @@ watch(
                 <div class="flex items-center gap-2 pt-3 border-t border-border/50">
                   <span class="text-xs text-secondary/60">Ваша оценка:</span>
                   <div class="flex gap-0.5">
-                    <span v-for="starIndex in 5" :key="starIndex" class="text-lg">
-                      <span v-if="starIndex <= session.feedback" class="text-yellow-400">★</span>
-                      <span v-else class="text-secondary/20">★</span>
-                    </span>
+                    <img
+                      v-for="starIndex in 5"
+                      :key="starIndex"
+                      src="@/images/star.svg"
+                      :alt="`Star ${starIndex}`"
+                      class="w-4 h-4 object-contain"
+                      :style="{ opacity: starIndex <= session.feedback ? 1 : 0.2 }"
+                    />
                   </div>
                 </div>
               </div>
