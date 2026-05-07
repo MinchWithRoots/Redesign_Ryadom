@@ -124,55 +124,45 @@ onMounted(() => {
 <template>
   <div class="layout-landing">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden min-h-[750px] lg:min-h-[850px] flex items-center">
+    <section class="hero-section">
       <!-- Background image -->
       <img
         src="/src/images/hero.png"
         alt=""
-        class="absolute inset-0 w-auto h-auto object-cover object-center pointer-events-none select-none"
-        aria-hidden="true" style="
-    position: absolute;
-    top: 50px;
-"
+        class="hero-bg-image"
+        aria-hidden="true"
       />
 
       <!-- Content -->
-      <div class="relative z-10 w-full max-w-[1280px] mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
-        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-8" style="
-    bottom: 80px;
-    position: relative;">
+      <div class="hero-content">
+        <div class="hero-grid">
           <!-- Left: text + buttons -->
-          <div class="flex flex-col gap-6 lg:gap-8">
+          <div class="hero-text-group">
             <!-- Heading -->
-            <h1 class="flex flex-wrap items-start gap-x-4 gap-y-0" data-v-inspector="src/views/HomeView.vue:142:13" style="flex-wrap: nowrap;
-">
-<span class="font-inter font-bold text-[#F8F7FC] text-[48px] sm:text-[56px] lg:text-[64px] leading-[1.2]" data-v-inspector="src/views/HomeView.vue:143:15">
-<span class="block" data-v-inspector="src/views/HomeView.vue:144:17" style="
-    width: 400px;
-">Найди свою поддержку</span> 
-
-</span><span class="font-pacifico font-normal text-white text-[72px] sm:text-[90px] lg:text-[100px] leading-[1.2]" data-v-inspector="src/views/HomeView.vue:147:15">Рядом</span>
-</h1>
+            <h1 class="hero-heading">
+              <span class="hero-heading-main">Найди свою поддержку</span>
+              <span class="hero-heading-accent">Рядом</span>
+            </h1>
 
             <!-- Subtitle -->
-            <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-8 max-w-[513px]">
+            <p class="hero-subtitle">
               Безопасное пространство для общения с людьми, которые поймут и поддержат тебя
             </p>
 
             <!-- Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4 w-fit">
+            <div class="hero-buttons">
               <button
                 @click="navigate('/search')"
-                class="inline-flex items-center justify-center gap-3 px-10 py-5 font-inter font-semibold text-white text-[18px] leading-7 rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.15)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.35)] hover:-translate-y-0.5 transition-all group"
+                class="btn-primary-hero"
               >
                 Начать поиск
-                <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M13 17L18 12L13 7M18 12H6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               <button
                 @click="navigate('/become-companion')"
-                class="inline-flex items-center justify-center px-8 py-5 font-inter font-semibold text-[#5D5A88] text-[15px] rounded-full border-2 border-[#FF725E] bg-white hover:bg-white/90 transition-all"
+                class="btn-secondary"
               >
                 Стать спутником
               </button>
@@ -180,11 +170,10 @@ onMounted(() => {
           </div>
 
           <!-- Right: Planet illustration -->
-          <div class="hidden lg:flex items-center justify-center">
+          <div class="hero-planet">
             <img
               src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
-              class="w-full max-w-[480px] drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
             />
           </div>
         </div>
@@ -192,80 +181,79 @@ onMounted(() => {
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-24 lg:py-32 px-4 lg:px-8 relative">
+    <section id="about">
       <div class="container-wide">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <div class="about-grid">
           <!-- Image -->
-          <div class="order-2 lg:order-1 flex justify-center relative">
+          <div class="about-image-section">
             <!-- Decorative elements -->
-            <div class="absolute -top-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
-            <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-secondary/10 rounded-full blur-3xl"></div>
+            <div class="about-decorative-1"></div>
+            <div class="about-decorative-2"></div>
 
-            <div class="relative w-full max-w-md lg:max-w-lg">
-              <div class="aspect-square rounded-3xl overflow-hidden shadow-hover relative group">
+            <div class="about-image-container">
+              <div class="about-image-wrapper">
                 <img
                   src="https://images.pexels.com/photos/14904695/pexels-photo-14904695.jpeg"
                   alt="Two people hugging with care and support"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <!-- Gradient overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent"></div>
+                <div class="about-image-overlay"></div>
               </div>
               <!-- Decorative cards -->
-              <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-card border border-border/50 max-w-xs">
-                <p class="text-sm font-semibold text-secondary">Безопасность</p>
-                <p class="text-xs text-secondary/60 mt-1">Все данные защищены по стандартам GDPR</p>
+              <div class="about-card">
+                <p>Безопасность</p>
+                <p>Все данные защищены по стандартам GDPR</p>
               </div>
             </div>
           </div>
 
           <!-- Content -->
-          <div class="order-1 lg:order-2 flex flex-col gap-8">
-            <div class="space-y-4">
-              <p class="text-primary font-semibold text-lg">О нас</p>
-              <h2 class="text-4xl lg:text-5xl font-bold text-secondary leading-tight">
+          <div class="about-content">
+            <div class="about-header">
+              <p class="about-label">О нас</p>
+              <h2 class="about-title">
                 Платформа доверия и<br/>поддержки
               </h2>
             </div>
 
-            <div class="space-y-6">
-              <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="about-features">
+              <div class="about-feature">
+                <div class="about-feature-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 class="font-semibold text-secondary mb-2">Наша миссия</h3>
-                  <p class="text-secondary/60 leading-relaxed">
+                <div class="about-feature-content">
+                  <h3>Наша миссия</h3>
+                  <p>
                     Создать безопасное, конфиденциальное пространство, где каждый может найти помощь и поддержку без страха и стыда
                   </p>
                 </div>
               </div>
 
-              <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="about-feature">
+                <div class="about-feature-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-2m0 0H10m2 0v2m0-2v-2m7 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 class="font-semibold text-secondary mb-2">Наши ценности</h3>
-                  <p class="text-secondary/60 leading-relaxed">
+                <div class="about-feature-content">
+                  <h3>Наши ценности</h3>
+                  <p>
                     Мы верим в силу сочувствия и поддержки людей, которые вместе проходят свой путь в терапии
                   </p>
                 </div>
               </div>
 
-              <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="about-feature">
+                <div class="about-feature-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                   </svg>
                 </div>
-                <div>
-                  <h3 class="font-semibold text-secondary mb-2">Развитие</h3>
-                  <p class="text-secondary/60 leading-relaxed">
+                <div class="about-feature-content">
+                  <h3>Развитие</h3>
+                  <p>
                     Мы постоянно развиваемся, чтобы предложить лучший сервис и наиболее эффективные способы поддержки
                   </p>
                 </div>
@@ -274,10 +262,10 @@ onMounted(() => {
 
             <button
               @click="navigate('/search')"
-              class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all w-fit group"
+              class="btn-about"
             >
               Присоединиться сейчас
-              <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
@@ -287,22 +275,22 @@ onMounted(() => {
     </section>
 
     <!-- Reviews Section -->
-    <section id="reviews" class="py-24 lg:py-32 px-4 lg:px-8 bg-gradient-to-b from-white to-light-bg relative overflow-hidden">
+    <section id="reviews">
       <!-- Decorative elements -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
-      <div class="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
+      <div class="reviews-decorative-1"></div>
+      <div class="reviews-decorative-2"></div>
 
       <div class="container-wide">
-        <div class="flex flex-col gap-12 lg:gap-16">
-          <div class="text-center space-y-4">
-            <div class="flex items-center justify-center gap-2">
-              <img src="../images/star.svg" alt="Star" class="w-[50px] h-[50px] object-contain" />
-              <p class="text-primary font-semibold text-lg">Отзывы</p>
+        <div class="reviews-container">
+          <div class="reviews-header">
+            <div class="reviews-label">
+              <img src="../images/star.svg" alt="Star" />
+              <p>Отзывы</p>
             </div>
-            <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
+            <h2 class="reviews-title">
               Истории людей,<br/>которым мы помогли
             </h2>
-            <p class="text-xl text-secondary/60 max-w-2xl mx-auto">
+            <p class="reviews-subtitle">
               Узнайте, как наша платформа изменила жизни тысячи людей
             </p>
           </div>
@@ -314,54 +302,54 @@ onMounted(() => {
     </section>
 
     <!-- CTA Section -->
-    <section class="py-24 lg:py-32 px-4 lg:px-8 relative overflow-hidden">
+    <section class="cta-section">
       <!-- Gradient background -->
-      <div class="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5"></div>
+      <div class="cta-bg-gradient"></div>
 
       <!-- Decorative blobs -->
-      <div class="absolute top-1/2 -right-48 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2"></div>
-      <div class="absolute bottom-0 -left-48 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+      <div class="cta-decorative-1"></div>
+      <div class="cta-decorative-2"></div>
 
-      <div class="container mx-auto max-w-3xl text-center relative z-10">
-        <div class="space-y-6 mb-12">
-          <h2 class="text-4xl lg:text-5xl font-bold text-secondary leading-tight">
+      <div class="cta-inner">
+        <div class="cta-content">
+          <h2 class="cta-title">
             Готов начать<br/>свой путь к поддержке?
           </h2>
-          <p class="text-xl text-secondary/60 leading-relaxed">
+          <p class="cta-description">
             Присоединись к сообществу людей, которые находят понимание, поддержку и новых друзей
           </p>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <div class="cta-buttons">
           <button
             @click="navigate('/auth')"
-            class="px-10 py-4 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all group text-lg"
+            class="btn-cta-primary"
           >
             Начать сейчас
-            <span class="inline-block group-hover:translate-x-1 transition-transform">→</span>
+            <span>→</span>
           </button>
           <button
             @click="navigate('/')"
-            class="px-10 py-4 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary hover:bg-primary/5 transition-all text-lg"
+            class="btn-cta-secondary"
           >
             Узнать больше
           </button>
         </div>
 
         <!-- Trust badges -->
-        <div class="mt-16 flex flex-col sm:flex-row gap-6 justify-center items-center text-sm">
-          <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <img src="../images/shield-tick.svg" alt="Verified" class="w-[40px] h-[40px] object-contain" />
+        <div class="cta-badges">
+          <div class="cta-badge">
+            <img src="../images/shield-tick.svg" alt="Verified" />
             <span>Проверенный контент</span>
           </div>
-          <div class="hidden sm:block text-secondary/30">•</div>
-          <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <img src="../images/lock.svg" alt="Security" class="w-[40px] h-[40px] object-contain" />
+          <div class="cta-divider">•</div>
+          <div class="cta-badge">
+            <img src="../images/lock.svg" alt="Security" />
             <span>Защита данных</span>
           </div>
-          <div class="hidden sm:block text-secondary/30">•</div>
-          <div class="flex items-center gap-2 text-secondary/70 font-medium">
-            <img src="../images/star.svg" alt="Reviews" class="w-[40px] h-[40px] object-contain" />
+          <div class="cta-divider">•</div>
+          <div class="cta-badge">
+            <img src="../images/star.svg" alt="Reviews" />
             <span>500+ отзывов 5★</span>
           </div>
         </div>
@@ -369,34 +357,34 @@ onMounted(() => {
     </section>
 
     <!-- Contacts Section -->
-    <section id="contacts" class="py-24 lg:py-32 px-4 lg:px-8 bg-gradient-to-b from-light-bg to-white relative">
-      <div class="container mx-auto max-w-2xl">
-        <div class="text-center space-y-8">
-          <div class="space-y-4">
-            <p class="text-primary font-semibold text-lg">Контакты</p>
-            <h2 class="text-4xl lg:text-5xl font-bold text-secondary">
+    <section id="contacts">
+      <div class="contacts-container">
+        <div class="contacts-header">
+          <div class="contacts-header-text">
+            <p class="contacts-label">Контакты</p>
+            <h2 class="contacts-title">
               Свяжитесь с нами
             </h2>
-            <p class="text-xl text-secondary/60">
+            <p class="contacts-subtitle">
               У вас есть вопросы или предложения? Мы всегда готовы помочь
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+          <div class="contacts-grid">
             <!-- Email -->
             <a
               href="mailto:info@ryandom.ru"
-              class="p-6 bg-white rounded-2xl border-2 border-border hover:border-primary hover:shadow-hover transition-all group"
+              class="contact-card"
             >
-              <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="contact-card-inner">
+                <div class="contact-card-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <div class="text-left">
-                  <p class="font-semibold text-secondary mb-1">Электронная почта</p>
-                  <p class="text-secondary/60 group-hover:text-primary transition-colors">info@ryandom.ru</p>
+                <div class="contact-card-text">
+                  <p class="contact-card-title">Электронная почта</p>
+                  <p class="contact-card-value">info@ryandom.ru</p>
                 </div>
               </div>
             </a>
@@ -404,24 +392,24 @@ onMounted(() => {
             <!-- Phone -->
             <a
               href="tel:+79000000000"
-              class="p-6 bg-white rounded-2xl border-2 border-border hover:border-primary hover:shadow-hover transition-all group"
+              class="contact-card"
             >
-              <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="contact-card-inner">
+                <div class="contact-card-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.73 1.365a1 1 0 001.006-.19c.235-.172.482-.311.735-.427a1 1 0 00.503-1.35l-1.498-4.493a1 1 0 00-.948-.684H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.73 1.365a1 1 0 001.006-.19c.235-.172.482-.311.735-.427a1 1 0 00.503-1.35l-1.498-4.493" />
                   </svg>
                 </div>
-                <div class="text-left">
-                  <p class="font-semibold text-secondary mb-1">Телефон</p>
-                  <p class="text-secondary/60 group-hover:text-primary transition-colors">+7 (900) 000-00-00</p>
+                <div class="contact-card-text">
+                  <p class="contact-card-title">Телефон</p>
+                  <p class="contact-card-value">+7 (900) 000-00-00</p>
                 </div>
               </div>
             </a>
           </div>
 
-          <div class="mt-12 p-6 bg-primary/5 border border-primary/20 rounded-2xl">
-            <p class="text-secondary/70">
+          <div class="contacts-note">
+            <p>
               Мы стараемся ответить на все запросы в течение 24 часов
             </p>
           </div>
@@ -431,4 +419,881 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* LAYOUT AND CONTAINER STYLES */
+.layout-landing {
+  width: 100%;
+}
+
+.container-wide {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 1024px) {
+  .container-wide {
+    padding: 0 2rem;
+  }
+}
+
+/* HERO SECTION */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  min-height: 750px;
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .hero-section {
+    min-height: 850px;
+  }
+}
+
+.hero-bg-image {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  top: 50px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  padding-top: 80px;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-content {
+    padding: 0 3rem;
+    padding-top: 80px;
+    padding-bottom: 6rem;
+  }
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 2.5rem;
+  position: relative;
+  bottom: 80px;
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+.hero-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-text-group {
+    gap: 2rem;
+  }
+}
+
+.hero-heading {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #f8f7fc;
+}
+
+.hero-heading-main {
+  display: block;
+  font-size: 48px;
+  line-height: 1.2;
+  width: 400px;
+}
+
+@media (min-width: 640px) {
+  .hero-heading-main {
+    font-size: 56px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-heading-main {
+    font-size: 64px;
+  }
+}
+
+.hero-heading-accent {
+  font-family: 'Pacifico', cursive;
+  font-weight: 400;
+  color: white;
+  font-size: 72px;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .hero-heading-accent {
+    font-size: 90px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-heading-accent {
+    font-size: 100px;
+  }
+}
+
+.hero-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  color: #f8f7fc;
+  font-size: 1.25rem;
+  line-height: 2rem;
+  max-width: 513px;
+}
+
+@media (min-width: 1024px) {
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
+}
+
+.hero-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: fit-content;
+}
+
+@media (min-width: 640px) {
+  .hero-buttons {
+    flex-direction: row;
+  }
+}
+
+.btn-primary-hero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem 2.5rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: white;
+  font-size: 18px;
+  line-height: 1.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #ff6330, #d32032);
+  box-shadow: 0 4px 8px rgba(212, 132, 106, 0.15);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-hero:hover {
+  box-shadow: 0 8px 20px rgba(212, 132, 106, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-primary-hero svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-primary-hero:hover svg {
+  transform: translateX(4px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 2rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #5d5a88;
+  font-size: 15px;
+  border-radius: 9999px;
+  background-color: white;
+  border: 2px solid #ff725e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-planet {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .hero-planet {
+    display: flex;
+  }
+}
+
+.hero-planet img {
+  width: 100%;
+  max-width: 480px;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
+}
+
+/* ABOUT SECTION */
+#about {
+  padding: 6rem 1rem;
+}
+
+@media (min-width: 1024px) {
+  #about {
+    padding: 8rem 2rem;
+  }
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .about-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+  }
+}
+
+.about-image-section {
+  order: 2;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .about-image-section {
+    order: 1;
+  }
+}
+
+.about-decorative-1 {
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  width: 160px;
+  height: 160px;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 9999px;
+  filter: blur(96px);
+}
+
+.about-decorative-2 {
+  position: absolute;
+  bottom: -40px;
+  right: -40px;
+  width: 192px;
+  height: 192px;
+  background-color: rgba(100, 116, 139, 0.1);
+  border-radius: 9999px;
+  filter: blur(96px);
+}
+
+.about-image-container {
+  position: relative;
+  width: 100%;
+  max-width: 448px;
+}
+
+@media (min-width: 1024px) {
+  .about-image-container {
+    max-width: 448px;
+  }
+}
+
+.about-image-wrapper {
+  aspect-ratio: 1;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.about-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.about-image-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+.about-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(59, 130, 246, 0.2), transparent);
+}
+
+.about-card {
+  position: absolute;
+  bottom: -1.5rem;
+  right: -1.5rem;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  max-width: 320px;
+}
+
+.about-card p:first-child {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #5d5a88;
+}
+
+.about-card p:last-child {
+  font-size: 0.75rem;
+  color: rgba(93, 90, 136, 0.6);
+  margin-top: 0.25rem;
+}
+
+.about-content {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .about-content {
+    order: 2;
+  }
+}
+
+.about-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.about-label {
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.about-title {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #5d5a88;
+}
+
+@media (min-width: 1024px) {
+  .about-title {
+    font-size: 2.25rem;
+  }
+}
+
+.about-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.about-feature {
+  display: flex;
+  gap: 1rem;
+}
+
+.about-feature-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.about-feature-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #3b82f6;
+}
+
+.about-feature-content h3 {
+  font-weight: 600;
+  color: #5d5a88;
+  margin-bottom: 0.5rem;
+}
+
+.about-feature-content p {
+  color: rgba(93, 90, 136, 0.6);
+  line-height: 1.5;
+}
+
+.btn-about {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(to right, #ff6330, #d32032);
+  color: white;
+  font-weight: 600;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  transition: all 0.2s ease;
+}
+
+.btn-about:hover {
+  box-shadow: 0 8px 20px rgba(212, 132, 106, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-about svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-about:hover svg {
+  transform: translateX(4px);
+}
+
+/* REVIEWS SECTION */
+#reviews {
+  padding: 6rem 1rem;
+  background: linear-gradient(to bottom, white, #f8f7fc);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  #reviews {
+    padding: 8rem 2rem;
+  }
+}
+
+.reviews-decorative-1 {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 384px;
+  height: 384px;
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 9999px;
+  filter: blur(96px);
+  z-index: -10;
+}
+
+.reviews-decorative-2 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 384px;
+  height: 384px;
+  background-color: rgba(100, 116, 139, 0.05);
+  border-radius: 9999px;
+  filter: blur(96px);
+  z-index: -10;
+}
+
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .reviews-container {
+    gap: 4rem;
+  }
+}
+
+.reviews-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reviews-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.reviews-label img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.reviews-label p {
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.reviews-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5d5a88;
+  line-height: 1.2;
+}
+
+@media (min-width: 1024px) {
+  .reviews-title {
+    font-size: 2.25rem;
+  }
+}
+
+.reviews-subtitle {
+  font-size: 1.25rem;
+  color: rgba(93, 90, 136, 0.6);
+  max-width: 896px;
+  margin: 0 auto;
+}
+
+/* CTA SECTION */
+.cta-section {
+  padding: 6rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .cta-section {
+    padding: 8rem 2rem;
+  }
+}
+
+.cta-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.05), transparent, rgba(100, 116, 139, 0.05));
+}
+
+.cta-decorative-1 {
+  position: absolute;
+  top: 50%;
+  right: -192px;
+  width: 384px;
+  height: 384px;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 9999px;
+  filter: blur(96px);
+  transform: translateY(-50%);
+}
+
+.cta-decorative-2 {
+  position: absolute;
+  bottom: 0;
+  left: -192px;
+  width: 384px;
+  height: 384px;
+  background-color: rgba(100, 116, 139, 0.1);
+  border-radius: 9999px;
+  filter: blur(96px);
+}
+
+.cta-inner {
+  max-width: 768px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.cta-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.cta-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5d5a88;
+  line-height: 1.2;
+}
+
+@media (min-width: 1024px) {
+  .cta-title {
+    font-size: 2.25rem;
+  }
+}
+
+.cta-description {
+  font-size: 1.25rem;
+  color: rgba(93, 90, 136, 0.6);
+  line-height: 1.5;
+}
+
+.cta-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .cta-buttons {
+    flex-direction: row;
+  }
+}
+
+.btn-cta-primary {
+  padding: 1rem 2.5rem;
+  background: linear-gradient(to right, #ff6330, #d32032);
+  color: white;
+  font-weight: 600;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: none;
+  cursor: pointer;
+  font-size: 1.125rem;
+  transition: all 0.2s ease;
+}
+
+.btn-cta-primary:hover {
+  box-shadow: 0 8px 20px rgba(212, 132, 106, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-cta-primary span {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.btn-cta-primary:hover span {
+  transform: translateX(4px);
+}
+
+.btn-cta-secondary {
+  padding: 1rem 2.5rem;
+  color: #5d5a88;
+  font-weight: 600;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 1.125rem;
+  transition: all 0.2s ease;
+}
+
+.btn-cta-secondary:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.cta-badges {
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .cta-badges {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+}
+
+.cta-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(93, 90, 136, 0.7);
+  font-weight: 500;
+}
+
+.cta-badge img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.cta-divider {
+  display: none;
+  color: rgba(93, 90, 136, 0.3);
+}
+
+@media (min-width: 640px) {
+  .cta-divider {
+    display: block;
+  }
+}
+
+/* CONTACTS SECTION */
+#contacts {
+  padding: 6rem 1rem;
+  background: linear-gradient(to bottom, #f8f7fc, white);
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  #contacts {
+    padding: 8rem 2rem;
+  }
+}
+
+.contacts-container {
+  width: 100%;
+  max-width: 672px;
+  margin: 0 auto;
+}
+
+.contacts-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.contacts-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contacts-label {
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.contacts-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5d5a88;
+}
+
+@media (min-width: 1024px) {
+  .contacts-title {
+    font-size: 2.25rem;
+  }
+}
+
+.contacts-subtitle {
+  font-size: 1.25rem;
+  color: rgba(93, 90, 136, 0.6);
+}
+
+.contacts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+@media (min-width: 768px) {
+  .contacts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.contact-card {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 1rem;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.contact-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 20px rgba(212, 132, 106, 0.35);
+}
+
+.contact-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.contact-card-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-card-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #3b82f6;
+}
+
+.contact-card-text {
+  text-align: left;
+}
+
+.contact-card-title {
+  font-weight: 600;
+  color: #5d5a88;
+  margin-bottom: 0.25rem;
+}
+
+.contact-card-value {
+  color: rgba(93, 90, 136, 0.6);
+  transition: color 0.2s ease;
+}
+
+.contact-card:hover .contact-card-value {
+  color: #3b82f6;
+}
+
+.contacts-note {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background-color: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  color: rgba(93, 90, 136, 0.7);
+}
+</style>
