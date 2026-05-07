@@ -124,112 +124,65 @@ onMounted(() => {
 <template>
   <div class="layout-landing">
     <!-- Hero Section -->
-    <section class="section-hero">
-      <div class="hero-container">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <!-- Left Content -->
+    <section class="relative overflow-hidden min-h-[600px] lg:min-h-[700px] flex items-center">
+      <!-- Background image -->
+      <img
+        src="/src/images/hero.png"
+        alt=""
+        class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
+        aria-hidden="true"
+      />
+
+      <!-- Content -->
+      <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-16">
+          <!-- Left: text + buttons -->
           <div class="flex flex-col gap-8 lg:gap-10">
-            <div class="space-y-4 lg:space-y-6">
-              <div class="flex items-center gap-2">
-                <img src="../images/shield-tick.svg" alt="Добро пожаловать" class="w-[50px] h-[50px] object-contain" />
-                <p class="text-primary font-semibold text-lg tracking-wide">Добро пожаловать</p>
-              </div>
-              <h1 class="text-5xl lg:text-7xl font-bold text-secondary leading-tight">
-                Найди свою <span class="bg-gradient-to-r from-primary to-secondary/70 bg-clip-text text-transparent">поддержку</span>
+            <!-- Heading -->
+            <div>
+              <h1 class="font-inter font-bold text-[#F8F7FC] leading-none">
+                <span class="block text-5xl sm:text-6xl lg:text-7xl xl:text-[72px] leading-tight">Найди свою</span>
+                <span class="block text-5xl sm:text-6xl lg:text-7xl xl:text-[72px] leading-tight">поддержку
+                  <span class="font-pacifico font-normal text-white text-5xl sm:text-7xl lg:text-8xl xl:text-[100px] leading-none align-middle">Рядом</span>
+                </span>
               </h1>
             </div>
-            <p class="text-xl lg:text-2xl text-secondary/60 leading-relaxed font-light max-w-xl">
+
+            <!-- Subtitle -->
+            <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-relaxed max-w-lg">
               Безопасное пространство для общения с людьми, которые поймут и поддержат тебя
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
               <button
                 @click="navigate('/search')"
-                class="inline-flex items-center justify-center gap-3 px-8 py-4 lg:px-10 lg:py-5 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all w-fit text-base lg:text-lg group"
+                class="inline-flex items-center justify-center gap-3 px-10 py-[18px] font-inter font-semibold text-white text-lg rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.35)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.45)] hover:-translate-y-0.5 transition-all w-fit group"
               >
                 Начать поиск
-                <svg class="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 17L18 12L13 7M18 12H6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               <button
                 @click="navigate('/become-companion')"
-                class="inline-flex items-center justify-center gap-2 px-8 py-4 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                class="inline-flex items-center justify-center px-8 py-[18px] font-inter font-semibold text-secondary text-base rounded-full border-2 border-[#FF725E] bg-white hover:bg-white/90 transition-all"
               >
                 Стать спутником
               </button>
             </div>
-
-            <!-- Stats -->
-            <div class="flex gap-8 pt-8 border-t border-border/50">
-              <div>
-                <p class="text-3xl font-bold text-primary">500+</p>
-                <p class="text-sm text-secondary/60 mt-1">Активных пользователей</p>
-              </div>
-              <div>
-                <p class="text-3xl font-bold text-primary">98%</p>
-                <p class="text-sm text-secondary/60 mt-1">Рекомендуют друзьям</p>
-              </div>
-              <div>
-                <p class="text-3xl font-bold text-primary">24/7</p>
-                <p class="text-sm text-secondary/60 mt-1">Поддержка</p>
-              </div>
-            </div>
           </div>
 
-          <!-- Right - Modern Illustration Area -->
-          <div class="relative h-full min-h-[500px] lg:min-h-[600px]">
-            <!-- Decorative blobs -->
-            <div class="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-3xl opacity-60"></div>
-            <div class="absolute bottom-0 left-10 w-96 h-96 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-full blur-3xl opacity-40"></div>
-
-            <!-- Main visual element -->
-            <div class="relative h-full flex items-center justify-center">
-              <div class="w-full max-w-sm aspect-square">
-                <!-- Outer ring -->
-                <div class="absolute inset-0 border-2 border-primary/20 rounded-full"></div>
-
-                <!-- Inner circle with gradient -->
-                <div class="absolute inset-8 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent rounded-full border border-primary/10"></div>
-
-                <!-- Icons arranged in circle -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="relative w-48 h-48">
-                    <!-- Center icon -->
-                    <div class="absolute inset-0 flex items-center justify-center">
-                      <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center shadow-card border border-white opacity-100">
-                        <img src="../images/user-story.svg" alt="Menu" class="w-[65px] h-[65px] object-contain" />
-                      </div>
-                    </div>
-
-                    <!-- Floating icons -->
-                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0s">
-                      <img src="../images/heart-add.svg" alt="Bookmark" class="w-[45px] h-[45px] object-contain" />
-                    </div>
-                    <div class="absolute top-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.2s">
-                      <img src="../images/heart.svg" alt="Heart" class="w-[45px] h-[45px] object-contain" />
-                    </div>
-                    <div class="absolute bottom-8 -right-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.4s">
-                      <img src="../images/settings.svg" alt="Setting" class="w-[45px] h-[45px] object-contain" />
-                    </div>
-                    <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.6s">
-                      <img src="../images/message-add-alt.svg" alt="Notification" class="w-[45px] h-[45px] object-contain" />
-                    </div>
-                    <div class="absolute bottom-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 0.8s">
-                      <img src="../images/lock.svg" alt="Danger" class="w-[45px] h-[45px] object-contain" />
-                    </div>
-                    <div class="absolute top-8 -left-4 w-16 h-16 bg-white border-2 border-primary/20 rounded-2xl flex items-center justify-center shadow-card animate-bounce" style="animation-delay: 1s">
-                      <img src="../images/support.svg" alt="Info" class="w-[45px] h-[45px] object-contain" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <!-- Right: Planet illustration -->
+          <div class="hidden lg:flex items-center justify-center">
+            <img
+              src="/src/images/Planet with stars.png"
+              alt="Planet with stars"
+              class="w-full max-w-[560px] drop-shadow-xl"
+            />
           </div>
         </div>
       </div>
-
-      <!-- Decorative bottom wave -->
-      <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-light-bg to-transparent pointer-events-none"></div>
     </section>
 
     <!-- About Section -->

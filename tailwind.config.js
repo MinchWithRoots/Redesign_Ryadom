@@ -3,6 +3,10 @@ export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        pacifico: ['Pacifico', 'cursive'],
+        inter: ['Inter', 'sans-serif'],
+      },
       colors: {
         primary: '#FF6A2F',
         'primary-dark': '#D32032',
