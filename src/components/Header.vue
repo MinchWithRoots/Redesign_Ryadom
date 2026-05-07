@@ -11,7 +11,6 @@ const isScrolled = ref(false)
 const { logout } = useAuth()
 
 const isHomePage = computed(() => route.path === '/')
-const isTransparent = computed(() => isHomePage.value && !isScrolled.value)
 
 onMounted(async () => {
   await loadCurrentUser()
@@ -60,26 +59,14 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <header
-    :class="[
-      'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-      isTransparent
-        ? 'bg-transparent h-[80px]'
-        : 'bg-white/90 backdrop-blur-md shadow-card border-b border-border/30 h-[80px]'
-    ]"
-  >
+  <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-md shadow-card border-b border-border/30 h-[80px]">
     <div class="container mx-auto px-4 lg:px-8 w-full h-full flex items-center justify-between">
       <!-- Logo -->
       <div
         class="flex items-center gap-2.5 cursor-pointer transition-opacity hover:opacity-80"
         @click="navigate('/')"
       >
-        <span
-          :class="[
-            'text-2xl font-bold font-inter transition-colors',
-            isTransparent ? 'text-white' : 'text-secondary'
-          ]"
-        >
+        <span class="text-2xl font-bold font-inter text-secondary">
           Рядом
         </span>
       </div>
@@ -91,37 +78,26 @@ const handleLogout = async () => {
           @click.prevent="navigate('/')"
           :class="[
             'text-base font-medium transition-colors',
-            isTransparent
-              ? (isActive('/') ? 'text-white font-semibold' : 'text-white/80 hover:text-white')
-              : (isActive('/') ? 'text-primary' : 'text-secondary hover:text-primary')
+            isActive('/') ? 'text-primary' : 'text-secondary hover:text-primary'
           ]"
         >
           Главная
         </a>
         <button
           @click="scrollToSection('about')"
-          :class="[
-            'text-base font-medium transition-colors',
-            isTransparent ? 'text-white/80 hover:text-white' : 'text-secondary hover:text-primary'
-          ]"
+          class="text-base font-medium transition-colors text-secondary hover:text-primary"
         >
           О нас
         </button>
         <button
           @click="scrollToSection('reviews')"
-          :class="[
-            'text-base font-medium transition-colors',
-            isTransparent ? 'text-white/80 hover:text-white' : 'text-secondary hover:text-primary'
-          ]"
+          class="text-base font-medium transition-colors text-secondary hover:text-primary"
         >
           Отзывы
         </button>
         <button
           @click="scrollToSection('contacts')"
-          :class="[
-            'text-base font-medium transition-colors',
-            isTransparent ? 'text-white/80 hover:text-white' : 'text-secondary hover:text-primary'
-          ]"
+          class="text-base font-medium transition-colors text-secondary hover:text-primary"
         >
           Контакты
         </button>
@@ -132,12 +108,7 @@ const handleLogout = async () => {
         <template v-if="!currentUser">
           <button
             @click="navigate('/auth')"
-            :class="[
-              'px-6 py-2.5 text-sm font-semibold rounded-full border-2 transition-all',
-              isTransparent
-                ? 'border-white/60 text-white hover:border-white hover:bg-white/10'
-                : 'border-primary text-secondary hover:bg-primary/5'
-            ]"
+            class="px-6 py-2.5 text-sm font-semibold rounded-full border-2 border-primary text-secondary hover:bg-primary/5 transition-all"
           >
             Логин
           </button>
@@ -151,12 +122,7 @@ const handleLogout = async () => {
         <template v-else>
           <button
             @click="navigate('/profile')"
-            :class="[
-              'px-6 py-2.5 text-sm font-semibold rounded-full border-2 transition-all',
-              isTransparent
-                ? 'border-white/60 text-white hover:border-white hover:bg-white/10'
-                : 'border-border text-secondary hover:border-primary hover:text-primary'
-            ]"
+            class="px-6 py-2.5 text-sm font-semibold rounded-full border-2 border-border text-secondary hover:border-primary hover:text-primary transition-all"
           >
             {{ currentUser.name }}
           </button>
@@ -177,22 +143,19 @@ const handleLogout = async () => {
       >
         <span
           :class="[
-            'w-6 h-0.5 transition-all',
-            isTransparent ? 'bg-white' : 'bg-secondary',
+            'w-6 h-0.5 bg-secondary transition-all',
             isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
           ]"
         ></span>
         <span
           :class="[
-            'w-6 h-0.5 transition-all',
-            isTransparent ? 'bg-white' : 'bg-secondary',
+            'w-6 h-0.5 bg-secondary transition-all',
             isMobileMenuOpen ? 'opacity-0' : ''
           ]"
         ></span>
         <span
           :class="[
-            'w-6 h-0.5 transition-all',
-            isTransparent ? 'bg-white' : 'bg-secondary',
+            'w-6 h-0.5 bg-secondary transition-all',
             isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
           ]"
         ></span>

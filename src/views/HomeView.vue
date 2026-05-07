@@ -139,12 +139,12 @@ onMounted(() => {
           <!-- Left: text + buttons -->
           <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
-            <h1 class="font-inter font-bold text-[#F8F7FC] leading-none flex flex-wrap items-center gap-x-3 gap-y-0">
-              <span class="flex flex-col text-[52px] sm:text-[64px] lg:text-[72px] leading-[1.1]">
-                <span>Найди свою</span>
-                <span>поддержку</span>
+            <h1 class="flex flex-col lg:flex-row items-start lg:items-center gap-y-2 lg:gap-x-6">
+              <span class="font-inter font-bold text-[#F8F7FC] text-[52px] sm:text-[64px] lg:text-[72px] leading-[1.0]">
+                <span class="block">Найди свою</span>
+                <span class="block">поддержку</span>
               </span>
-              <span class="font-pacifico font-normal text-white text-[80px] sm:text-[100px] lg:text-[128px] leading-none">Рядом</span>
+              <span class="font-pacifico font-normal text-white text-[80px] sm:text-[100px] lg:text-[128px] leading-[1.0]">Рядом</span>
             </h1>
 
             <!-- Subtitle -->
@@ -153,10 +153,10 @@ onMounted(() => {
             </p>
 
             <!-- Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex flex-col sm:flex-row gap-4 w-fit">
               <button
                 @click="navigate('/search')"
-                class="inline-flex items-center justify-center gap-3 px-10 py-5 font-inter font-semibold text-white text-[18px] leading-7 rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.15)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.35)] hover:-translate-y-0.5 transition-all w-fit group"
+                class="inline-flex items-center justify-center gap-3 px-10 py-5 font-inter font-semibold text-white text-[18px] leading-7 rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.15)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.35)] hover:-translate-y-0.5 transition-all group"
               >
                 Начать поиск
                 <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
