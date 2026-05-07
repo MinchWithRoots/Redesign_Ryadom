@@ -130,7 +130,10 @@ onMounted(() => {
         src="/src/images/hero.png"
         alt=""
         class="absolute inset-0 w-auto h-auto object-cover object-center pointer-events-none select-none"
-        aria-hidden="true"
+        aria-hidden="true" style="
+    position: absolute;
+    top: 50px;
+"
       />
 
       <!-- Content -->
