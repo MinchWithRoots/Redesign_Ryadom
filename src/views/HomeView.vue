@@ -124,12 +124,12 @@ onMounted(() => {
 <template>
   <div class="layout-landing">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden min-h-[600px] lg:min-h-[700px] flex items-center">
+    <section class="relative overflow-hidden min-h-[750px] lg:min-h-[850px] flex items-center">
       <!-- Background image -->
       <img
         src="/src/images/hero.png"
         alt=""
-        class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
+        class="absolute inset-0 w-auto h-auto object-cover object-center pointer-events-none select-none"
         aria-hidden="true"
       />
 
@@ -140,11 +140,11 @@ onMounted(() => {
           <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
             <h1 class="flex flex-wrap items-start gap-x-4 gap-y-0">
-              <span class="font-inter font-bold text-[#F8F7FC] text-[52px] sm:text-[64px] lg:text-[72px] leading-[1.2]">
+              <span class="font-inter font-bold text-[#F8F7FC] text-[48px] sm:text-[56px] lg:text-[64px] leading-[1.2]">
                 <span class="block">Найди свою</span>
                 <span class="block">поддержку</span>
               </span>
-              <span class="font-pacifico font-normal text-white text-[80px] sm:text-[100px] lg:text-[128px] leading-[1.2]">Рядом</span>
+              <span class="font-pacifico font-normal text-white text-[72px] sm:text-[90px] lg:text-[100px] leading-[1.2]">Рядом</span>
             </h1>
 
             <!-- Subtitle -->
@@ -177,7 +177,7 @@ onMounted(() => {
             <img
               src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
-              class="w-full max-w-[643px] drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+              class="w-full max-w-[480px] drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
             />
           </div>
         </div>
