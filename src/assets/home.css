@@ -11,7 +11,7 @@
 .hero-section {
   position: relative;
   overflow: hidden;
-  min-height: 680px;
+  min-height: 700px;
   display: flex;
   align-items: center;
   padding-top: var(--header-height);
@@ -19,7 +19,7 @@
 
 @media (min-width: 1024px) {
   .hero-section {
-    min-height: 780px;
+    min-height: 800px;
   }
 }
 
@@ -72,20 +72,45 @@
 /* Hero Heading */
 .hero-heading {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.25rem 0.5rem;
+  flex-direction: column;
+  gap: 0;
   font-style: normal;
 }
 
-.hero-heading-main {
+.hero-heading-line1 {
   display: block;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  font-size: 48px;
-  line-height: 1.1;
+  font-size: 44px;
+  line-height: 1;
   color: #F8F7FC;
-  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .hero-heading-line1 {
+    font-size: 56px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-heading-line1 {
+    font-size: 72px;
+  }
+}
+
+.hero-heading-line2 {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.hero-heading-main {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1;
+  color: #FEF5EC;
 }
 
 @media (min-width: 640px) {
@@ -96,28 +121,28 @@
 
 @media (min-width: 1024px) {
   .hero-heading-main {
-    font-size: 64px;
+    font-size: 72px;
   }
 }
 
 .hero-heading-accent {
   font-family: 'Pacifico', cursive;
   font-weight: 400;
-  font-size: 72px;
-  line-height: 1;
+  font-size: 68px;
+  line-height: 0.95;
   color: #FFFFFF;
   letter-spacing: 0.45px;
 }
 
 @media (min-width: 640px) {
   .hero-heading-accent {
-    font-size: 88px;
+    font-size: 96px;
   }
 }
 
 @media (min-width: 1024px) {
   .hero-heading-accent {
-    font-size: 108px;
+    font-size: 128px;
   }
 }
 
@@ -128,12 +153,12 @@
   font-size: 18px;
   line-height: 2rem;
   color: #F8F7FC;
-  max-width: 480px;
+  max-width: 513px;
 }
 
 @media (min-width: 1024px) {
   .hero-subtitle {
-    font-size: 20px;
+    font-size: 24px;
   }
 }
 
@@ -226,7 +251,7 @@
 
 .hero-planet img {
   width: 100%;
-  max-width: 560px;
+  max-width: 600px;
   filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
 }
 
