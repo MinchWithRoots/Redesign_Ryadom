@@ -124,49 +124,55 @@ onMounted(() => {
 <template>
   <div class="layout-landing">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden min-h-[600px] lg:min-h-[700px] flex items-center">
+    <section class="relative overflow-hidden min-h-[750px] lg:min-h-[850px] flex items-center">
       <!-- Background image -->
       <img
         src="/src/images/hero.png"
         alt=""
-        class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
-        aria-hidden="true"
+        class="absolute inset-0 w-auto h-auto object-cover object-center pointer-events-none select-none"
+        aria-hidden="true" style="
+    position: absolute;
+    top: 50px;
+"
       />
 
       <!-- Content -->
-      <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
-        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-16">
+      <div class="relative z-10 w-full max-w-[1280px] mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-8" style="
+    bottom: 80px;
+    position: relative;">
           <!-- Left: text + buttons -->
-          <div class="flex flex-col gap-8 lg:gap-10">
+          <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
-            <div>
-              <h1 class="font-inter font-bold text-[#F8F7FC] leading-none">
-                <span class="block text-5xl sm:text-6xl lg:text-7xl xl:text-[72px] leading-tight">Найди свою</span>
-                <span class="block text-5xl sm:text-6xl lg:text-7xl xl:text-[72px] leading-tight">поддержку
-                  <span class="font-pacifico font-normal text-white text-5xl sm:text-7xl lg:text-8xl xl:text-[100px] leading-none align-middle">Рядом</span>
-                </span>
-              </h1>
-            </div>
+            <h1 class="flex flex-wrap items-start gap-x-4 gap-y-0" data-v-inspector="src/views/HomeView.vue:142:13" style="flex-wrap: nowrap;
+">
+<span class="font-inter font-bold text-[#F8F7FC] text-[48px] sm:text-[56px] lg:text-[64px] leading-[1.2]" data-v-inspector="src/views/HomeView.vue:143:15">
+<span class="block" data-v-inspector="src/views/HomeView.vue:144:17" style="
+    width: 400px;
+">Найди свою поддержку</span> 
+
+</span><span class="font-pacifico font-normal text-white text-[72px] sm:text-[90px] lg:text-[100px] leading-[1.2]" data-v-inspector="src/views/HomeView.vue:147:15">Рядом</span>
+</h1>
 
             <!-- Subtitle -->
-            <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-relaxed max-w-lg">
+            <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-8 max-w-[513px]">
               Безопасное пространство для общения с людьми, которые поймут и поддержат тебя
             </p>
 
             <!-- Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex flex-col sm:flex-row gap-4 w-fit">
               <button
                 @click="navigate('/search')"
-                class="inline-flex items-center justify-center gap-3 px-10 py-[18px] font-inter font-semibold text-white text-lg rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.35)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.45)] hover:-translate-y-0.5 transition-all w-fit group"
+                class="inline-flex items-center justify-center gap-3 px-10 py-5 font-inter font-semibold text-white text-[18px] leading-7 rounded-full bg-gradient-to-r from-[#FF6330] to-[#D32032] shadow-[0_4px_8px_rgba(212,132,106,0.15)] hover:shadow-[0_8px_20px_rgba(212,132,106,0.35)] hover:-translate-y-0.5 transition-all group"
               >
                 Начать поиск
-                <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M13 17L18 12L13 7M18 12H6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               <button
                 @click="navigate('/become-companion')"
-                class="inline-flex items-center justify-center px-8 py-[18px] font-inter font-semibold text-secondary text-base rounded-full border-2 border-[#FF725E] bg-white hover:bg-white/90 transition-all"
+                class="inline-flex items-center justify-center px-8 py-5 font-inter font-semibold text-[#5D5A88] text-[15px] rounded-full border-2 border-[#FF725E] bg-white hover:bg-white/90 transition-all"
               >
                 Стать спутником
               </button>
@@ -178,7 +184,7 @@ onMounted(() => {
             <img
               src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
-              class="w-full max-w-[560px] drop-shadow-xl"
+              class="w-full max-w-[480px] drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
             />
           </div>
         </div>
