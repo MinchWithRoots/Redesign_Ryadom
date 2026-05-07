@@ -139,13 +139,13 @@ onMounted(() => {
           <!-- Left: text + buttons -->
           <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
-            <h1 class="flex flex-wrap items-start gap-x-4 gap-y-0">
-              <span class="font-inter font-bold text-[#F8F7FC] text-[48px] sm:text-[56px] lg:text-[64px] leading-[1.2]">
-                <span class="block">Найди свою</span>
-                <span class="block">поддержку</span>
-              </span>
-              <span class="font-pacifico font-normal text-white text-[72px] sm:text-[90px] lg:text-[100px] leading-[1.2]">Рядом</span>
-            </h1>
+            <h1 class="flex flex-wrap items-start gap-x-4 gap-y-0" data-v-inspector="src/views/HomeView.vue:142:13" style="flex-wrap: nowrap;
+">
+<span class="font-inter font-bold text-[#F8F7FC] text-[48px] sm:text-[56px] lg:text-[64px] leading-[1.2]" data-v-inspector="src/views/HomeView.vue:143:15">
+<span class="block" data-v-inspector="src/views/HomeView.vue:144:17">Найди свою</span>
+<span class="block" data-v-inspector="src/views/HomeView.vue:145:17">поддержку</span>
+</span><span class="font-pacifico font-normal text-white text-[72px] sm:text-[90px] lg:text-[100px] leading-[1.2]" data-v-inspector="src/views/HomeView.vue:147:15">Рядом</span>
+</h1>
 
             <!-- Subtitle -->
             <p class="font-inter font-light text-[#F8F7FC] text-xl lg:text-2xl leading-8 max-w-[513px]">
