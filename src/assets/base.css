@@ -135,7 +135,7 @@ body {
   }
 
   .btn-primary {
-    @apply px-8 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all;
+    @apply px-8 py-3 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all;
   }
 
   .btn-secondary {
