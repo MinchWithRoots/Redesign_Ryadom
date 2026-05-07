@@ -176,7 +176,7 @@ onMounted(() => {
           <!-- Right: Planet illustration -->
           <div class="hidden lg:flex items-center justify-center">
             <img
-              src="/src/images/Planet with stars.png"
+              src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
               class="w-full max-w-[560px] drop-shadow-xl"
             />
