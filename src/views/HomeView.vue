@@ -144,7 +144,7 @@ onMounted(() => {
             <div class="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 @click="navigate('/search')"
-                class="inline-flex items-center justify-center gap-3 px-8 py-4 lg:px-10 lg:py-5 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all w-fit text-base lg:text-lg group"
+                class="inline-flex items-center justify-center gap-3 px-8 py-4 lg:px-10 lg:py-5 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all w-fit text-base lg:text-lg group"
               >
                 Начать поиск
                 <svg class="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,7 +315,7 @@ onMounted(() => {
 
             <button
               @click="navigate('/search')"
-              class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all w-fit group"
+              class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all w-fit group"
             >
               Присоединиться сейчас
               <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -376,7 +376,7 @@ onMounted(() => {
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             @click="navigate('/auth')"
-            class="px-10 py-4 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all group text-lg"
+            class="px-10 py-4 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all group text-lg"
           >
             Начать сейчас
             <span class="inline-block group-hover:translate-x-1 transition-transform">→</span>

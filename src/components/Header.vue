@@ -110,13 +110,13 @@ const navItems = [
         <template v-if="!currentUser">
           <button
             @click="navigate('/auth')"
-            class="px-6 py-2 text-secondary font-medium border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+            class="px-6 py-2 text-secondary font-medium border border-primary rounded-full hover:bg-primary/5 transition-all"
           >
             Логин
           </button>
           <button
             @click="navigate('/auth', { mode: 'register' })"
-            class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
+            class="px-8 py-2 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
           >
             Регистрация
           </button>
@@ -131,7 +131,7 @@ const navItems = [
           </button>
           <button
             @click="handleLogout"
-            class="px-8 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
+            class="px-8 py-2 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-medium rounded-full shadow-soft hover:shadow-hover hover:translate-y-[-2px] transition-all"
           >
             Выйти
           </button>
