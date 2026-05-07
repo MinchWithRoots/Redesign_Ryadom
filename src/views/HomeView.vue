@@ -139,12 +139,12 @@ onMounted(() => {
           <!-- Left: text + buttons -->
           <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
-            <h1 class="flex flex-col lg:flex-row items-start lg:items-center gap-y-2 lg:gap-x-6">
-              <span class="font-inter font-bold text-[#F8F7FC] text-[52px] sm:text-[64px] lg:text-[72px] leading-[1.0]">
+            <h1 class="flex flex-wrap items-start gap-x-4 gap-y-0">
+              <span class="font-inter font-bold text-[#F8F7FC] text-[52px] sm:text-[64px] lg:text-[72px] leading-[1.2]">
                 <span class="block">Найди свою</span>
                 <span class="block">поддержку</span>
               </span>
-              <span class="font-pacifico font-normal text-white text-[80px] sm:text-[100px] lg:text-[128px] leading-[1.0]">Рядом</span>
+              <span class="font-pacifico font-normal text-white text-[80px] sm:text-[100px] lg:text-[128px] leading-[1.2]">Рядом</span>
             </h1>
 
             <!-- Subtitle -->
