@@ -135,7 +135,9 @@ onMounted(() => {
 
       <!-- Content -->
       <div class="relative z-10 w-full max-w-[1280px] mx-auto px-6 lg:px-12 pt-[80px] pb-16 lg:pb-24">
-        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-8" style="
+    bottom: 80px;
+    position: relative;">
           <!-- Left: text + buttons -->
           <div class="flex flex-col gap-6 lg:gap-8">
             <!-- Heading -->
