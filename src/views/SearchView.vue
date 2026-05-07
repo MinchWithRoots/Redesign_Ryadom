@@ -5,6 +5,7 @@ import { currentUser, companions, chats, sendConnectionRequest, loadCompanions, 
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
+import '@/assets/search.css'
 
 const router = useRouter()
 const authModal = ref<InstanceType<typeof AuthRequiredModal> | null>(null)
@@ -244,7 +245,7 @@ const navigateToProfile = (companionId: string | number) => {
             <!-- Reset Button -->
             <button
               @click="resetFilters"
-              class="w-full py-2 text-secondary text-sm font-medium border border-border rounded-full hover:border-primary hover:text-primary transition-all"
+              class="btn-reset-filters"
             >
               Сбросить фильтры
             </button>
@@ -254,15 +255,10 @@ const navigateToProfile = (companionId: string | number) => {
         <!-- Main Content -->
         <div class="lg:col-span-3">
           <!-- Topic Tags -->
-          <div class="mb-8 flex flex-wrap gap-2">
+          <div class="topic-tags">
             <button
               @click="filters.topic = 'all'"
-              :class="[
-                'px-4 py-2 rounded-full text-sm font-medium transition-all',
-                filters.topic === 'all'
-                  ? 'bg-primary text-white shadow-soft'
-                  : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
-              ]"
+              :class="['topic-btn', filters.topic === 'all' ? 'active' : 'inactive']"
             >
               Все темы
             </button>
@@ -270,12 +266,7 @@ const navigateToProfile = (companionId: string | number) => {
               v-for="topic in topics"
               :key="topic"
               @click="filters.topic = topic"
-              :class="[
-                'px-4 py-2 rounded-full text-sm font-medium transition-all',
-                filters.topic === topic
-                  ? 'bg-primary text-white shadow-soft'
-                  : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
-              ]"
+              :class="['topic-btn', filters.topic === topic ? 'active' : 'inactive']"
             >
               {{ topic }}
             </button>
@@ -289,56 +280,51 @@ const navigateToProfile = (companionId: string | number) => {
           </transition>
 
           <!-- Companions Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-6">
+          <div class="companions-grid">
             <div
               v-for="companion in filteredCompanions"
               :key="companion.id"
-              class="group bg-white border border-border/50 rounded-3xl overflow-hidden shadow-card hover:shadow-hover hover:translate-y-[-4px] transition-all cursor-pointer"
+              class="companion-card"
               @click="selectedCompanion = companion"
             >
               <!-- Image -->
-              <div class="h-64 overflow-hidden bg-light-bg relative">
+              <div class="companion-card-image">
                 <img
                   :src="companion.image"
                   :alt="companion.name"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                <div class="companion-card-overlay"></div>
               </div>
 
               <!-- Info -->
-              <div class="p-6">
-                <div class="mb-4">
-                  <div class="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 class="text-lg font-bold text-secondary">{{ companion.name }}</h3>
-                      <div class="flex items-center gap-2">
-                        <p class="text-sm text-secondary/60">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
-                        <span v-if="companion.gender === 'female'" class="text-sm text-secondary/60">• Женщина</span>
-                        <span v-else-if="companion.gender === 'male'" class="text-sm text-secondary/60">• Мужчина</span>
-                      </div>
-                    </div>
+              <div class="companion-card-content">
+                <div class="companion-card-header">
+                  <h3 class="companion-name">{{ companion.name }}</h3>
+                  <div class="companion-meta">
+                    <p>{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
+                    <span v-if="companion.gender === 'female'">• Женщина</span>
+                    <span v-else-if="companion.gender === 'male'">• Мужчина</span>
                   </div>
-                  <p class="text-xs text-primary font-semibold mb-3">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-                  <p v-if="companion.topics && companion.topics.length > 0" class="text-xs text-primary font-semibold mb-3">Темы: {{ companion.topics.join(', ') }}</p>
-                  <p class="text-sm text-secondary/70 leading-relaxed mb-4 break-words overflow-hidden">{{ companion.bio }}</p>
                 </div>
+                <p class="companion-experience">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
+                <p v-if="companion.topics && companion.topics.length > 0" class="companion-topics">Темы: {{ companion.topics.join(', ') }}</p>
+                <p class="companion-bio">{{ companion.bio }}</p>
 
                 <!-- Topics -->
-                <div class="mb-4 flex flex-wrap gap-2">
+                <div class="companion-topic-tags">
                   <span
                     v-for="topic in companion.topics"
                     :key="topic"
-                    class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full"
+                    class="companion-topic-tag"
                   >
                     {{ topic }}
                   </span>
                 </div>
 
                 <!-- Testimonials -->
-                <div class="flex items-center gap-2 mb-4">
-                  <img src="../images/support.svg" alt="Thanks" class="w-[16px] h-[16px] object-contain" />
-                  <p class="text-xs text-secondary/60">{{ companion.reviews_count }} отзывов</p>
+                <div class="companion-reviews">
+                  <img src="../images/support.svg" alt="Thanks" />
+                  <p>{{ companion.reviews_count }} отзывов</p>
                 </div>
 
                 <!-- Button -->
