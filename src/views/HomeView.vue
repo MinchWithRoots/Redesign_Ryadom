@@ -1,4 +1,4 @@
-<script setup lang="ts">
+в отдельный <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
