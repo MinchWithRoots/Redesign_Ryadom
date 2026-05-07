@@ -7,24 +7,7 @@ import { useAuth } from '../composables/useAuth'
 const router = useRouter()
 const route = useRoute()
 const isMobileMenuOpen = ref(false)
-const isScrolled = ref(false)
 const { logout } = useAuth()
-
-const isHomePage = computed(() => route.path === '/')
-
-onMounted(async () => {
-  await loadCurrentUser()
-  handleScroll()
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
-
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 60
-}
 
 const isActive = (path: string) => route.path === path
 
@@ -56,174 +39,93 @@ const handleLogout = async () => {
     router.push('/auth')
   }
 }
+
+onMounted(async () => {
+  await loadCurrentUser()
+})
+
+onUnmounted(() => {})
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-md shadow-card border-b border-border/30 h-[80px]">
-    <div class="container mx-auto px-4 lg:px-8 w-full h-full flex items-center justify-between">
+  <header class="site-header">
+    <div class="site-header__container">
+
       <!-- Logo -->
-      <div
-        class="flex items-center gap-2.5 cursor-pointer transition-opacity hover:opacity-80"
-        @click="navigate('/')"
-      >
-        <span class="text-2xl font-bold font-inter text-secondary">
-          Рядом
-        </span>
+      <div class="site-header__logo" @click="navigate('/')">
+        <img
+          src="https://api.builder.io/api/v1/image/assets/TEMP/e2792548849e9a9b49ac0d1023b64e6ba4665289?width=92"
+          alt="Рядом"
+          class="site-header__logo-icon"
+        />
+        <span class="site-header__logo-text">Рядом</span>
       </div>
 
       <!-- Desktop Navigation -->
-      <nav class="hidden lg:flex items-center gap-8">
+      <nav class="site-header__nav" aria-label="Основная навигация">
         <a
           href="/"
           @click.prevent="navigate('/')"
-          :class="[
-            'text-base font-medium transition-colors',
-            isActive('/') ? 'text-primary' : 'text-secondary hover:text-primary'
-          ]"
+          :class="['site-header__nav-link', isActive('/') ? 'site-header__nav-link--active' : '']"
         >
           Главная
         </a>
-        <button
-          @click="scrollToSection('about')"
-          class="text-base font-medium transition-colors text-secondary hover:text-primary"
-        >
-          О нас
-        </button>
-        <button
-          @click="scrollToSection('reviews')"
-          class="text-base font-medium transition-colors text-secondary hover:text-primary"
-        >
-          Отзывы
-        </button>
-        <button
-          @click="scrollToSection('contacts')"
-          class="text-base font-medium transition-colors text-secondary hover:text-primary"
-        >
-          Контакты
-        </button>
+        <button class="site-header__nav-btn" @click="scrollToSection('about')">О нас</button>
+        <button class="site-header__nav-btn" @click="scrollToSection('reviews')">Отзывы</button>
+        <button class="site-header__nav-btn" @click="scrollToSection('contacts')">Контакты</button>
       </nav>
 
-      <!-- Desktop Buttons -->
-      <div class="hidden lg:flex items-center gap-3">
+      <!-- Desktop Auth Buttons -->
+      <div class="site-header__actions">
         <template v-if="!currentUser">
-          <button
-            @click="navigate('/auth')"
-            class="px-6 py-2.5 text-sm font-semibold rounded-full border-2 border-primary text-secondary hover:bg-primary/5 transition-all"
-          >
-            Логин
-          </button>
-          <button
-            @click="navigate('/auth', { mode: 'register' })"
-            class="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white rounded-full shadow-soft hover:shadow-hover hover:-translate-y-px transition-all"
-          >
-            Регистрация
-          </button>
+          <button class="btn-header-login" @click="navigate('/auth')">Логин</button>
+          <button class="btn-header-register" @click="navigate('/auth', { mode: 'register' })">Регистрация</button>
         </template>
         <template v-else>
-          <button
-            @click="navigate('/profile')"
-            class="px-6 py-2.5 text-sm font-semibold rounded-full border-2 border-border text-secondary hover:border-primary hover:text-primary transition-all"
-          >
+          <button class="btn-header-login" @click="navigate('/profile')">
             {{ currentUser.name }}
           </button>
-          <button
-            @click="handleLogout"
-            class="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white rounded-full shadow-soft hover:shadow-hover hover:-translate-y-px transition-all"
-          >
-            Выйти
-          </button>
+          <button class="btn-header-register" @click="handleLogout">Выйти</button>
         </template>
       </div>
 
-      <!-- Mobile Menu Button -->
+      <!-- Mobile Toggle -->
       <button
+        :class="['site-header__mobile-toggle', isMobileMenuOpen ? 'is-open' : '']"
         @click="isMobileMenuOpen = !isMobileMenuOpen"
-        class="lg:hidden flex flex-col gap-1.5 w-10 h-10 items-center justify-center"
         aria-label="Меню"
       >
-        <span
-          :class="[
-            'w-6 h-0.5 bg-secondary transition-all',
-            isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-          ]"
-        ></span>
-        <span
-          :class="[
-            'w-6 h-0.5 bg-secondary transition-all',
-            isMobileMenuOpen ? 'opacity-0' : ''
-          ]"
-        ></span>
-        <span
-          :class="[
-            'w-6 h-0.5 bg-secondary transition-all',
-            isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-          ]"
-        ></span>
+        <span></span>
+        <span></span>
+        <span></span>
       </button>
     </div>
 
     <!-- Mobile Menu -->
-    <div
-      v-if="isMobileMenuOpen"
-      class="lg:hidden absolute top-[80px] left-0 right-0 bg-white border-t border-border shadow-card"
-    >
-      <nav class="flex flex-col p-4 gap-3">
+    <div v-if="isMobileMenuOpen" class="site-header__mobile-menu">
+      <div class="site-header__mobile-menu-inner">
         <a
           href="/"
           @click.prevent="navigate('/')"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors"
+          :class="['site-header__mobile-nav-link', isActive('/') ? 'site-header__mobile-nav-link--active' : '']"
         >
           Главная
         </a>
-        <button
-          @click="scrollToSection('about')"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors text-left"
-        >
-          О нас
-        </button>
-        <button
-          @click="scrollToSection('reviews')"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors text-left"
-        >
-          Отзывы
-        </button>
-        <button
-          @click="scrollToSection('contacts')"
-          class="text-secondary font-medium py-2 hover:text-primary transition-colors text-left"
-        >
-          Контакты
-        </button>
-        <div class="flex flex-col gap-2 pt-2 border-t border-border">
+        <button class="site-header__mobile-nav-btn" @click="scrollToSection('about')">О нас</button>
+        <button class="site-header__mobile-nav-btn" @click="scrollToSection('reviews')">Отзывы</button>
+        <button class="site-header__mobile-nav-btn" @click="scrollToSection('contacts')">Контакты</button>
+
+        <div class="site-header__mobile-actions">
           <template v-if="!currentUser">
-            <button
-              @click="navigate('/auth')"
-              class="w-full px-6 py-2.5 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-colors"
-            >
-              Логин
-            </button>
-            <button
-              @click="navigate('/auth', { mode: 'register' })"
-              class="w-full px-6 py-3 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-            >
-              Регистрация
-            </button>
+            <button class="btn-mobile-login" @click="navigate('/auth')">Логин</button>
+            <button class="btn-mobile-register" @click="navigate('/auth', { mode: 'register' })">Регистрация</button>
           </template>
           <template v-else>
-            <button
-              @click="navigate('/profile')"
-              class="w-full px-6 py-2.5 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-colors"
-            >
-              {{ currentUser.name }}
-            </button>
-            <button
-              @click="handleLogout"
-              class="w-full px-6 py-3 bg-gradient-to-r from-[#FF6330] to-[#D32032] text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
-            >
-              Выйти
-            </button>
+            <button class="btn-mobile-login" @click="navigate('/profile')">{{ currentUser.name }}</button>
+            <button class="btn-mobile-register" @click="handleLogout">Выйти</button>
           </template>
         </div>
-      </nav>
+      </div>
     </div>
   </header>
 </template>
