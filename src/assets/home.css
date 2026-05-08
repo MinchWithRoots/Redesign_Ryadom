@@ -13,7 +13,7 @@
   min-height: 700px;
   display: flex;
   align-items: center;
-  margin-top: var(--header-height);
+  margin-top: 85px;
   padding-bottom: 100px;
 }
 
