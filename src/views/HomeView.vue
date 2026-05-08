@@ -319,12 +319,16 @@ onMounted(() => {
 
     <!-- CTA Section -->
     <section class="cta-section">
-      <!-- Gradient background -->
+      <!-- Background image -->
+      <img src="../images/last-section.png" class="cta-bg-image" alt="" aria-hidden="true" />
+
+      <!-- Gradient overlay -->
       <div class="cta-bg-gradient"></div>
 
       <!-- Decorative blobs -->
       <div class="cta-decorative-1"></div>
       <div class="cta-decorative-2"></div>
+      <div class="cta-decorative-3"></div>
 
       <div class="cta-inner">
         <div class="cta-content">
@@ -341,8 +345,7 @@ onMounted(() => {
             @click="navigate('/auth')"
             class="btn-cta-primary"
           >
-            Начать сейчас
-            <span>→</span>
+            Начать сейчас <span>→</span>
           </button>
           <button
             @click="navigate('/')"
@@ -366,7 +369,7 @@ onMounted(() => {
           <div class="cta-divider">•</div>
           <div class="cta-badge">
             <img src="../images/star.svg" alt="Reviews" />
-            <span>500+ отзывов 5★</span>
+            <span>Отзывы от реальных пользователей</span>
           </div>
         </div>
       </div>

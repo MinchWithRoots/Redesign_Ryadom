@@ -602,52 +602,87 @@
 /* ===== CTA SECTION ===== */
 
 .cta-section {
-  padding: 5rem 1rem;
+  padding: 5rem 1rem 0;
   position: relative;
   overflow: hidden;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @media (min-width: 1024px) {
   .cta-section {
-    padding: 7rem 1.5rem;
+    padding: 6rem 1.5rem 0;
+    min-height: 509px;
   }
+}
+
+.cta-bg-image {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center bottom;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
 }
 
 .cta-bg-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, var(--color-primary-light), transparent, var(--color-secondary-light));
+  background: linear-gradient(90deg, rgba(212, 132, 106, 0.05) 0%, rgba(212, 132, 106, 0.00) 50%, rgba(93, 90, 136, 0.05) 100%);
+  z-index: 1;
 }
 
 .cta-decorative-1 {
   position: absolute;
-  top: 50%;
+  top: -1px;
   right: -192px;
   width: 384px;
   height: 384px;
   border-radius: 9999px;
-  filter: blur(96px);
-  background-color: var(--color-primary-lighter);
-  transform: translateY(-50%);
+  filter: blur(32px);
+  background-color: rgba(212, 132, 106, 0.10);
+  z-index: 1;
 }
 
 .cta-decorative-2 {
   position: absolute;
-  bottom: 0;
+  top: 125px;
   left: -192px;
   width: 384px;
   height: 384px;
   border-radius: 9999px;
-  filter: blur(96px);
-  background-color: var(--color-secondary-lighter);
+  filter: blur(32px);
+  background-color: rgba(93, 90, 136, 0.10);
+  z-index: 1;
+}
+
+.cta-decorative-3 {
+  position: absolute;
+  top: 23px;
+  right: -100px;
+  width: 433px;
+  height: 449px;
+  border-radius: 9999px;
+  filter: blur(35px);
+  background-color: rgba(255, 114, 94, 0.20);
+  transform: rotate(180deg);
+  z-index: 1;
 }
 
 .cta-inner {
   max-width: 768px;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
   position: relative;
   z-index: 10;
+  padding-bottom: 3rem;
 }
 
 .cta-content {
@@ -768,8 +803,8 @@
 }
 
 .cta-badge img {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
