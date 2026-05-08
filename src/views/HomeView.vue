@@ -277,7 +277,7 @@ onMounted(() => {
       <!-- Right decorative group -->
       <div class="reviews-deco-right">
         <div class="reviews-deco-blur"></div>
-        <img src="../images/Planet-with-stars.png" class="reviews-planet" alt="" aria-hidden="true" />
+        <img src="../images/planet.png" class="reviews-planet" alt="" aria-hidden="true" />
         <!-- Small sparkles -->
         <svg class="reviews-sparkle reviews-sparkle-rt" width="17" height="12" viewBox="0 0 17 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M10.3102 7.79341L6.02942 11.9968L5.19705 6.86597L0 5.66929L4.75639 4.01387L4.23179 1.50582L7.55427 2.84212L10.4431 0L11.863 3.72966L16.2627 3.48035L13.5487 5.74907L16.2766 9.11475L10.3102 7.79341Z" fill="#FF725E"/>
@@ -319,12 +319,16 @@ onMounted(() => {
 
     <!-- CTA Section -->
     <section class="cta-section">
-      <!-- Gradient background -->
+      <!-- Background image -->
+      <img src="../images/last-section.png" class="cta-bg-image" alt="" aria-hidden="true" />
+
+      <!-- Gradient overlay -->
       <div class="cta-bg-gradient"></div>
 
       <!-- Decorative blobs -->
       <div class="cta-decorative-1"></div>
       <div class="cta-decorative-2"></div>
+      <div class="cta-decorative-3"></div>
 
       <div class="cta-inner">
         <div class="cta-content">
@@ -341,8 +345,7 @@ onMounted(() => {
             @click="navigate('/auth')"
             class="btn-cta-primary"
           >
-            Начать сейчас
-            <span>→</span>
+            Начать сейчас <span>→</span>
           </button>
           <button
             @click="navigate('/')"
@@ -366,7 +369,7 @@ onMounted(() => {
           <div class="cta-divider">•</div>
           <div class="cta-badge">
             <img src="../images/star.svg" alt="Reviews" />
-            <span>500+ отзывов 5★</span>
+            <span>Отзывы от реальных пользователей</span>
           </div>
         </div>
       </div>

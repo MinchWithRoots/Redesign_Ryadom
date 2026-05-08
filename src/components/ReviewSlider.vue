@@ -59,12 +59,13 @@ const handleSwiperInit = (swiper: any) => {
       :space-between="40"
       :speed="600"
       :loop="true"
+      :centered-slides="true"
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
-        1024: { slidesPerView: 3, spaceBetween: 40 },
-        768: { slidesPerView: 2, spaceBetween: 30 },
-        480: { slidesPerView: 1, spaceBetween: 20 }
+        1024: { slidesPerView: 3, spaceBetween: 40, centeredSlides: true },
+        768: { slidesPerView: 2, spaceBetween: 30, centeredSlides: true },
+        480: { slidesPerView: 1, spaceBetween: 20, centeredSlides: true }
       }"
       @swiper="handleSwiperInit"
       class="emotions-slider__slider swiper"
@@ -171,10 +172,10 @@ const handleSwiperInit = (swiper: any) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  width: calc(100% + 120px);
   position: absolute;
   top: 50%;
-  left: 0;
+  left: -60px;
   translate: 0 -50%;
   z-index: 10;
   pointer-events: none;
@@ -268,12 +269,16 @@ const handleSwiperInit = (swiper: any) => {
   width: 100%;
   max-width: 400px;
   background: #ffffff;
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: var(--border-radius);
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 114, 94, 0.1);
+}
+
+.emotions-slider__slide.swiper-slide-active .emotions-slider-item {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 20px rgba(255, 114, 94, 0.15);
 }
 
 @media screen and (max-width: 1023px) {
@@ -344,12 +349,7 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item__author-image {
-  flex-shrink: 0;
-  aspect-ratio: 1;
-  width: 24px;
-  border-radius: 100%;
-  overflow: hidden;
-  border: 2px solid var(--color-primary);
+  display: none;
 }
 
 .emotions-slider-item__author-image img {
@@ -361,9 +361,7 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item__author-name {
-  color: var(--color-secondary);
-  font-size: 12px;
-  line-height: 1.3;
+  display: none;
 }
 
 .emotions-slider-item__info {
