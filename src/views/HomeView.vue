@@ -187,27 +187,13 @@ onMounted(() => {
     <section id="about">
       <div class="container-wide">
         <div class="about-grid">
-          <!-- Image -->
+          <!-- Illustration -->
           <div class="about-image-section">
-            <!-- Decorative elements -->
-            <div class="about-decorative-1"></div>
-            <div class="about-decorative-2"></div>
-
-            <div class="about-image-container">
-              <div class="about-image-wrapper">
-                <img
-                  src="https://images.pexels.com/photos/14904695/pexels-photo-14904695.jpeg"
-                  alt="Two people hugging with care and support"
-                />
-                <!-- Gradient overlay -->
-                <div class="about-image-overlay"></div>
-              </div>
-              <!-- Decorative cards -->
-              <div class="about-card">
-                <p>Безопасность</p>
-                <p>Все данные защищены по стандартам GDPR</p>
-              </div>
-            </div>
+            <img
+              src="https://img.freepik.com/free-vector/volunteers-concept-illustration_114360-7998.jpg?w=740"
+              alt="Три человека держат сердца — поддержка и доверие"
+              class="about-illustration"
+            />
           </div>
 
           <!-- Content -->
@@ -222,8 +208,10 @@ onMounted(() => {
             <div class="about-features">
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L21.8 13.2L29 12L23.6 17.4L27 24L20 20.4L13 24L16.4 17.4L11 12L18.2 13.2L20 6Z" stroke="#FF6A2F" stroke-width="1.5" stroke-linejoin="round"/>
+                    <circle cx="30" cy="10" r="2" fill="#FF6A2F"/>
+                    <circle cx="11" cy="30" r="1.5" fill="#FF6A2F"/>
                   </svg>
                 </div>
                 <div class="about-feature-content">
@@ -236,8 +224,9 @@ onMounted(() => {
 
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-2m0 0H10m2 0v2m0-2v-2m7 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 8L34 16V24L20 32L6 24V16L20 8Z" stroke="#FF6A2F" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M20 23C18.5 23 14 20.5 14 17C14 14.8 15.8 13 18 13C19 13 19.8 13.4 20 14C20.2 13.4 21 13 22 13C24.2 13 26 14.8 26 17C26 20.5 21.5 23 20 23Z" stroke="#FF6A2F" stroke-width="1.5" stroke-linejoin="round"/>
                   </svg>
                 </div>
                 <div class="about-feature-content">
@@ -249,11 +238,6 @@ onMounted(() => {
               </div>
 
               <div class="about-feature">
-                <div class="about-feature-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                </div>
                 <div class="about-feature-content">
                   <h3>Развитие</h3>
                   <p>
@@ -262,16 +246,6 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-
-            <button
-              @click="navigate('/search')"
-              class="btn-about"
-            >
-              Присоединиться сейчас
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
