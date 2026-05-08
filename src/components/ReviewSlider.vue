@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation, Pagination, Autoplay } from 'swiper/modules'
+import { Navigation, Pagination, Autoplay, Virtual } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -18,7 +18,7 @@ defineProps<{
   reviews: Review[]
 }>()
 
-const modules = [Navigation, Pagination, Autoplay]
+const modules = [Navigation, Pagination, Autoplay, Virtual]
 const swiperInstance = ref<any>(null)
 
 const handleSwiperInit = (swiper: any) => {
@@ -55,15 +55,16 @@ const handleSwiperInit = (swiper: any) => {
     <!-- Slider Content -->
     <Swiper
       :modules="modules"
-      :slides-per-view="'auto'"
-      :space-between="20"
+      :slides-per-view="3"
+      :space-between="40"
       :speed="600"
-      :centered-slides="true"
-      :initial-slide="1"
+      :loop="true"
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
-        768: { spaceBetween: 40 }
+        1024: { slidesPerView: 3, spaceBetween: 40 },
+        768: { slidesPerView: 2, spaceBetween: 30 },
+        480: { slidesPerView: 1, spaceBetween: 20 }
       }"
       @swiper="handleSwiperInit"
       class="emotions-slider__slider swiper"
@@ -133,7 +134,7 @@ const handleSwiperInit = (swiper: any) => {
   --color-text: #333333;
   --color-border: #e5e7eb;
 
-  padding-inline: 98px;
+  padding-inline: 0;
   position: relative;
 }
 
@@ -145,7 +146,7 @@ const handleSwiperInit = (swiper: any) => {
 
 @media screen and (max-width: 1023px) {
   .emotions-slider {
-    padding-inline: 60px;
+    padding-inline: 0;
   }
 
   .emotions-slider__slide {
@@ -156,7 +157,7 @@ const handleSwiperInit = (swiper: any) => {
 @media screen and (max-width: 767.9px) {
   .emotions-slider {
     padding: 0;
-    margin-inline: -20px;
+    margin-inline: 0;
   }
 
   .emotions-slider__slide {
@@ -256,12 +257,15 @@ const handleSwiperInit = (swiper: any) => {
 .swiper-slide {
   width: auto;
   height: auto;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .emotions-slider-item {
   --border-radius: 16px;
 
-  width: calc(100dvw - 60px);
+  width: 100%;
   max-width: 400px;
   background: #ffffff;
   border: 1px solid var(--color-border);
@@ -270,6 +274,13 @@ const handleSwiperInit = (swiper: any) => {
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+@media screen and (max-width: 1023px) {
+  .emotions-slider-item {
+    width: 100%;
+    max-width: 350px;
+  }
 }
 
 @media screen and (max-width: 767.9px) {
@@ -454,14 +465,6 @@ const handleSwiperInit = (swiper: any) => {
 
 /* Responsive adjustments */
 @media screen and (max-width: 1023px) {
-  .emotions-slider {
-    padding-inline: 60px;
-  }
-
-  .emotions-slider-item {
-    max-width: 350px;
-  }
-
   .emotions-slider-item__content {
     gap: 16px;
     padding: 20px 16px;
