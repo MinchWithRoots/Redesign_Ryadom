@@ -128,7 +128,7 @@ const handleSwiperInit = (swiper: any) => {
 
 <style scoped>
 .emotions-slider {
-  --color-primary: #ff6b9d;
+  --color-primary: #FF725E;
   --color-secondary: #6b7280;
   --color-text: #333333;
   --color-border: #e5e7eb;
@@ -386,7 +386,7 @@ const handleSwiperInit = (swiper: any) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 14px;
   color: var(--color-primary);
   text-decoration: none;
@@ -409,7 +409,7 @@ const handleSwiperInit = (swiper: any) => {
   display: block;
   width: 100%;
   height: 100%;
-  background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 10h12M14 7l3 3-3 3' stroke='%23ff6b9d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+  background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 10H16M14 7L17 10L14 13' stroke='%23FF725E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     center center no-repeat;
   background-size: 100%;
   transition: translate 0.4s ease;
