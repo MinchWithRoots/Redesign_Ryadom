@@ -11,13 +11,23 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="app-layout">
     <Header />
-    <main class="flex-1">
+    <main class="app-main">
       <router-view />
     </main>
     <Footer />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+}
+</style>
