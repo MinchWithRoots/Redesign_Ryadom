@@ -399,28 +399,142 @@
   }
 }
 
-.reviews-decorative-1 {
+/* Wave images */
+.reviews-left-wave {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 384px;
-  height: 384px;
-  border-radius: 9999px;
-  filter: blur(96px);
-  background-color: var(--color-primary-lighter);
+  left: -54px;
+  top: 103px;
+  width: 423px;
+  height: 768px;
+  object-fit: contain;
+  pointer-events: none;
   z-index: 0;
 }
 
-.reviews-decorative-2 {
+.reviews-right-wave {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 384px;
-  height: 384px;
-  border-radius: 9999px;
-  filter: blur(96px);
-  background-color: var(--color-secondary-lighter);
+  right: -54px;
+  top: 304px;
+  width: 309px;
+  height: 735px;
+  object-fit: contain;
+  pointer-events: none;
   z-index: 0;
+}
+
+/* Left decorative group */
+.reviews-deco-left {
+  position: absolute;
+  left: 0;
+  top: 139px;
+  width: 384px;
+  height: 900px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Right decorative group */
+.reviews-deco-right {
+  position: absolute;
+  right: 0;
+  top: 128px;
+  width: 384px;
+  height: 664px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.reviews-deco-blur {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: rgba(93, 90, 136, 0.05);
+  filter: blur(32px);
+}
+
+.reviews-deco-right .reviews-deco-blur {
+  background: rgba(212, 132, 106, 0.05);
+}
+
+/* Sparkle stars */
+.reviews-sparkle {
+  position: absolute;
+  pointer-events: none;
+}
+
+.reviews-sparkle-lt {
+  left: 33px;
+  top: 123px;
+}
+
+.reviews-sparkle-lb {
+  left: 52px;
+  top: 156px;
+}
+
+.reviews-sparkle-lt2 {
+  left: 277px;
+  top: 0;
+}
+
+.reviews-sparkle-rt {
+  left: 121px;
+  top: 244px;
+}
+
+.reviews-sparkle-rt2 {
+  right: 37px;
+  top: 291px;
+}
+
+.reviews-sparkle-rt3 {
+  left: 257px;
+  top: 55px;
+}
+
+/* Rotated stars */
+.reviews-star-left {
+  position: absolute;
+  left: 222px;
+  top: 342px;
+  width: 50px;
+  height: 50px;
+  transform: rotate(27.7deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reviews-star-right {
+  position: absolute;
+  left: 301px;
+  top: 542px;
+  width: 50px;
+  height: 50px;
+  transform: rotate(16.4deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Planet */
+.reviews-planet {
+  position: absolute;
+  right: -20px;
+  top: -80px;
+  width: 220px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Hide on small screens */
+@media (max-width: 1024px) {
+  .reviews-left-wave,
+  .reviews-right-wave,
+  .reviews-deco-left,
+  .reviews-deco-right {
+    display: none;
+  }
 }
 
 .reviews-container {
