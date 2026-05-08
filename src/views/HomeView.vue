@@ -190,8 +190,8 @@ onMounted(() => {
           <!-- Illustration -->
           <div class="about-image-section">
             <img
-              src="https://img.freepik.com/free-vector/volunteers-concept-illustration_114360-7998.jpg?w=740"
-              alt="Три человека держат сердца — поддержка и доверие"
+              src="/src/images/amico.svg"
+              alt="Поддержка и доверие"
               class="about-illustration"
             />
           </div>
@@ -208,11 +208,7 @@ onMounted(() => {
             <div class="about-features">
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 6L21.8 13.2L29 12L23.6 17.4L27 24L20 20.4L13 24L16.4 17.4L11 12L18.2 13.2L20 6Z" stroke="#FF6A2F" stroke-width="1.5" stroke-linejoin="round"/>
-                    <circle cx="30" cy="10" r="2" fill="#FF6A2F"/>
-                    <circle cx="11" cy="30" r="1.5" fill="#FF6A2F"/>
-                  </svg>
+                  <img src="/src/images/star-pointy.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Наша миссия</h3>
@@ -224,10 +220,7 @@ onMounted(() => {
 
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 8L34 16V24L20 32L6 24V16L20 8Z" stroke="#FF6A2F" stroke-width="1.5" stroke-linejoin="round"/>
-                    <path d="M20 23C18.5 23 14 20.5 14 17C14 14.8 15.8 13 18 13C19 13 19.8 13.4 20 14C20.2 13.4 21 13 22 13C24.2 13 26 14.8 26 17C26 20.5 21.5 23 20 23Z" stroke="#FF6A2F" stroke-width="1.5" stroke-linejoin="round"/>
-                  </svg>
+                  <img src="/src/images/home-love.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Наши ценности</h3>
@@ -238,6 +231,9 @@ onMounted(() => {
               </div>
 
               <div class="about-feature">
+                <div class="about-feature-icon">
+                  <img src="/src/images/stars-shiny.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
+                </div>
                 <div class="about-feature-content">
                   <h3>Развитие</h3>
                   <p>

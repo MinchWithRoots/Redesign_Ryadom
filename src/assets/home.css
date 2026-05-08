@@ -363,6 +363,12 @@
   justify-content: center;
 }
 
+.about-feature-icon-img {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+
 .about-feature-content h3 {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
