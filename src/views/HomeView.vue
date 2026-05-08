@@ -220,7 +220,7 @@ onMounted(() => {
 
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <img src="/src/images/stars.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
+                  <img src="/src/images/home-love.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Наши ценности</h3>
@@ -232,7 +232,7 @@ onMounted(() => {
 
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <img src="/src/images/stars.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
+                  <img src="/src/images/stars-shiny.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Развитие</h3>
