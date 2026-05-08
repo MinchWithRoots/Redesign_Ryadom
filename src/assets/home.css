@@ -301,6 +301,7 @@
   max-width: 480px;
   height: auto;
   display: block;
+  padding-top: 40px;
 }
 
 .about-content {
@@ -327,7 +328,7 @@
   font-family: 'Pacifico', cursive;
   font-style: normal;
   font-size: var(--font-size-base);
-  font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-2xl);
 }
 
 .about-title {
