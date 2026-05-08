@@ -175,7 +175,7 @@ onMounted(() => {
           <!-- Right: Planet illustration -->
           <div class="hero-planet">
             <img
-              src="/src/images/Planet-with-stars.png"
+              src="/src/images/planet.png"
               alt="Planet with stars"
             />
           </div>
