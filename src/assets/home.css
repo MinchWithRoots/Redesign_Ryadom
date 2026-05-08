@@ -301,6 +301,7 @@
   max-width: 480px;
   height: auto;
   display: block;
+  padding-top: 50px;
 }
 
 .about-content {
@@ -324,8 +325,9 @@
 
 .about-label {
   color: var(--color-primary);
-  font-style: italic;
-  font-size: var(--font-size-base);
+  font-family: 'Pacifico', cursive;
+  font-style: normal;
+  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-normal);
 }
 
@@ -361,6 +363,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.about-feature-icon-img {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
 }
 
 .about-feature-content h3 {
