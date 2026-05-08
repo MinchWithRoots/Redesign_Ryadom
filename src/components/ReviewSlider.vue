@@ -361,9 +361,7 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item__author-name {
-  color: var(--color-secondary);
-  font-size: 12px;
-  line-height: 1.3;
+  display: none;
 }
 
 .emotions-slider-item__info {
