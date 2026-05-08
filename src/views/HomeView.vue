@@ -175,7 +175,7 @@ onMounted(() => {
           <!-- Right: Planet illustration -->
           <div class="hero-planet">
             <img
-              src="/src/images/planet.png"
+              src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
             />
           </div>
@@ -277,7 +277,7 @@ onMounted(() => {
       <!-- Right decorative group -->
       <div class="reviews-deco-right">
         <div class="reviews-deco-blur"></div>
-        <img src="../images/Planet-with-stars.png" class="reviews-planet" alt="" aria-hidden="true" />
+        <img src="../images/planet.png" class="reviews-planet" alt="" aria-hidden="true" />
         <!-- Small sparkles -->
         <svg class="reviews-sparkle reviews-sparkle-rt" width="17" height="12" viewBox="0 0 17 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M10.3102 7.79341L6.02942 11.9968L5.19705 6.86597L0 5.66929L4.75639 4.01387L4.23179 1.50582L7.55427 2.84212L10.4431 0L11.863 3.72966L16.2627 3.48035L13.5487 5.74907L16.2766 9.11475L10.3102 7.79341Z" fill="#FF725E"/>
