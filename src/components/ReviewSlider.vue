@@ -172,10 +172,10 @@ const handleSwiperInit = (swiper: any) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  width: calc(100% + 120px);
   position: absolute;
   top: 50%;
-  left: 0;
+  left: -60px;
   translate: 0 -50%;
   z-index: 10;
   pointer-events: none;
@@ -296,7 +296,9 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item__image {
-  display: none;
+  aspect-ratio: 400 / 270;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
 }
 
 .emotions-slider-item__image img {
@@ -347,12 +349,7 @@ const handleSwiperInit = (swiper: any) => {
 }
 
 .emotions-slider-item__author-image {
-  flex-shrink: 0;
-  aspect-ratio: 1;
-  width: 24px;
-  border-radius: 100%;
-  overflow: hidden;
-  border: 2px solid var(--color-primary);
+  display: none;
 }
 
 .emotions-slider-item__author-image img {
