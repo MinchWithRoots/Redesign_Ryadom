@@ -823,7 +823,7 @@
 
 #contacts {
   padding: 5rem 1rem;
-  background: linear-gradient(to bottom, var(--color-light-bg), var(--color-white));
+  /* background: linear-gradient(to bottom, var(--color-light-bg), var(--color-white)); */
   position: relative;
 }
 
