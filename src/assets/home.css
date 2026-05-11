@@ -955,3 +955,7 @@
   border-radius: var(--radius-lg);
   color: var(--color-secondary-70);
 }
+
+footer {
+  background-color: #090B2E;
+}
