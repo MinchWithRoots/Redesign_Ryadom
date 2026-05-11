@@ -683,6 +683,7 @@
   position: relative;
   z-index: 10;
   padding-bottom: 3rem;
+  margin-bottom: 100px;
 }
 
 .cta-content {
