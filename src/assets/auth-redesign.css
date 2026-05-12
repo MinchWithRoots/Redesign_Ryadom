@@ -148,6 +148,10 @@
   height: 24px;
 }
 
+.auth-brand__feature-icon-img {
+  filter: brightness(0) saturate(100%) invert(100%) opacity(0.9);
+}
+
 .auth-brand__feature-text h3 {
   font-size: 16px;
   font-weight: 600;
@@ -354,11 +358,11 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  filter: brightness(0.7);
+  filter: brightness(0) saturate(100%) invert(100%);
 }
 
 .auth-form__input-toggle:hover .auth-form__input-toggle-icon {
-  filter: brightness(0.5);
+  filter: brightness(0) saturate(100%) invert(100%) opacity(0.8);
 }
 
 /* Form Row */
