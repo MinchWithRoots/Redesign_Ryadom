@@ -375,66 +375,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Contacts Section -->
-    <section id="contacts">
-      <div class="contacts-container">
-        <div class="contacts-header">
-          <div class="contacts-header-text">
-            <p class="contacts-label">Контакты</p>
-            <h2 class="contacts-title">
-              Свяжитесь с нами
-            </h2>
-            <p class="contacts-subtitle">
-              У вас есть вопросы или предложения? Мы всегда готовы помочь
-            </p>
-          </div>
-
-          <div class="contacts-grid">
-            <!-- Email -->
-            <a
-              href="mailto:info@ryandom.ru"
-              class="contact-card"
-            >
-              <div class="contact-card-inner">
-                <div class="contact-card-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div class="contact-card-text">
-                  <p class="contact-card-title">Электронная почта</p>
-                  <p class="contact-card-value">info@ryandom.ru</p>
-                </div>
-              </div>
-            </a>
-
-            <!-- Phone -->
-            <a
-              href="tel:+79000000000"
-              class="contact-card"
-            >
-              <div class="contact-card-inner">
-                <div class="contact-card-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.73 1.365a1 1 0 001.006-.19c.235-.172.482-.311.735-.427a1 1 0 00.503-1.35l-1.498-4.493a1 1 0 00-.948-.684H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.73 1.365a1 1 0 001.006-.19c.235-.172.482-.311.735-.427a1 1 0 00.503-1.35l-1.498-4.493" />
-                  </svg>
-                </div>
-                <div class="contact-card-text">
-                  <p class="contact-card-title">Телефон</p>
-                  <p class="contact-card-value">+7 (900) 000-00-00</p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="contacts-note">
-            <p>
-              Мы стараемся ответить на все запросы в течение 24 часов
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 

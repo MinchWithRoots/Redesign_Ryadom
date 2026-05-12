@@ -73,7 +73,7 @@
 /* Hero Heading */
 .hero-heading {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   gap: 0;
   font-style: normal;
 }
@@ -85,6 +85,7 @@
   font-size: 44px;
   line-height: 1;
   color: #F8F7FC;
+  /* white-space: nowrap; */
 }
 
 @media (min-width: 640px) {
@@ -101,7 +102,7 @@
 
 .hero-heading-line2 {
   display: flex;
-  align-items: flex-end;
+  /* align-items: flex-end; */
   gap: 0.25rem;
   flex-wrap: wrap;
 }
@@ -251,9 +252,11 @@
 }
 
 .hero-planet img {
-  width: 100%;
-  max-width: 600px;
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
+    width: 80%;
+    max-width: 600px;
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
+    margin-top: 100px;
+    margin-right: 150px;
 }
 
 /* ===== ABOUT SECTION ===== */
@@ -520,7 +523,7 @@
 /* Planet */
 .reviews-planet {
   position: absolute;
-  right: -20px;
+  /* right: -20px; */
   top: -80px;
   width: 220px;
   height: auto;
@@ -683,6 +686,7 @@
   position: relative;
   z-index: 10;
   padding-bottom: 3rem;
+  margin-bottom: 100px;
 }
 
 .cta-content {
@@ -823,7 +827,7 @@
 
 #contacts {
   padding: 5rem 1rem;
-  background: linear-gradient(to bottom, var(--color-light-bg), var(--color-white));
+  /* background: linear-gradient(to bottom, var(--color-light-bg), var(--color-white)); */
   position: relative;
 }
 
@@ -954,4 +958,8 @@
   border: 1px solid var(--color-primary-lighter-20);
   border-radius: var(--radius-lg);
   color: var(--color-secondary-70);
+}
+
+footer {
+  background-color: #090B2E;
 }
