@@ -4,6 +4,10 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
+import '@/assets/auth-redesign.css'
+import eyeIcon from '@/images/eye.svg'
+import eyeSlashIcon from '@/images/eye-slash.svg'
+import userHeartIcon from '@/images/user-heart.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -16,6 +20,12 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const rememberMe = ref(false)
+
+const icons = {
+  eye: eyeIcon,
+  eyeSlash: eyeSlashIcon,
+  userHeart: userHeartIcon,
+}
 
 // Watch for errors from useAuth
 watch(error, (newError) => {
@@ -198,258 +208,322 @@ const handleForgotPassword = async () => {
   }
 }
 
-
 const navigate = (path: string) => {
   router.push(path)
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16 flex items-center">
-    <div class="container mx-auto px-4 max-w-md">
-      <div class="mb-12 text-center">
-        <h1 class="text-4xl font-bold text-secondary mb-3">
-          <span v-if="isLogin">Добро пожаловать</span>
-          <span v-else>Присоединиться</span>
-        </h1>
-        <p class="text-secondary/60">
-          <span v-if="isLogin">Войдите, чтобы продолжить поиск поддержки</span>
-          <span v-else>Создайте аккаунт для начала</span>
-        </p>
-      </div>
+  <div class="auth-page">
+    <!-- Decorative Background -->
+    <div class="auth-page__decoration">
+      <div class="auth-page__circle auth-page__circle--1"></div>
+      <div class="auth-page__circle auth-page__circle--2"></div>
+      <div class="auth-page__circle auth-page__circle--3"></div>
+      <div class="auth-page__gradient"></div>
+    </div>
 
-      <!-- Form Container -->
-      <div class="card">
-        <!-- Error Message -->
-        <transition name="fade">
-          <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-            {{ errorMessage }}
-          </div>
-        </transition>
-
-        <!-- Success Message -->
-        <transition name="fade">
-          <div v-if="successMessage" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
-            {{ successMessage }}
-          </div>
-        </transition>
-
-        <!-- Login Form -->
-        <form v-if="isLogin" @submit.prevent="handleLogin" class="space-y-6">
-          <!-- Email -->
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-secondary block">Email адрес</label>
-            <input
-              v-model="loginForm.email"
-              type="email"
-              placeholder="your@email.com"
-              class="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary"
-            />
+    <!-- Main Container -->
+    <div class="auth-page__container">
+      <!-- Left Section - Brand Info (Desktop) -->
+      <div class="auth-page__brand">
+        <div class="auth-brand__content">
+          <!-- Description -->
+          <div class="auth-brand__description">
+            <h2 class="auth-brand__tagline">Платформа для тех, кто в пути</h2>
+            <p class="auth-brand__subtitle">Найди поддержку и помоги другим обрести надежду</p>
           </div>
 
-          <!-- Password -->
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-secondary block">Пароль</label>
-            <div class="relative">
-              <input
-                v-model="loginForm.password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="••••••••"
-                class="w-full px-4 py-3 pr-12 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary"
-              />
-              <button
-                type="button"
-                @click="showPassword = !showPassword"
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/50 hover:text-secondary transition-colors"
-              >
-                <svg v-if="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          <!-- Features List -->
+          <div class="auth-brand__features">
+            <div class="auth-brand__feature">
+              <div class="auth-brand__feature-icon">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                 </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              </div>
+              <div class="auth-brand__feature-text">
+                <h3>Полная конфиденциальность</h3>
+                <p>Твои данные защищены современными стандартами</p>
+              </div>
+            </div>
+
+            <div class="auth-brand__feature">
+              <div class="auth-brand__feature-icon">
+                <img :src="icons.userHeart" alt="heart" class="auth-brand__feature-icon-img" />
+              </div>
+              <div class="auth-brand__feature-text">
+                <h3>Сообщество поддержки</h3>
+                <p>Людей, которые понимают и поддерживают друг друга</p>
+              </div>
+            </div>
+
+            <div class="auth-brand__feature">
+              <div class="auth-brand__feature-icon">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                 </svg>
-              </button>
+              </div>
+              <div class="auth-brand__feature-text">
+                <h3>Безопасная система</h3>
+                <p>Проверено и надежно защищено экспертами</p>
+              </div>
             </div>
           </div>
 
-          <!-- Remember & Forgot -->
-          <div class="flex items-center justify-between text-sm">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="rememberMe" type="checkbox" class="w-4 h-4 accent-primary rounded" />
-              <span class="text-secondary/70">Запомнить меня</span>
-            </label>
+          <!-- Testimonial -->
+          <div class="auth-brand__testimonial">
+            <p class="auth-brand__quote">«Наконец-то нашла людей, которые меня понимают. Спасибо за такое безопасное сообщество!»</p>
+            <p class="auth-brand__author">— Елена В., пользователь платформы</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section - Forms -->
+      <div class="auth-page__form-section">
+        <!-- Form Wrapper -->
+        <div class="auth-form">
+          <!-- Form Header -->
+          <div class="auth-form__header">
+            <h1 class="auth-form__title">
+              <span v-if="isLogin">Добро пожаловать</span>
+              <span v-else>Присоединиться</span>
+            </h1>
+            <p class="auth-form__subtitle">
+              <span v-if="isLogin">Войдите в свой аккаунт для поиска поддержки</span>
+              <span v-else>Создайте аккаунт и начните путь к переменам</span>
+            </p>
+          </div>
+
+          <!-- Messages -->
+          <transition name="auth-fade">
+            <div v-if="errorMessage" class="auth-message auth-message--error">
+              <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              {{ errorMessage }}
+            </div>
+          </transition>
+
+          <transition name="auth-fade">
+            <div v-if="successMessage" class="auth-message auth-message--success">
+              <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              {{ successMessage }}
+            </div>
+          </transition>
+
+          <!-- Login Form -->
+          <form v-if="isLogin" @submit.prevent="handleLogin" class="auth-form__content">
+            <!-- Email -->
+            <div class="auth-form__group">
+              <label class="auth-form__label">Email адрес</label>
+              <div class="auth-form__input-wrapper">
+                <svg class="auth-form__input-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                <input
+                  v-model="loginForm.email"
+                  type="email"
+                  placeholder="you@example.com"
+                  class="auth-form__input"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="auth-form__group">
+              <label class="auth-form__label">Пароль</label>
+              <div class="auth-form__input-wrapper">
+                <svg class="auth-form__input-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+                <input
+                  v-model="loginForm.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  class="auth-form__input"
+                />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="auth-form__input-toggle"
+                >
+                  <svg v-if="showPassword" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                  </svg>
+                  <svg v-else fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                    <path d="M15.171 13.576l1.414 1.414A10.015 10.015 0 0119.542 10c-1.274-4.057-5.064-7-9.542-7a9.948 9.948 0 00-2.683.357l1.431 1.431A9.987 9.987 0 0110 3c4.478 0 8.268 2.943 9.542 7a9.957 9.957 0 01-.912 1.976z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Remember & Forgot -->
+            <div class="auth-form__row">
+              <label class="auth-form__checkbox">
+                <input v-model="rememberMe" type="checkbox" />
+                <span>Запомнить меня</span>
+              </label>
+              <button
+                type="button"
+                @click="handleForgotPassword"
+                :disabled="isLoading"
+                class="auth-form__link"
+              >
+                Забыли пароль?
+              </button>
+            </div>
+
+            <!-- Login Button -->
             <button
-              type="button"
-              @click="handleForgotPassword"
+              type="submit"
               :disabled="isLoading"
-              class="text-primary hover:text-primary/80 transition-colors font-medium disabled:opacity-50"
+              class="auth-form__button auth-form__button--primary"
             >
-              Забыли пароль?
+              <span v-if="!isLoading">Войти</span>
+              <span v-else>
+                <span class="auth-form__loader"></span>
+                Загрузка...
+              </span>
             </button>
-          </div>
 
-          <!-- Login Button -->
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span v-if="!isLoading">Войти</span>
-            <span v-else>Загрузка...</span>
-          </button>
-
-
-          <!-- Register Link -->
-          <p class="text-center text-secondary/70 text-sm">
-            Нет аккаунта?
-            <button
-              type="button"
-              @click="isLogin = false"
-              class="text-primary font-semibold hover:text-primary/80 transition-colors"
-            >
-              Зарегистрироваться
-            </button>
-          </p>
-        </form>
-
-        <!-- Register Form -->
-        <form v-else @submit.prevent="handleRegister" class="space-y-4">
-          <!-- Full Name -->
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-secondary block">Полное имя</label>
-            <input
-              v-model="registerForm.fullName"
-              type="text"
-              placeholder="Иван Петров"
-              class="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary"
-            />
-          </div>
-
-          <!-- Email -->
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-secondary block">Email адрес</label>
-            <input
-              v-model="registerForm.email"
-              type="email"
-              placeholder="your@email.com"
-              class="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary"
-            />
-          </div>
-
-          <!-- Password -->
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-secondary block">Пароль</label>
-            <div class="relative">
-              <input
-                v-model="registerForm.password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Минимум 8 символов"
-                class="w-full px-4 py-3 pr-12 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary"
-              />
+            <!-- Register Link -->
+            <p class="auth-form__switch">
+              Нет аккаунта?
               <button
                 type="button"
-                @click="showPassword = !showPassword"
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/50 hover:text-secondary transition-colors"
+                @click="isLogin = false"
+                class="auth-form__link"
               >
-                <svg v-if="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                Зарегистрироваться
               </button>
-            </div>
-          </div>
+            </p>
+          </form>
 
-          <!-- Confirm Password -->
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-secondary block">Подтверждение пароля</label>
-            <div class="relative">
-              <input
-                v-model="registerForm.confirmPassword"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                placeholder="••••••••"
-                class="w-full px-4 py-3 pr-12 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary"
-              />
+          <!-- Register Form -->
+          <form v-else @submit.prevent="handleRegister" class="auth-form__content">
+            <!-- Full Name -->
+            <div class="auth-form__group">
+              <label class="auth-form__label">Полное имя</label>
+              <div class="auth-form__input-wrapper">
+                <svg class="auth-form__input-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                </svg>
+                <input
+                  v-model="registerForm.fullName"
+                  type="text"
+                  placeholder="Иван Петров"
+                  class="auth-form__input"
+                />
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="auth-form__group">
+              <label class="auth-form__label">Email адрес</label>
+              <div class="auth-form__input-wrapper">
+                <svg class="auth-form__input-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                <input
+                  v-model="registerForm.email"
+                  type="email"
+                  placeholder="you@example.com"
+                  class="auth-form__input"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="auth-form__group">
+              <label class="auth-form__label">Пароль</label>
+              <div class="auth-form__input-wrapper">
+                <svg class="auth-form__input-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+                <input
+                  v-model="registerForm.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="Минимум 6 символов"
+                  class="auth-form__input"
+                />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="auth-form__input-toggle"
+                >
+                  <img v-if="showPassword" :src="icons.eye" alt="show" class="auth-form__input-toggle-icon" />
+                  <img v-else :src="icons.eyeSlash" alt="hide" class="auth-form__input-toggle-icon" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="auth-form__group">
+              <label class="auth-form__label">Подтверждение пароля</label>
+              <div class="auth-form__input-wrapper">
+                <svg class="auth-form__input-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+                <input
+                  v-model="registerForm.confirmPassword"
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  class="auth-form__input"
+                />
+                <button
+                  type="button"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                  class="auth-form__input-toggle"
+                >
+                  <img v-if="showConfirmPassword" :src="icons.eye" alt="show" class="auth-form__input-toggle-icon" />
+                  <img v-else :src="icons.eyeSlash" alt="hide" class="auth-form__input-toggle-icon" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Terms -->
+            <label class="auth-form__checkbox auth-form__checkbox--terms">
+              <input v-model="registerForm.acceptTerms" type="checkbox" />
+              <span>
+                Я согласен с
+                <button type="button" class="auth-form__link">условиями использования</button>
+                и
+                <button type="button" class="auth-form__link">политикой конфиденциальности</button>
+              </span>
+            </label>
+
+            <!-- Register Button -->
+            <button
+              type="submit"
+              :disabled="isLoading"
+              class="auth-form__button auth-form__button--primary"
+            >
+              <span v-if="!isLoading">Создать аккаунт</span>
+              <span v-else>
+                <span class="auth-form__loader"></span>
+                Загрузка...
+              </span>
+            </button>
+
+            <!-- Login Link -->
+            <p class="auth-form__switch">
+              Уже есть аккаунт?
               <button
                 type="button"
-                @click="showConfirmPassword = !showConfirmPassword"
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/50 hover:text-secondary transition-colors"
+                @click="isLogin = true"
+                class="auth-form__link"
               >
-                <svg v-if="showConfirmPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                Войти
               </button>
-            </div>
-          </div>
-
-          <!-- Terms -->
-          <label class="flex items-start gap-3 cursor-pointer mt-4">
-            <input
-              v-model="registerForm.acceptTerms"
-              type="checkbox"
-              class="w-4 h-4 mt-1 accent-primary rounded"
-            />
-            <span class="text-xs text-secondary/70">
-              Я согласен с
-              <button type="button" class="text-primary hover:underline">условиями использования</button>
-              и
-              <button type="button" class="text-primary hover:underline">политикой конфиденциальности</button>
-            </span>
-          </label>
-
-          <!-- Register Button -->
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span v-if="!isLoading">Создать аккаунт</span>
-            <span v-else>Загрузка...</span>
-          </button>
-
-          <!-- Login Link -->
-          <p class="text-center text-secondary/70 text-sm mt-4">
-            Уже есть аккаунт?
-            <button
-              type="button"
-              @click="isLogin = true"
-              class="text-primary font-semibold hover:text-primary/80 transition-colors"
-            >
-              Войти
-            </button>
-          </p>
-        </form>
-      </div>
-
-      <!-- Security Info -->
-      <div class="mt-8 grid grid-cols-3 gap-4 text-center text-xs text-secondary/60">
-        <div class="flex flex-col items-center gap-2">
-          <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-          </svg>
-          Защита данных
-        </div>
-        <div class="flex flex-col items-center gap-2">
-          <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-          </svg>
-          Проверено
-        </div>
-        <div class="flex flex-col items-center gap-2">
-          <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-          Надёжная
+            </p>
+          </form>
         </div>
       </div>
     </div>
@@ -457,13 +531,13 @@ const navigate = (path: string) => {
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
+.auth-fade-enter-active,
+.auth-fade-leave-active {
   transition: all 0.3s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.auth-fade-enter-from,
+.auth-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
 }
