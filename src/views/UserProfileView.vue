@@ -163,35 +163,35 @@ const navigateToChat = () => {
               </div>
 
               <!-- Stats -->
-              <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
-                <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
+              <div class="profile-stats">
+                <div class="profile-stat">
                   <div class="flex items-center justify-center gap-2 mb-2">
                     <img :src="supportIcon" alt="отзывы" class="w-5 h-5" />
-                    <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+                    <p class="profile-stat__value">{{ companion.reviews_count }}</p>
                   </div>
-                  <p class="text-xs text-secondary/60">отзывов</p>
+                  <p class="profile-stat__label">отзывов</p>
                 </div>
               </div>
 
               <!-- Action Buttons -->
-              <div class="space-y-3">
+              <div class="profile-menu">
                 <button
                   v-if="!hasRequestSent && !isCurrentUserCompanion"
                   @click="handleSendConnectionRequest"
-                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                  class="profile-button profile-button--primary"
                 >
                   Предложить связь
                 </button>
                 <button
                   v-else-if="hasRequestSent && !isCurrentUserCompanion"
                   @click="navigateToChat"
-                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                  class="profile-button profile-button--primary"
                 >
                   Перейти в чаты
                 </button>
                 <button
                   @click="goBack"
-                  class="w-full py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+                  class="profile-button profile-button--secondary"
                 >
                   Отмена
                 </button>
@@ -203,18 +203,18 @@ const navigateToChat = () => {
           <div class="lg:col-span-2 space-y-6">
             <!-- Experience Section -->
             <div class="card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
+              <h2 class="profile-section__title">Опыт в терапии</h2>
 
-              <div class="space-y-4">
-                <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
-                  <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="profile-section__content">
+                <div class="experience-item">
+                  <div class="experience-item__icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <p class="text-sm font-semibold text-secondary mb-1">Время в пути</p>
-                    <p class="text-secondary/70">{{ getExperienceText(companion.experience) }}</p>
+                  <div class="experience-item__text">
+                    <p class="experience-item__label">Время в пути</p>
+                    <p class="experience-item__value">{{ getExperienceText(companion.experience) }}</p>
                   </div>
                 </div>
               </div>
@@ -222,21 +222,21 @@ const navigateToChat = () => {
 
             <!-- Bio Section -->
             <div class="card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">О себе</h2>
-              <p class="text-secondary/70 leading-relaxed text-lg break-words overflow-hidden">
+              <h2 class="profile-section__title">О себе</h2>
+              <p class="profile-bio">
                 {{ companion.bio }}
               </p>
             </div>
 
             <!-- Topics Section -->
             <div class="card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">Темы для обсуждения</h2>
+              <h2 class="profile-section__title">Темы для обсуждения</h2>
 
-              <div class="flex flex-wrap gap-3">
+              <div class="profile-topics">
                 <span
                   v-for="topic in companion.topics"
                   :key="topic"
-                  class="px-6 py-2.5 bg-primary/10 text-primary font-semibold rounded-full text-sm hover:bg-primary/20 transition-colors"
+                  class="profile-topic"
                 >
                   {{ topic }}
                 </span>
