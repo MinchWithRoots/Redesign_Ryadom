@@ -5,6 +5,9 @@ import { useAuth } from '../composables/useAuth'
 import { loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import '@/assets/auth-redesign.css'
+import eyeIcon from '@/images/eye.svg'
+import eyeSlashIcon from '@/images/eye-slash.svg'
+import userHeartIcon from '@/images/user-heart.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -17,6 +20,12 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const rememberMe = ref(false)
+
+const icons = {
+  eye: eyeIcon,
+  eyeSlash: eyeSlashIcon,
+  userHeart: userHeartIcon,
+}
 
 // Watch for errors from useAuth
 watch(error, (newError) => {
@@ -219,16 +228,6 @@ const navigate = (path: string) => {
       <!-- Left Section - Brand Info (Desktop) -->
       <div class="auth-page__brand">
         <div class="auth-brand__content">
-          <!-- Logo -->
-          <div class="auth-brand__header">
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/e2792548849e9a9b49ac0d1023b64e6ba4665289?width=92"
-              alt="Рядом"
-              class="auth-brand__logo"
-            />
-            <span class="auth-brand__title">Рядом</span>
-          </div>
-
           <!-- Description -->
           <div class="auth-brand__description">
             <h2 class="auth-brand__tagline">Платформа для тех, кто в пути</h2>
@@ -251,9 +250,7 @@ const navigate = (path: string) => {
 
             <div class="auth-brand__feature">
               <div class="auth-brand__feature-icon">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a6 6 0 00-9-5.497A4 4 0 0012 9h-2.5a4 4 0 00-4 4v5h10z" />
-                </svg>
+                <img :src="icons.userHeart" alt="heart" class="auth-brand__feature-icon-img" />
               </div>
               <div class="auth-brand__feature-text">
                 <h3>Сообщество поддержки</h3>
@@ -461,14 +458,8 @@ const navigate = (path: string) => {
                   @click="showPassword = !showPassword"
                   class="auth-form__input-toggle"
                 >
-                  <svg v-if="showPassword" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                  </svg>
-                  <svg v-else fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0119.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-                    <path d="M15.171 13.576l1.414 1.414A10.015 10.015 0 0119.542 10c-1.274-4.057-5.064-7-9.542-7a9.948 9.948 0 00-2.683.357l1.431 1.431A9.987 9.987 0 0110 3c4.478 0 8.268 2.943 9.542 7a9.957 9.957 0 01-.912 1.976z" />
-                  </svg>
+                  <img v-if="showPassword" :src="icons.eye" alt="show" class="auth-form__input-toggle-icon" />
+                  <img v-else :src="icons.eyeSlash" alt="hide" class="auth-form__input-toggle-icon" />
                 </button>
               </div>
             </div>
@@ -491,14 +482,8 @@ const navigate = (path: string) => {
                   @click="showConfirmPassword = !showConfirmPassword"
                   class="auth-form__input-toggle"
                 >
-                  <svg v-if="showConfirmPassword" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                  </svg>
-                  <svg v-else fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0119.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-                    <path d="M15.171 13.576l1.414 1.414A10.015 10.015 0 0119.542 10c-1.274-4.057-5.064-7-9.542-7a9.948 9.948 0 00-2.683.357l1.431 1.431A9.987 9.987 0 0110 3c4.478 0 8.268 2.943 9.542 7a9.957 9.957 0 01-.912 1.976z" />
-                  </svg>
+                  <img v-if="showConfirmPassword" :src="icons.eye" alt="show" class="auth-form__input-toggle-icon" />
+                  <img v-else :src="icons.eyeSlash" alt="hide" class="auth-form__input-toggle-icon" />
                 </button>
               </div>
             </div>
