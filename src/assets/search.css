@@ -105,6 +105,7 @@
 }
 
 .search-header h1 {
+  font-family: 'Inter', sans-serif;
   font-size: 2rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-secondary);
@@ -118,6 +119,7 @@
 }
 
 .search-header p {
+  font-family: 'Inter', sans-serif;
   font-size: var(--font-size-xl);
   color: var(--color-secondary-60);
 }
@@ -135,6 +137,7 @@
 }
 
 .filters-sidebar h3 {
+  font-family: 'Inter', sans-serif;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-secondary);
@@ -151,6 +154,7 @@
 }
 
 .filter-group p {
+  font-family: 'Inter', sans-serif;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-secondary);
@@ -178,6 +182,7 @@
 }
 
 .filter-option span {
+  font-family: 'Inter', sans-serif;
   font-size: var(--font-size-sm);
   color: var(--color-secondary-70);
 }
@@ -216,6 +221,7 @@
 }
 
 .topic-btn {
+  font-family: 'Inter', sans-serif;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
@@ -310,6 +316,7 @@
 }
 
 .companion-name {
+  font-family: 'Inter', sans-serif;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-secondary);
