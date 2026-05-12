@@ -127,7 +127,7 @@ const navigateToProfile = (companionId: string | number) => {
       <!-- Header -->
       <div class="search-header">
         <h1>
-          Найди своего <span class="text-primary font-black">спутника</span>
+          Найди своего <span class="text-primary" style="font-weight: 900;">спутника</span>
         </h1>
         <p>
           Люди в терапии, готовые слушать и поддерживать друг друга
