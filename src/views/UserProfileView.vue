@@ -8,6 +8,7 @@ import ReviewsList from '../components/ReviewsList.vue'
 import supportIcon from '../images/support.svg'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
+import '@/assets/profile.css'
 
 const router = useRouter()
 const route = useRoute()

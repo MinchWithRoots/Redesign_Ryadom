@@ -6,6 +6,7 @@ import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { supabase } from '@/utils/supabase'
+import '@/assets/profile.css'
 
 const router = useRouter()
 const activeTab = ref('chats')
