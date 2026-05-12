@@ -4,6 +4,7 @@
 .profile-layout {
   width: 100%;
   padding: 0;
+  padding-top: var(--header-height);
 }
 
 .profile-layout__container {
@@ -203,6 +204,10 @@
   height: 1.25rem;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+.profile-menu__item:not(.profile-menu__item--active) .profile-menu__icon {
+  opacity: 0.6;
 }
 
 .profile-menu__admin-section {
