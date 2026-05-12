@@ -39,7 +39,7 @@
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: var(--container-max-width);
+  max-width: 1536px;
   margin: 0 auto;
   padding: 3rem 1.5rem 4rem;
 }
@@ -59,8 +59,8 @@
 
 @media (min-width: 1024px) {
   .hero-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    grid-template-columns: 5fr 4fr;
+    gap: 2rem;
   }
 }
 
@@ -68,14 +68,31 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow: visible;
 }
 
 /* Hero Heading */
 .hero-heading {
   display: flex;
-  /* flex-direction: column; */
-  gap: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
   font-style: normal;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+@media (min-width: 480px) {
+  .hero-heading {
+    flex-wrap: nowrap;
+  }
+}
+
+.hero-heading-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 0;
 }
 
 .hero-heading-line1 {
@@ -131,9 +148,11 @@
   font-family: 'Pacifico', cursive;
   font-weight: 400;
   font-size: 68px;
-  line-height: 0.95;
+  line-height: 1;
   color: #FFFFFF;
   letter-spacing: 0.45px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
@@ -252,11 +271,10 @@
 }
 
 .hero-planet img {
-    width: 80%;
+    width: 90%;
     max-width: 600px;
     filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
-    margin-top: 100px;
-    margin-right: 150px;
+    margin-top: 60px;
 }
 
 /* ===== ABOUT SECTION ===== */
