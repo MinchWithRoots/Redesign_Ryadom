@@ -82,6 +82,7 @@
   max-width: var(--container-max-width);
   margin: 0 auto;
   padding: 2rem 1rem;
+  padding-top: calc(2rem + var(--header-height));
   position: relative;
   z-index: 1;
 }
