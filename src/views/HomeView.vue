@@ -141,10 +141,7 @@ onMounted(() => {
           <div class="hero-text-group">
             <!-- Heading -->
             <h1 class="hero-heading">
-              <span class="hero-heading-line1">Найди свою</span>
-              <br>
-              </br>
-               <span class="hero-heading-line1">поддержку</span>
+              <span class="hero-heading-line1">Найди свою поддержку</span>
               <span class="hero-heading-line2">
                 <span class="hero-heading-accent">Рядом</span>
               </span>
