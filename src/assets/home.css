@@ -73,9 +73,16 @@
 /* Hero Heading */
 .hero-heading {
   display: flex;
-  /* flex-direction: column; */
-  gap: 0;
+  align-items: flex-start;
+  gap: 0.5rem;
   font-style: normal;
+  flex-wrap: wrap;
+}
+
+.hero-heading-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .hero-heading-line1 {
@@ -134,6 +141,8 @@
   line-height: 0.95;
   color: #FFFFFF;
   letter-spacing: 0.45px;
+  align-self: center;
+  white-space: nowrap;
 }
 
 @media (min-width: 640px) {
