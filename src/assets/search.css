@@ -66,15 +66,18 @@
   position: absolute;
   width: 600px;
   height: 600px;
-  background: var(--color-primary);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 160, 100, 0.12), rgba(255, 106, 47, 0.08));
   border-radius: 50%;
   top: -200px;
   right: -150px;
-  opacity: 0.08;
+  opacity: 0.9;
   mix-blend-mode: multiply;
   animation: float 6s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
+  box-shadow:
+    0 0 0 120px rgba(255, 106, 47, 0.03),
+    0 0 0 150px rgba(255, 140, 70, 0.02);
 }
 
 .layout-container {
