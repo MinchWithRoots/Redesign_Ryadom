@@ -689,3 +689,9 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ===== LAYOUT PAGE ===== */
+.layout-page {
+  padding-top: var(--header-height);
+  min-height: 100vh;
+}
