@@ -269,7 +269,7 @@ watch(
               <!-- Stats -->
               <div v-if="userProfile" class="profile-stats">
                 <div class="profile-stat">
-                  <p class="profile-stat__value">0</p>
+                  <p class="profile-stat__value">{{ userProfile.sessions || 0 }}</p>
                   <p class="profile-stat__label">сессий</p>
                 </div>
                 <div class="profile-stat">

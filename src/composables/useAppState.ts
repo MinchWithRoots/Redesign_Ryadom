@@ -12,6 +12,7 @@ export interface User {
   role?: string // 'user' or 'admin'
   gender?: string
   topics?: string[]
+  sessions?: number
 }
 
 export interface CompanionTopic {
@@ -213,6 +214,7 @@ export const loadCurrentUser = async () => {
       role: profile.role || 'user',
       gender: profile.gender,
       topics: profile.topics || [],
+      sessions: profile.sessions || 0,
     }
 
     return profile
@@ -1159,6 +1161,12 @@ export const approveChatRequest = async (requestId: string) => {
       chatRequests.value.splice(index, 1)
     }
 
+    // Increase session count for both users
+    if (currentUser.value && currentUser.value.id === request.user_id) {
+      // Current user is the user who made the request
+      await incrementUserSessions(request.user_id)
+    }
+
     // Reload chats so the new chat appears in the list
     console.log('Reloading chats...')
     await loadChats()
@@ -1311,5 +1319,48 @@ export const getCompanionReviews = async (companionId: string): Promise<Review[]
     const errorMessage = err instanceof Error ? err.message : 'Failed to load reviews'
     console.error('Error loading reviews:', errorMessage)
     return []
+  }
+}
+
+// Increment user sessions count
+export const incrementUserSessions = async (userId: string) => {
+  try {
+    // Get current session count
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('sessions')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (fetchError) {
+      console.error('Error fetching user sessions:', fetchError)
+      return
+    }
+
+    const currentSessions = user?.sessions || 0
+    const newSessions = currentSessions + 1
+
+    // Update session count
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ sessions: newSessions })
+      .eq('id', userId)
+
+    if (updateError) {
+      console.error('Error updating sessions:', updateError)
+      return
+    }
+
+    // Update local state
+    if (currentUser.value && currentUser.value.id === userId) {
+      currentUser.value = {
+        ...currentUser.value,
+        sessions: newSessions,
+      }
+    }
+
+    console.log(`Sessions incremented for user ${userId}: ${newSessions}`)
+  } catch (err) {
+    console.error('Error in incrementUserSessions:', err)
   }
 }
