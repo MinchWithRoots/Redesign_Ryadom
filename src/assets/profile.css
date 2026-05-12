@@ -141,6 +141,7 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
+  filter: invert(49%) sepia(82%) saturate(532%) hue-rotate(357deg) brightness(107%) contrast(105%);
 }
 
 .profile-stat__value {
@@ -204,10 +205,15 @@
   height: 1.25rem;
   object-fit: contain;
   flex-shrink: 0;
+  filter: invert(49%) sepia(82%) saturate(532%) hue-rotate(357deg) brightness(107%) contrast(105%);
 }
 
 .profile-menu__item:not(.profile-menu__item--active) .profile-menu__icon {
-  opacity: 0.6;
+  opacity: 0.7;
+}
+
+.profile-menu__item--active .profile-menu__icon {
+  opacity: 1;
 }
 
 .profile-menu__admin-section {
