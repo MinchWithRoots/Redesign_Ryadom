@@ -149,7 +149,7 @@
 }
 
 .auth-brand__feature-icon-img {
-  filter: brightness(0) saturate(100%) invert(100%) opacity(0.9);
+  filter: brightness(0) saturate(100%) invert(100%) opacity(1);
 }
 
 .auth-brand__feature-text h3 {
