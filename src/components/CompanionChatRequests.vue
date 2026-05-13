@@ -11,9 +11,9 @@
     <div v-else class="chat-requests-list">
       <!-- Pending Requests Section -->
       <div v-if="pendingRequests.length > 0">
-        <div style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border);">
-          <h3 style="display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif; font-size: 1.125rem; font-weight: 600; color: var(--color-secondary);">
-            <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 700; background-color: rgba(234, 179, 8, 0.1); color: #ca8a04;">
+        <div class="chat-requests-section__header">
+          <h3 class="chat-requests-section__subtitle">
+            <span class="chat-requests-section__badge chat-requests-section__badge--pending">
               {{ pendingRequests.length }}
             </span>
             В ожидании
@@ -77,9 +77,9 @@
 
       <!-- Approved Requests Section -->
       <div v-if="approvedRequests.length > 0" style="margin-top: 1.5rem;">
-        <div style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border);">
-          <h3 style="display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif; font-size: 1.125rem; font-weight: 600; color: var(--color-secondary);">
-            <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 700; background-color: rgba(34, 197, 94, 0.1); color: #16a34a;">
+        <div class="chat-requests-section__header">
+          <h3 class="chat-requests-section__subtitle">
+            <span class="chat-requests-section__badge chat-requests-section__badge--approved">
               {{ approvedRequests.length }}
             </span>
             Одобренные
@@ -123,9 +123,9 @@
 
       <!-- Rejected Requests Section -->
       <div v-if="rejectedRequests.length > 0" style="margin-top: 1.5rem;">
-        <div style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border);">
-          <h3 style="display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif; font-size: 1.125rem; font-weight: 600; color: var(--color-secondary);">
-            <span style="display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 700; background-color: rgba(239, 68, 68, 0.1); color: #dc2626;">
+        <div class="chat-requests-section__header">
+          <h3 class="chat-requests-section__subtitle">
+            <span class="chat-requests-section__badge chat-requests-section__badge--rejected">
               {{ rejectedRequests.length }}
             </span>
             Отклоненные
@@ -172,8 +172,7 @@
     <transition name="slide">
       <div
         v-if="notification"
-        class="companion-requests-notification"
-        style="position: fixed; top: 180px; left: 50%; transform: translateX(-50%); background-color: #22c55e; color: white; padding: 0.75rem 1.5rem; border-radius: 9999px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); z-index: 50; font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 500;"
+        class="chat-requests-notification"
       >
         {{ notification }}
       </div>

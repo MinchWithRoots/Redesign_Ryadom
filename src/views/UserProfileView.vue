@@ -19,13 +19,11 @@ const showNotification = ref('')
 const hasRequestSent = ref(false)
 
 const isCurrentUserCompanion = computed(() => {
-  // Спутник это тот, у кого роль 'companion' и это его профиль
   return currentUser.value && companion.value && 
          currentUser.value.role === 'companion' && 
          currentUser.value.id === companion.value.user_id
 })
 
-// Get companion ID from route params
 const companionId = computed(() => {
   const id = route.params.id
   return typeof id === 'string' ? parseInt(id) : id
@@ -33,7 +31,6 @@ const companionId = computed(() => {
 
 onMounted(async () => {
   try {
-    // Load current user if not already loaded
     if (!currentUser.value) {
       await loadCurrentUser()
     }
@@ -68,7 +65,6 @@ const handleSendConnectionRequest = async () => {
       errorMessage = err.message
 
       if (errorMessage === 'NOT_LOGGED_IN') {
-        // Show auth modal instead of error
         authModal.value?.openModal()
         return
       }
@@ -90,108 +86,88 @@ const goBack = () => {
 }
 
 const navigateToChat = () => {
-  // After connection request, user can navigate to chat
   router.push('/profile?tab=chats')
 }
 </script>
 
 <template>
   <div class="layout-page">
-    <!-- Auth Required Modal -->
     <AuthRequiredModal ref="authModal" />
 
-    <!-- Notification -->
     <transition name="slide">
-      <div v-if="showNotification" class="fixed top-[180px] left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50">
+      <div v-if="showNotification" class="profile-notification">
         {{ showNotification }}
       </div>
     </transition>
 
-    <div class="container mx-auto px-4 lg:px-8 max-w-4xl">
-      <!-- Back Button -->
-      <button
-        @click="goBack"
-        class="mb-8 flex items-center gap-2 text-secondary hover:text-primary transition-colors"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="profile-container">
+      <button @click="goBack" class="profile-back">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
-        <span class="font-medium">Назад</span>
+        <span>Назад</span>
       </button>
 
-      <!-- Loading State -->
-      <div v-if="isLoading" class="flex items-center justify-center py-16">
-        <div class="text-center">
-          <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p class="text-secondary/60">Загрузка профиля...</p>
-        </div>
+      <div v-if="isLoading" class="profile-loading">
+        <div class="profile-loading__spinner"></div>
+        <p class="profile-loading__text">Загрузка профиля...</p>
       </div>
 
-      <!-- Profile Content -->
-      <div v-else-if="companion" class="space-y-6">
-        <!-- Companion Badge (only visible to the companion themselves) -->
-        <div v-if="isCurrentUserCompanion" class="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary rounded-2xl">
-          <div class="flex items-center gap-3">
-            <svg class="w-6 h-6 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <p class="font-bold text-primary">👤 Это ваш профиль спутника</p>
-              <p class="text-sm text-primary/70">Только вы видите раздел с входящими заявками на чат</p>
-            </div>
+      <div v-else-if="companion" class="profile-layout">
+        <div v-if="isCurrentUserCompanion" class="profile-badge">
+          <svg class="profile-badge__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="profile-badge__content">
+            <p class="profile-badge__title">👤 Это ваш профиль спутника</p>
+            <p class="profile-badge__subtitle">Только вы видите раздел с входящими заявками на чат</p>
           </div>
         </div>
 
-        <!-- Main Profile Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Sidebar with Basic Info -->
-          <div class="lg:col-span-1">
-            <div class="bg-white border border-border/50 rounded-3xl p-6 shadow-card sticky top-[140px]">
-              <!-- Profile Image -->
-              <div class="mb-6">
-                <img
-                  :src="companion.image"
-                  :alt="companion.name"
-                  class="w-full h-72 rounded-2xl object-cover"
-                />
+        <div class="profile-layout__container">
+          <div class="profile-layout__sidebar">
+            <div class="profile-card">
+              <img
+                :src="companion.image"
+                :alt="companion.name"
+                class="profile-card__avatar profile-card__avatar--large"
+              />
+
+              <div class="profile-card__header">
+                <h1 class="profile-card__name">{{ companion.name }}</h1>
+                <p class="profile-card__age">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
               </div>
 
-              <!-- Basic Info -->
-              <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-secondary mb-2">{{ companion.name }}</h1>
-                <p class="text-lg text-secondary/60 mb-4">{{ companion.age }} {{ getAgeForm(companion.age) }}</p>
-              </div>
-
-              <!-- Stats -->
-              <div class="flex gap-3 mb-6 pb-6 border-b border-border/50">
-                <div class="flex-1 p-3 bg-light-bg rounded-xl text-center">
-                  <div class="flex items-center justify-center gap-2 mb-2">
-                    <img :src="supportIcon" alt="отзывы" class="w-5 h-5" />
-                    <p class="text-2xl font-bold text-primary">{{ companion.reviews_count }}</p>
+              <div class="profile-stats">
+                <div class="profile-stat">
+                  <div class="profile-stat__flex">
+                    <img :src="supportIcon" alt="отзывы" class="profile-stat__icon" />
+                    <p class="profile-stat__value">{{ companion.reviews_count }}</p>
                   </div>
-                  <p class="text-xs text-secondary/60">отзывов</p>
+                  <p class="profile-stat__label">отзывов</p>
                 </div>
               </div>
 
-              <!-- Action Buttons -->
-              <div class="space-y-3">
+              <div class="profile-divider"></div>
+
+              <div class="profile-menu">
                 <button
                   v-if="!hasRequestSent && !isCurrentUserCompanion"
                   @click="handleSendConnectionRequest"
-                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                  class="profile-button profile-button--primary"
                 >
                   Предложить связь
                 </button>
                 <button
                   v-else-if="hasRequestSent && !isCurrentUserCompanion"
                   @click="navigateToChat"
-                  class="w-full py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all"
+                  class="profile-button profile-button--primary"
                 >
                   Перейти в чаты
                 </button>
                 <button
                   @click="goBack"
-                  class="w-full py-3 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+                  class="profile-button profile-button--secondary"
                 >
                   Отмена
                 </button>
@@ -199,88 +175,71 @@ const navigateToChat = () => {
             </div>
           </div>
 
-          <!-- Main Content -->
-          <div class="lg:col-span-2 space-y-6">
-            <!-- Experience Section -->
-            <div class="card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">Опыт в терапии</h2>
-
-              <div class="space-y-4">
-                <div class="flex items-start gap-4 p-4 bg-light-bg rounded-xl">
-                  <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="profile-layout__main">
+            <div class="profile-section">
+              <h2 class="profile-section__title">Опыт в терапии</h2>
+              <div class="profile-section__content">
+                <div class="experience-item">
+                  <div class="experience-item__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <p class="text-sm font-semibold text-secondary mb-1">Время в пути</p>
-                    <p class="text-secondary/70">{{ getExperienceText(companion.experience) }}</p>
+                  <div class="experience-item__text">
+                    <p class="experience-item__label">Время в пути</p>
+                    <p class="experience-item__value">{{ getExperienceText(companion.experience) }}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Bio Section -->
-            <div class="card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">О себе</h2>
-              <p class="text-secondary/70 leading-relaxed text-lg break-words overflow-hidden">
-                {{ companion.bio }}
-              </p>
+            <div class="profile-section">
+              <h2 class="profile-section__title">О себе</h2>
+              <p class="profile-bio">{{ companion.bio }}</p>
             </div>
 
-            <!-- Topics Section -->
-            <div class="card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">Темы для обсуждения</h2>
-
-              <div class="flex flex-wrap gap-3">
+            <div class="profile-section">
+              <h2 class="profile-section__title">Темы для обсуждения</h2>
+              <div class="profile-topics">
                 <span
                   v-for="topic in companion.topics"
                   :key="topic"
-                  class="px-6 py-2.5 bg-primary/10 text-primary font-semibold rounded-full text-sm hover:bg-primary/20 transition-colors"
+                  class="profile-topic"
                 >
                   {{ topic }}
                 </span>
               </div>
             </div>
 
-            <!-- Reviews Section -->
             <ReviewsList v-if="companion" :companion-id="companion.id" />
 
-            <!-- Incoming Chat Requests Section (only for the companion themselves) -->
             <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
-            <!-- How It Works -->
-            <div class="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-3xl p-8 shadow-card">
-              <h2 class="text-2xl font-bold text-secondary mb-6">Как это работает</h2>
+            <div class="profile-how-it-works">
+              <h2 class="profile-how-it-works__title">Как это работает</h2>
 
-              <div class="space-y-4">
-                <div class="flex gap-4">
-                  <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    1
-                  </div>
+              <div class="profile-steps">
+                <div class="profile-step">
+                  <div class="profile-step__number">1</div>
                   <div>
-                    <p class="font-semibold text-secondary mb-1">Отправьте запрос</p>
-                    <p class="text-sm text-secondary/70">Нажмите кнопку "Предложить связь"</p>
+                    <p class="profile-step__title">Отправьте запрос</p>
+                    <p class="profile-step__description">Нажмите кнопку "Предложить связь"</p>
                   </div>
                 </div>
 
-                <div class="flex gap-4">
-                  <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    2
-                  </div>
+                <div class="profile-step">
+                  <div class="profile-step__number">2</div>
                   <div>
-                    <p class="font-semibold text-secondary mb-1">Дождитесь ответа</p>
-                    <p class="text-sm text-secondary/70">{{ companion.name }} ответит на ваш запрос в течение 24 часов</p>
+                    <p class="profile-step__title">Дождитесь ответа</p>
+                    <p class="profile-step__description">{{ companion.name }} ответит на ваш запрос в течение 24 часов</p>
                   </div>
                 </div>
 
-                <div class="flex gap-4">
-                  <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    3
-                  </div>
+                <div class="profile-step">
+                  <div class="profile-step__number">3</div>
                   <div>
-                    <p class="font-semibold text-secondary mb-1">Начните общение</p>
-                    <p class="text-sm text-secondary/70">Обсудите важные для вас темы и поддерживайте друг друга</p>
+                    <p class="profile-step__title">Начните общение</p>
+                    <p class="profile-step__description">Обсудите важные для вас темы и поддерживайте друг друга</p>
                   </div>
                 </div>
               </div>
@@ -289,27 +248,46 @@ const navigateToChat = () => {
         </div>
       </div>
 
-      <!-- Not Found State -->
-      <div v-else class="flex items-center justify-center py-16">
-        <div class="text-center">
-          <svg class="w-16 h-16 text-secondary/30 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
-          <h2 class="text-2xl font-bold text-secondary mb-2">Профиль не найден</h2>
-          <p class="text-secondary/60 mb-6">К сожалению, не удалось загрузить профиль пользователя</p>
-          <button
-            @click="goBack"
-            class="btn-primary"
-          >
-            Вернуться назад
-          </button>
-        </div>
+      <div v-else class="profile-not-found">
+        <svg class="profile-not-found__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <h2 class="profile-not-found__title">Профиль не найден</h2>
+        <p class="profile-not-found__text">К сожалению, не удалось загрузить профиль пользователя</p>
+        <button @click="goBack" class="profile-button profile-button--primary">
+          Вернуться назад
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.profile-notification {
+  position: fixed;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-success);
+  color: var(--color-white);
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.profile-card__avatar--large {
+  width: 100%;
+  height: 18rem;
+  border-radius: 1.25rem;
+  object-fit: cover;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
