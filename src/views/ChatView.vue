@@ -8,6 +8,7 @@ import '@/assets/chat.css'
 import infoIcon from '../images/info-triangle.svg'
 import blockIcon from '../images/block.svg'
 import sendIcon from '../images/send.svg'
+import closeIcon from '../images/close.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -470,7 +471,7 @@ onMounted(async () => {
                   :disabled="isEndingSession"
                   class="chat-dropdown-item"
                 >
-                  <img :src="sendIcon" alt="Close" class="chat-dropdown-icon" style="transform: rotate(45deg);" />
+                  <img :src="closeIcon" alt="Close" class="chat-dropdown-icon" style="transform: rotate(45deg);" />
                   <span>Завершить сессию</span>
                 </button>
               </div>
