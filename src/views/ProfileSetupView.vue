@@ -147,7 +147,7 @@ const handleCompleteSetup = async () => {
 
   try {
     await updateUserProfile({
-      bio: profileSetup.value.bio,
+      bio: profileSetup.value.bio.substring(0, 500),
       image: profileSetup.value.image || undefined,
       age: profileSetup.value.age || undefined,
       gender: profileSetup.value.gender || undefined,

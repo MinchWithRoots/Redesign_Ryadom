@@ -91,7 +91,7 @@ const handleSaveProfile = async () => {
   isSaving.value = true
   try {
     await updateUserProfile({
-      bio: userEditForm.value.bio,
+      bio: userEditForm.value.bio.substring(0, 500),
       image: userEditForm.value.image || undefined,
       topics: userEditForm.value.selectedTopics,
     })
