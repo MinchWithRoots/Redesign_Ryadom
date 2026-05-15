@@ -64,85 +64,150 @@ const handleDialogConfirm = async () => {
 
 // Check admin access
 onMounted(async () => {
-  if (!isAdmin()) {
-    router.push('/')
-    return
+  console.log('AdminDashboard mounted')
+  try {
+    // First load current user to check if admin
+    await loadCurrentUser()
+    console.log('Current user loaded:', currentUser.value?.email, 'Role:', currentUser.value?.role)
+
+    if (!isAdmin()) {
+      console.log('Not admin, redirecting...')
+      router.push('/')
+      return
+    }
+    console.log('Loading dashboard data...')
+    await loadDashboardData()
+    console.log('Dashboard data loaded')
+  } catch (err) {
+    console.error('Error in AdminDashboard mount:', err)
+    errorMessage.value = `Ошибка при загрузке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 5000)
   }
-  await loadDashboardData()
 })
 
 const loadDashboardData = async () => {
   try {
     isLoading.value = true
-    await Promise.all([loadUsers(), loadCompanionsList(), loadReviews(), loadChats(), loadApplications(), loadReports()])
+    console.log('Loading all dashboard data...')
+    const results = await Promise.allSettled([loadUsers(), loadCompanionsList(), loadReviews(), loadChats(), loadApplications(), loadReports()])
+    results.forEach((result, index) => {
+      const names = ['users', 'companions', 'reviews', 'chats', 'applications', 'reports']
+      if (result.status === 'rejected') {
+        console.error(`Failed to load ${names[index]}:`, result.reason)
+      } else {
+        console.log(`✓ Loaded ${names[index]}`)
+      }
+    })
+  } catch (err) {
+    console.error('Error in loadDashboardData:', err)
   } finally {
     isLoading.value = false
   }
 }
 
 const loadUsers = async () => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (!error) {
+    if (error) {
+      console.error('Error loading users:', error)
+      errorMessage.value = `Ошибка при загрузке пользователей: ${error.message}`
+      setTimeout(() => (errorMessage.value = ''), 5000)
+      return
+    }
     users.value = data || []
+  } catch (err) {
+    console.error('Failed to fetch users:', err)
+    errorMessage.value = `Ошибка подключения: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 5000)
   }
 }
 
 const loadCompanionsList = async () => {
-  const { data, error } = await supabase
-    .from('companions')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('companions')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (!error) {
+    if (error) {
+      console.error('Error loading companions:', error)
+      return
+    }
     companionsList.value = data || []
+  } catch (err) {
+    console.error('Failed to fetch companions:', err)
   }
 }
 
 const loadReviews = async () => {
-  const { data, error } = await supabase
-    .from('reviews')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (!error) {
+    if (error) {
+      console.error('Error loading reviews:', error)
+      return
+    }
     reviews.value = data || []
+  } catch (err) {
+    console.error('Failed to fetch reviews:', err)
   }
 }
 
 const loadChats = async () => {
-  const { data, error } = await supabase
-    .from('chats')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('chats')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (!error) {
+    if (error) {
+      console.error('Error loading chats:', error)
+      return
+    }
     chats.value = data || []
+  } catch (err) {
+    console.error('Failed to fetch chats:', err)
   }
 }
 
 const loadApplications = async () => {
-  const { data, error } = await supabase
-    .from('companion_applications')
-    .select('*, users (name, email)')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('companion_applications')
+      .select('*, users (name, email)')
+      .order('created_at', { ascending: false })
 
-  if (!error) {
+    if (error) {
+      console.error('Error loading applications:', error)
+      return
+    }
     applications.value = data || []
+  } catch (err) {
+    console.error('Failed to fetch applications:', err)
   }
 }
 
 const loadReports = async () => {
-  const { data, error } = await supabase
-    .from('reports')
-    .select('*, chats(user_id, companion_id), reporter:users(name, email)')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('reports')
+      .select('*, chats(user_id, companion_id), reporter:users(name, email)')
+      .order('created_at', { ascending: false })
 
-  if (!error) {
+    if (error) {
+      console.error('Error loading reports:', error)
+      return
+    }
     reports.value = data || []
+  } catch (err) {
+    console.error('Failed to fetch reports:', err)
   }
 }
 
