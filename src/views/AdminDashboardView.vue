@@ -94,7 +94,7 @@ const loadApplications = async () => {
 const loadReports = async () => {
   const { data, error } = await supabase
     .from('reports')
-    .select('*')
+    .select('*, chats(user_id, companion_id), reporter:users(name, email)')
     .order('created_at', { ascending: false })
 
   if (!error) {
@@ -229,6 +229,26 @@ const handleDeleteReport = async (reportId: string | number) => {
     setTimeout(() => (successMessage.value = ''), 3000)
   } catch (err) {
     errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 3000)
+  }
+}
+
+const handleBlockCompanion = async (companionId: string | number, companionName: string) => {
+  if (!confirm(`Заблокировать спутника "${companionName}"? Они не смогут принимать новые чаты.`)) return
+
+  try {
+    const { error } = await supabase
+      .from('companions')
+      .update({ is_available: false })
+      .eq('id', companionId)
+
+    if (error) throw error
+
+    successMessage.value = `Спутник "${companionName}" заблокирован ✓`
+    await loadCompanions()
+    setTimeout(() => (successMessage.value = ''), 3000)
+  } catch (err) {
+    errorMessage.value = `Ошибка при блокировке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
     setTimeout(() => (errorMessage.value = ''), 3000)
   }
 }
@@ -662,15 +682,24 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   </span>
                 </div>
               </div>
-              <button
-                @click="handleToggleCompanionStatus(companion.id, companion.is_available)"
-                class="btn btn-small rounded-full" :style="{
-                  backgroundColor: companion.is_available ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  color: companion.is_available ? '#16a34a' : '#dc2626'
-                }"
-              >
-                {{ companion.is_available ? '✓ Доступен' : '✗ Недоступен' }}
-              </button>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button
+                  @click="handleToggleCompanionStatus(companion.id, companion.is_available)"
+                  class="btn btn-small rounded-full" :style="{
+                    backgroundColor: companion.is_available ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    color: companion.is_available ? '#16a34a' : '#dc2626'
+                  }"
+                >
+                  {{ companion.is_available ? '✓ Доступен' : '✗ Недоступен' }}
+                </button>
+                <button
+                  @click="handleBlockCompanion(companion.id, companion.name)"
+                  class="btn btn-small rounded-full"
+                  style="background-color: rgba(239, 68, 68, 0.1); color: #dc2626;"
+                >
+                  🚫 Заблокировать
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -912,6 +941,18 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <!-- От кого и На кого -->
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 0.75rem; background-color: var(--color-light-bg); border-radius: var(--radius-md);">
+                    <div class="report-card__field">
+                      <span class="report-card__field-label">🔴 На кого (спутник):</span>
+                      <span class="report-card__field-value">{{ report.chats?.companion_id || 'N/A' }}</span>
+                    </div>
+                    <div class="report-card__field">
+                      <span class="report-card__field-label">🟢 От кого (жалобщик):</span>
+                      <span class="report-card__field-value">{{ report.reporter?.name || 'Анонимно' }} ({{ report.reporter?.email || 'нет email' }})</span>
+                    </div>
+                  </div>
+
                   <div class="report-card__field">
                     <span class="report-card__field-label">Причина:</span>
                     <span class="report-card__field-value">{{ report.reason }}</span>
@@ -926,10 +967,6 @@ const handleRejectApplication = async (applicationId: string | number) => {
                     <div class="report-card__field">
                       <span class="report-card__field-label">ID чата:</span>
                       <span class="report-card__field-value" style="font-family: monospace; font-size: var(--font-size-xs);">{{ report.chat_id }}</span>
-                    </div>
-                    <div class="report-card__field">
-                      <span class="report-card__field-label">От пользователя:</span>
-                      <span class="report-card__field-value" style="font-family: monospace; font-size: var(--font-size-xs);">{{ report.reporter_id }}</span>
                     </div>
                   </div>
 
@@ -950,16 +987,32 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 ✓ Отметить как обработанную
               </button>
               <button
+                @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
+                v-if="report.chats?.companion_id"
+                class="btn btn-large btn-block flex-1"
+                style="background-color: #ef4444; color: white;"
+              >
+                🚫 Заблокировать спутника
+              </button>
+              <button
                 @click="handleDeleteReport(report.id)"
                 class="btn btn-large btn--danger flex-1"
               >
                 ✕ Удалить
               </button>
             </div>
-            <div v-else style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
+            <div v-else style="border-top: 1px solid var(--color-border); padding-top: 1rem; display: flex; gap: 1rem;">
+              <button
+                @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
+                v-if="report.chats?.companion_id"
+                class="btn btn-large btn-block flex-1"
+                style="background-color: #ef4444; color: white;"
+              >
+                🚫 Заблокировать спутника
+              </button>
               <button
                 @click="handleDeleteReport(report.id)"
-                class="btn btn-large btn--danger btn-full"
+                class="btn btn-large btn--danger flex-1"
               >
                 ✕ Удалить
               </button>
