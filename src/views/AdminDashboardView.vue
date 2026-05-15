@@ -459,8 +459,8 @@ const handleApproveApplication = async (applicationId: string | number) => {
       age: app.age,
       gender: app.gender,
       experience: app.experience,
-      bio: app.bio.substring(0, 500),
-      image: imageUrl,
+      bio: app.bio,
+      image: imageUrl.substring(0, 2000), // Ensure image URL doesn't exceed limit
       topics: app.topics || [],
       is_available: true,
       user_id: app.user_id, // Link companion to user
