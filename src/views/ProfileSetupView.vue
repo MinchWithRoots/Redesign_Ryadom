@@ -331,7 +331,7 @@ const handleSkip = () => {
                 />
               </div>
               <div v-else class="profile-setup__photo-placeholder-container">
-                <span>📸</span>
+                <img src="/src/images/gallery.svg" alt="Upload photo" class="profile-setup__photo-placeholder-icon" />
               </div>
             </div>
 
