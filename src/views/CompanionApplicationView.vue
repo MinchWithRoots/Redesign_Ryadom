@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { currentUser, loadCurrentUser } from '@/composables/useAppState'
 import { submitCompanionApplication, getUserApplication } from '@/services/supabaseService'
 import { supabase } from '@/utils/supabase'
+import '@/assets/become-companion.css'
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -243,97 +244,102 @@ const submitApplication = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-light-bg to-white py-12 px-4 lg:px-8">
-    <div class="container mx-auto max-w-2xl">
+  <div class="become-companion-wrapper">
+    <div class="become-companion-container">
       <!-- Header -->
-      <div class="mb-12 text-center">
-        <h1 class="text-4xl lg:text-5xl font-bold text-secondary mb-4">
-          Стань спутником
-        </h1>
-        <p class="text-xl text-secondary/60">
+      <div class="become-companion-header">
+        <h1 class="become-companion-title">Стань спутником</h1>
+        <p class="become-companion-subtitle">
           Помогайте людям в их пути и получайте вознаграждение за вашу поддержку
         </p>
       </div>
 
       <!-- Existing Application Status -->
-      <div v-if="existingApplication" class="mb-8">
+      <div v-if="existingApplication">
         <div
           v-if="existingApplication.status === 'pending'"
-          class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-blue-900"
+          class="become-companion-status become-companion-status-pending"
         >
-          <p class="font-semibold mb-2">⏳ Ваша заявка на рассмотрении</p>
-          <p class="text-sm">
-            Спасибо за вашу заинтересованность! Администратор рассмотрит вашу заявку и свяжется с вами.
-          </p>
+          <div class="become-companion-status-icon">⏳</div>
+          <div class="become-companion-status-content">
+            <div class="become-companion-status-title">Ваша заявка на рассмотрении</div>
+            <div class="become-companion-status-message">
+              Спасибо за вашу заинтересованность! Администратор рассмотрит вашу заявку и свяжется с вами.
+            </div>
+          </div>
         </div>
         <div
           v-else-if="existingApplication.status === 'approved'"
-          class="bg-green-50 border border-green-200 rounded-2xl p-6 text-green-900"
+          class="become-companion-status become-companion-status-approved"
         >
-          <p class="font-semibold mb-2">✅ Ваша заявка одобрена!</p>
-          <p class="text-sm">
-            Поздравляем! Вы теперь спутник на платформе. Люди могут найти вас в поиске и отправить вам заявку на общение.
-          </p>
+          <div class="become-companion-status-icon">✅</div>
+          <div class="become-companion-status-content">
+            <div class="become-companion-status-title">Ваша заявка одобрена!</div>
+            <div class="become-companion-status-message">
+              Поздравляем! Вы теперь спутник на платформе. Люди могут найти вас в поиске и отправить вам заявку на общение.
+            </div>
+          </div>
         </div>
         <div
           v-else-if="existingApplication.status === 'rejected'"
-          class="bg-red-50 border border-red-200 rounded-2xl p-6 text-red-900"
+          class="become-companion-status become-companion-status-rejected"
         >
-          <p class="font-semibold mb-2">❌ Ваша заявка была отклонена</p>
-          <p class="text-sm mb-3">
-            {{ existingApplication.rejection_reason }}
-          </p>
-          <p class="text-xs text-red-700">
-            Вы можете отправить новую заявку с обновленной информацией.
-          </p>
+          <div class="become-companion-status-icon">❌</div>
+          <div class="become-companion-status-content">
+            <div class="become-companion-status-title">Ваша заявка была отклонена</div>
+            <div class="become-companion-status-message">
+              {{ existingApplication.rejection_reason }}
+            </div>
+            <div class="become-companion-status-message become-companion-mt">
+              Вы можете отправить новую заявку с обновленной информацией.
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="text-center py-12">
-        <div class="inline-block">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-        <p class="mt-4 text-secondary/60">Загрузка...</p>
+      <div v-if="isLoading" class="become-companion-loading">
+        <div class="become-companion-spinner"></div>
+        <p class="become-companion-loading-text">Загрузка...</p>
       </div>
 
       <!-- Form -->
-      <div v-else-if="!existingApplication || existingApplication.status === 'rejected'" class="bg-white rounded-3xl shadow-card p-8 lg:p-12 border border-border/50">
+      <div v-else-if="!existingApplication || existingApplication.status === 'rejected'" class="become-companion-form-card">
         <!-- Error Message -->
-        <div v-if="errorMessage" class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 text-red-900">
+        <div v-if="errorMessage" class="become-companion-response-message become-companion-response-error">
           {{ errorMessage }}
         </div>
 
         <!-- Success Message -->
-        <div v-if="successMessage" class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 text-green-900">
+        <div v-if="successMessage" class="become-companion-response-message become-companion-response-success">
           {{ successMessage }}
         </div>
 
-        <form @submit.prevent="submitApplication" class="space-y-8">
-          <!-- Personal Information -->
-          <div class="space-y-6">
-            <h2 class="text-2xl font-bold text-secondary">Персональная информация</h2>
+        <form @submit.prevent="submitApplication">
+          <!-- Personal Information Section -->
+          <div class="become-companion-form-section">
+            <h2 class="become-companion-form-section-title">Персональная информация</h2>
 
             <!-- Name -->
-            <div>
-              <label for="name" class="block text-sm font-semibold text-secondary mb-2">
-                Ваше имя *
+            <div class="become-companion-form-group">
+              <label for="name" class="become-companion-label become-companion-label-required">
+                Ваше имя
               </label>
               <input
                 id="name"
                 v-model="form.name"
                 type="text"
                 placeholder="Введите ваше имя"
-                class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                class="become-companion-input"
                 required
               />
             </div>
 
             <!-- Age and Gender -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="age" class="block text-sm font-semibold text-secondary mb-2">
-                  Возраст *
+            <div class="become-companion-form-grid-2">
+              <div class="become-companion-form-group">
+                <label for="age" class="become-companion-label become-companion-label-required">
+                  Возраст
                 </label>
                 <input
                   id="age"
@@ -342,33 +348,33 @@ const submitApplication = async () => {
                   min="18"
                   max="120"
                   placeholder="18+"
-                  class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  class="become-companion-input"
                   required
                 />
               </div>
-              <div>
-                <label for="gender" class="block text-sm font-semibold text-secondary mb-2">
-                  Пол *
+              <div class="become-companion-form-group">
+                <label for="gender" class="become-companion-label become-companion-label-required">
+                  Пол
                 </label>
-                <div class="w-full px-4 py-3 rounded-xl border border-border/50 bg-gray-50 flex items-center">
-                  <span class="text-secondary font-medium">
+                <div class="become-companion-readonly">
+                  <span>
                     {{ form.gender && (form.gender === 'Женщина' || form.gender === 'Мужчина') ? form.gender : (form.gender === 'male' ? 'Мужчина' : form.gender === 'female' ? 'Женщина' : 'Не указан') }}
                   </span>
-                  <span class="text-xs text-secondary/50 ml-2">(из профиля)</span>
+                  <span class="become-companion-readonly-label">(из профиля)</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Experience -->
-          <div>
-            <label for="experience" class="block text-sm font-semibold text-secondary mb-2">
-              Уровень опыта в поддержке других людей *
+          <div class="become-companion-form-group">
+            <label for="experience" class="become-companion-label become-companion-label-required">
+              Уровень опыта в поддержке других людей
             </label>
             <select
               id="experience"
               v-model="form.experience"
-              class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+              class="become-companion-select"
               required
             >
               <option value="Начинающий">Начинающий (первый раз помогу людям)</option>
@@ -377,73 +383,70 @@ const submitApplication = async () => {
           </div>
 
           <!-- About You -->
-          <div>
-            <label for="bio" class="block text-sm font-semibold text-secondary mb-2">
-              Расскажите о себе (минимум 50 символов) *
+          <div class="become-companion-form-group">
+            <label for="bio" class="become-companion-label become-companion-label-required">
+              Расскажите о себе <span class="become-companion-label-optional">(минимум 50 символов)</span>
             </label>
             <textarea
               id="bio"
               v-model="form.bio"
               placeholder="Опишите свой опыт, интересы, и почему вы хотите стать спутником..."
-              rows="5"
-              class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none"
+              class="become-companion-textarea"
               required
             ></textarea>
-            <p class="text-xs text-secondary/60 mt-2">
+            <div class="become-companion-counter">
               {{ form.bio.length }} символов
-            </p>
+            </div>
           </div>
 
           <!-- Areas of Support -->
-          <div>
-            <label class="block text-sm font-semibold text-secondary mb-4">
-              Области поддержки (выберите хотя бы одну) *
+          <div class="become-companion-form-group">
+            <label class="become-companion-label become-companion-label-required">
+              Области поддержки <span class="become-companion-label-optional">(выберите хотя бы одну)</span>
             </label>
-            <div v-if="topics.length > 0" class="grid grid-cols-2 gap-3">
+            <div v-if="topics.length > 0" class="become-companion-topics-grid">
               <button
                 v-for="topic in topics"
                 :key="topic.id"
                 type="button"
                 @click="toggleTopic(topic.id)"
                 :class="[
-                  'px-4 py-3 rounded-xl border-2 font-medium transition text-sm',
-                  form.topics.includes(topic.id)
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border/50 bg-white text-secondary hover:border-primary'
+                  'become-companion-topic-btn',
+                  form.topics.includes(topic.id) ? 'become-companion-topic-btn--selected' : ''
                 ]"
               >
-                ✓ {{ topic.name }}
+                <span v-if="form.topics.includes(topic.id)" class="become-companion-topic-btn-checkmark">✓</span>
+                {{ topic.name }}
               </button>
             </div>
           </div>
 
           <!-- Motivation Message -->
-          <div>
-            <label for="message" class="block text-sm font-semibold text-secondary mb-2">
-              Почему вы хотите стать спутником? (опционально)
+          <div class="become-companion-form-group">
+            <label for="message" class="become-companion-label">
+              Почему вы хотите стать спутником? <span class="become-companion-label-optional">(опционально)</span>
             </label>
             <textarea
               id="message"
               v-model="form.message"
               placeholder="Расскажите о ваших мотивациях и целях..."
-              rows="4"
-              class="w-full px-4 py-3 rounded-xl border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none"
+              class="become-companion-textarea"
             ></textarea>
           </div>
 
-          <!-- Submit Button -->
-          <div class="flex gap-4 pt-6">
+          <!-- Submit Buttons -->
+          <div class="become-companion-form-actions">
             <button
               type="button"
               @click="router.back()"
-              class="flex-1 px-6 py-3 rounded-full border-2 border-border text-secondary font-semibold hover:border-primary hover:text-primary transition"
+              class="become-companion-btn become-companion-btn-secondary"
             >
               Отмена
             </button>
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/90 text-white font-semibold hover:shadow-hover hover:translate-y-[-2px] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="become-companion-btn become-companion-btn-primary"
             >
               {{ isSubmitting ? 'Отправка...' : 'Отправить заявку' }}
             </button>
