@@ -636,7 +636,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
           @click="activeTab = 'applications'"
           :class="['tab-btn', activeTab === 'applications' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/send.svg" alt="Applications" class="tab-btn__icon" />
+          <img src="../images/user-add.svg" alt="Applications" class="tab-btn__icon" />
           Заявки <span v-if="stats.pendingApplications > 0" class="tab-btn__badge">{{ stats.pendingApplications }}</span>
         </button>
         <button
