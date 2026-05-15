@@ -8,7 +8,8 @@
         <!-- Header -->
         <div class="confirm-dialog__header">
           <div class="confirm-dialog__icon-wrapper" :class="{ 'confirm-dialog__icon-wrapper--danger': isDangerous }">
-            <span class="confirm-dialog__icon">{{ isDangerous ? '⚠️' : 'ℹ️' }}</span>
+            <img v-if="isDangerous" src="/src/images/block.svg" alt="Warning" class="confirm-dialog__icon" />
+            <img v-else src="/src/images/info-triangle.svg" alt="Info" class="confirm-dialog__icon" />
           </div>
           <h2 class="confirm-dialog__title">{{ title }}</h2>
         </div>
@@ -166,7 +167,9 @@ defineEmits<{
 }
 
 .confirm-dialog__icon {
-  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
 }
 
 .confirm-dialog__title {
