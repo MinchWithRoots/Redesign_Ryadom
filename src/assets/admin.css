@@ -246,6 +246,15 @@
   width: 1.25rem;
   height: 1.25rem;
   object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(54%) sepia(71%) saturate(381%) hue-rotate(358deg) brightness(104%) contrast(104%);
+}
+
+.stat-card__icon {
+  filter: brightness(0) saturate(100%) invert(54%) sepia(71%) saturate(381%) hue-rotate(358deg) brightness(104%) contrast(104%);
+}
+
+.admin-header__icon {
+  filter: brightness(0) saturate(100%) invert(54%) sepia(71%) saturate(381%) hue-rotate(358deg) brightness(104%) contrast(104%);
 }
 
 .tab-btn__badge {
