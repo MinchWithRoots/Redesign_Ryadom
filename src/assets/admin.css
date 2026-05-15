@@ -46,9 +46,9 @@
 }
 
 .alert-success-row {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #166534;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background-color: rgba(87, 100, 69, 0.1);
+  color: #3d4e2f;
+  border: 1px solid rgba(87, 100, 69, 0.3);
 }
 
 .alert-error-row {
@@ -294,13 +294,13 @@
 }
 
 .btn--success {
-  background-color: #22c55e;
+  background-color: #576445;
   color: var(--color-white);
   font-weight: var(--font-weight-bold);
 }
 
 .btn--success:hover:not(:disabled) {
-  background-color: #16a34a;
+  background-color: #43533d;
   box-shadow: var(--shadow-hover);
 }
 
@@ -361,8 +361,8 @@
 }
 
 .status-badge--approved {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #15803d;
+  background-color: rgba(87, 100, 69, 0.15);
+  color: #3d4e2f;
   font-weight: var(--font-weight-semibold);
 }
 
@@ -372,8 +372,8 @@
 }
 
 .status-badge--active {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #15803d;
+  background-color: rgba(87, 100, 69, 0.15);
+  color: #3d4e2f;
   font-weight: var(--font-weight-semibold);
 }
 
@@ -470,7 +470,7 @@
 }
 
 .text-success {
-  color: #22c55e;
+  color: #576445;
 }
 
 .text-error {
@@ -773,7 +773,7 @@
 }
 
 .border-l-green-500 {
-  border-left-color: #22c55e;
+  border-left-color: #576445;
 }
 
 .border-l-red-500 {
@@ -802,11 +802,11 @@
 }
 
 .bg-green-50 {
-  background-color: #f0fdf4;
+  background-color: #f4f6f0;
 }
 
 .bg-green-50\/30 {
-  background-color: rgba(240, 253, 244, 0.3);
+  background-color: rgba(244, 246, 240, 0.3);
 }
 
 .bg-red-50 {
@@ -818,7 +818,7 @@
 }
 
 .bg-green-100 {
-  background-color: #dcfce7;
+  background-color: #d4dcc9;
 }
 
 .bg-red-100 {
@@ -826,7 +826,7 @@
 }
 
 .bg-green-600 {
-  background-color: #16a34a;
+  background-color: #576445;
 }
 
 .bg-red-600 {
@@ -937,8 +937,8 @@
 }
 
 .app-card--approved {
-  border-left-color: #22c55e;
-  background-color: rgba(34, 197, 94, 0.08);
+  border-left-color: #576445;
+  background-color: rgba(87, 100, 69, 0.08);
 }
 
 .app-card--rejected {
@@ -1045,8 +1045,8 @@
 }
 
 .report-card--resolved {
-  border-left-color: #22c55e;
-  background-color: rgba(34, 197, 94, 0.08);
+  border-left-color: #576445;
+  background-color: rgba(87, 100, 69, 0.08);
 }
 
 .report-card__header {
