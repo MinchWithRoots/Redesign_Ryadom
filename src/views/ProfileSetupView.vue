@@ -178,27 +178,27 @@ const handleSkip = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-primary/5 via-white to-white pt-[140px] pb-12">
-    <div class="layout-container max-w-2xl">
+  <div class="profile-setup-layout">
+    <div class="layout-container">
       <!-- Header -->
-      <div class="text-center mb-12">
-        <h1 class="text-4xl lg:text-5xl font-bold text-secondary mb-4">
-          Создайте вашу <span class="text-primary">анкету</span>
+      <div class="profile-setup__header">
+        <h1 class="profile-setup__title">
+          Создайте вашу <span class="profile-setup__title-highlight">анкету</span>
         </h1>
-        <p class="text-xl text-secondary/60">
+        <p class="profile-setup__subtitle">
           Помогите другим понять, кто вы, чтобы мы смогли найти подходящих собеседников
         </p>
       </div>
 
       <!-- Progress Bar -->
-      <div class="mb-12">
-        <div class="flex justify-between mb-3">
-          <span class="text-sm font-semibold text-secondary">Шаг {{ step }} из {{ totalSteps }}</span>
-          <span class="text-sm font-semibold text-primary">{{ progress }}%</span>
+      <div class="profile-setup__progress">
+        <div class="profile-setup__progress-info">
+          <span class="profile-setup__progress-step">Шаг {{ step }} из {{ totalSteps }}</span>
+          <span class="profile-setup__progress-percentage">{{ progress }}%</span>
         </div>
-        <div class="w-full h-2 bg-light-bg rounded-full overflow-hidden">
+        <div class="profile-setup__progress-bar">
           <div
-            class="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-300 ease-out"
+            class="profile-setup__progress-fill"
             :style="{ width: `${progress}%` }"
           ></div>
         </div>
@@ -206,14 +206,14 @@ const handleSkip = () => {
 
       <!-- Error Message -->
       <transition name="fade">
-        <div v-if="errorMessage" class="mb-6 p-4 bg-red-100 border border-red-300 rounded-2xl text-red-700 text-sm">
+        <div v-if="errorMessage" class="profile-setup__message profile-setup__message--error">
           {{ errorMessage }}
         </div>
       </transition>
 
       <!-- Success Message -->
       <transition name="fade">
-        <div v-if="successMessage" class="mb-6 p-4 bg-green-100 border border-green-300 rounded-2xl text-green-700 text-sm">
+        <div v-if="successMessage" class="profile-setup__message profile-setup__message--success">
           {{ successMessage }}
         </div>
       </transition>
@@ -221,39 +221,37 @@ const handleSkip = () => {
       <!-- Form Content -->
       <div class="card">
         <!-- Step 1: Age & Gender -->
-        <div v-if="step === 1" class="space-y-8 animate-fade-in">
-          <div>
-            <h2 class="text-2xl font-bold text-secondary mb-6">Основная информация</h2>
+        <div v-if="step === 1" class="profile-setup__fade-in">
+          <div class="profile-setup__section">
+            <h2 class="profile-setup__section-title">Основная информация</h2>
 
             <!-- Age -->
-            <div class="mb-8">
+            <div class="profile-setup__bio-container">
               <label class="form-label">Ваш возраст *</label>
-              <div class="flex gap-3 mb-4">
+              <div class="profile-setup__age-input-group">
                 <input
                   v-model.number="profileSetup.age"
                   type="number"
                   min="18"
                   max="120"
                   placeholder="Введите возраст"
-                  class="input flex-1"
+                  class="input"
                 />
-                <div v-if="profileSetup.age" class="flex items-center gap-2 px-4 py-3 bg-light-bg rounded-xl">
-                  <span class="text-sm text-secondary">{{ profileSetup.age }}</span>
+                <div v-if="profileSetup.age" class="profile-setup__age-display">
+                  <span>{{ profileSetup.age }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Gender -->
-            <div>
+            <div class="profile-setup__bio-container">
               <label class="form-label">Ваш пол *</label>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="profile-setup__gender-grid">
                 <button
                   @click="profileSetup.gender = 'Женщина'"
                   :class="[
-                    'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
-                    profileSetup.gender === 'Женщина'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-white text-secondary hover:border-primary/50'
+                    'profile-setup__gender-button',
+                    { 'is-selected': profileSetup.gender === 'Женщина' }
                   ]"
                 >
                   Женщина
@@ -261,10 +259,8 @@ const handleSkip = () => {
                 <button
                   @click="profileSetup.gender = 'Мужчина'"
                   :class="[
-                    'p-4 rounded-2xl border-2 transition-all text-center font-semibold',
-                    profileSetup.gender === 'Мужчина'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-white text-secondary hover:border-primary/50'
+                    'profile-setup__gender-button',
+                    { 'is-selected': profileSetup.gender === 'Мужчина' }
                   ]"
                 >
                   Мужчина
@@ -275,23 +271,23 @@ const handleSkip = () => {
         </div>
 
         <!-- Step 2: Bio & Topics -->
-        <div v-if="step === 2" class="space-y-8 animate-fade-in">
-          <div>
-            <h2 class="text-2xl font-bold text-secondary mb-6">О вас</h2>
+        <div v-if="step === 2" class="profile-setup__fade-in">
+          <div class="profile-setup__section">
+            <h2 class="profile-setup__section-title">О вас</h2>
 
             <!-- Bio -->
-            <div class="mb-8">
+            <div class="profile-setup__bio-container">
               <label class="form-label">Расскажите о себе *</label>
-              <p class="text-xs text-secondary/60 mb-2">
+              <p class="profile-setup__bio-label">
                 Поделитесь информацией о себе, своих интересах или том, что вы ищете в разговорах
               </p>
               <textarea
                 v-model="profileSetup.bio"
                 rows="5"
                 placeholder="Напишите несколько предложений о себе..."
-                class="w-full px-4 py-3 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                class="profile-setup__bio-input"
               ></textarea>
-              <p class="text-xs text-secondary/50 mt-2">
+              <p class="profile-setup__bio-counter">
                 {{ profileSetup.bio.length }}/500 символов
               </p>
             </div>
@@ -299,19 +295,17 @@ const handleSkip = () => {
             <!-- Topics -->
             <div>
               <label class="form-label">Выберите темы для разговоров *</label>
-              <p class="text-xs text-secondary/60 mb-4">
+              <p class="profile-setup__bio-label" style="margin-bottom: 1rem;">
                 Выберите хотя бы одну тему, которая вас интересует
               </p>
-              <div class="flex flex-wrap gap-3">
+              <div class="profile-setup__topics-container">
                 <button
                   v-for="topic in topics"
                   :key="topic"
                   @click="toggleTopic(topic)"
                   :class="[
-                    'px-4 py-2 rounded-full text-sm font-medium transition-all',
-                    profileSetup.selectedTopics.includes(topic)
-                      ? 'bg-primary text-white shadow-soft'
-                      : 'bg-white border border-border/50 text-secondary hover:border-primary hover:text-primary'
+                    'profile-setup__topic-button',
+                    { 'is-selected': profileSetup.selectedTopics.includes(topic) }
                   ]"
                 >
                   {{ topic }}
