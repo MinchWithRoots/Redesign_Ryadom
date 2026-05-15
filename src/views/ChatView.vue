@@ -656,16 +656,7 @@ onMounted(async () => {
       <!-- Input Area -->
       <div class="chat-input-wrapper">
         <div class="chat-input-container">
-          <!-- Attachment Button -->
-          <button
-            type="button"
-            class="chat-input-button"
-            title="Загрузить файл"
-          >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
+      
 
           <!-- Input -->
           <input
