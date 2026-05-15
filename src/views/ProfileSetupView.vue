@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { currentUser, updateUserProfile, loadTopics, topics } from '../composables/useAppState'
 import { isLoggedIn } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
+import '@/assets/profile-setup.css'
 
 const router = useRouter()
 const step = ref(1) // Step 1: Age & Gender, Step 2: Bio & Topics, Step 3: Photo
@@ -316,47 +317,41 @@ const handleSkip = () => {
         </div>
 
         <!-- Step 3: Photo -->
-        <div v-if="step === 3" class="space-y-8 animate-fade-in">
-          <div>
-            <h2 class="text-2xl font-bold text-secondary mb-6">Загрузите фото (опционально)</h2>
+        <div v-if="step === 3" class="profile-setup__fade-in">
+          <div class="profile-setup__photo-section">
+            <h2 class="profile-setup__photo-title">Загрузите фото (опционально)</h2>
 
             <!-- Photo Preview -->
-            <div class="mb-8 text-center">
-              <div v-if="previewImage" class="mb-6">
+            <div class="profile-setup__photo-display">
+              <div v-if="previewImage">
                 <img
                   :src="previewImage"
                   alt="Profile preview"
-                  class="w-40 h-40 rounded-full mx-auto object-cover border-4 border-primary/20"
+                  class="profile-setup__photo-preview-image"
                 />
               </div>
-              <div v-else class="mb-6 w-40 h-40 rounded-full mx-auto bg-light-bg border-4 border-dashed border-border flex items-center justify-center">
-                <span class="text-4xl">📸</span>
+              <div v-else class="profile-setup__photo-placeholder-container">
+                <span>📸</span>
               </div>
             </div>
 
             <!-- Upload Input -->
-            <div class="mb-6">
-              <label class="block">
+            <div class="profile-setup__file-input-wrapper">
+              <label class="profile-setup__file-input-label">
                 <span class="sr-only">Выберите фото</span>
                 <input
                   type="file"
                   accept="image/*"
                   @change="handleImageUpload"
-                  class="block w-full text-sm text-secondary
-                    file:mr-4 file:py-3 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-primary file:text-white
-                    hover:file:bg-primary/90
-                    file:cursor-pointer"
+                  class="profile-setup__file-input-hidden"
                 />
               </label>
-              <p class="text-xs text-secondary/60 mt-2">Максимальный размер: 5MB</p>
+              <p class="profile-setup__file-size-info">Максимальный размер: 5MB</p>
             </div>
 
             <!-- Info -->
-            <div class="p-4 bg-light-bg rounded-2xl">
-              <p class="text-sm text-secondary/70">
+            <div class="profile-setup__photo-info-box">
+              <p>
                 Фото помогает другим пользователям лучше вас узнать. Вы можете загрузить его сейчас или позже в настройках профиля.
               </p>
             </div>
@@ -364,11 +359,11 @@ const handleSkip = () => {
         </div>
 
         <!-- Buttons -->
-        <div class="mt-12 flex gap-4">
+        <div class="profile-setup__buttons">
           <button
             v-if="step > 1"
             @click="handlePreviousStep"
-            class="px-8 py-3 text-secondary font-semibold border border-border rounded-full hover:border-primary hover:text-primary transition-all"
+            class="profile-setup__button profile-setup__button--secondary"
           >
             Назад
           </button>
@@ -376,7 +371,7 @@ const handleSkip = () => {
           <button
             v-if="step < totalSteps"
             @click="handleNextStep"
-            class="flex-1 px-8 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            class="profile-setup__button profile-setup__button--primary"
           >
             Далее
           </button>
@@ -385,7 +380,7 @@ const handleSkip = () => {
             v-if="step === totalSteps"
             @click="handleCompleteSetup"
             :disabled="isLoading"
-            class="flex-1 px-8 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-full shadow-soft hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            class="profile-setup__button profile-setup__button--primary"
           >
             <span v-if="!isLoading">Завершить и найти собеседников</span>
             <span v-else>Сохранение...</span>
@@ -394,10 +389,10 @@ const handleSkip = () => {
       </div>
 
       <!-- Skip Link -->
-      <div class="text-center mt-8">
+      <div class="profile-setup__skip">
         <button
           @click="handleSkip"
-          class="text-secondary/60 hover:text-secondary text-sm font-medium transition-colors"
+          class="profile-setup__skip-button"
         >
           Пропустить шаг
         </button>
@@ -406,30 +401,4 @@ const handleSkip = () => {
   </div>
 </template>
 
-<style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-</style>
+<style scoped></style>

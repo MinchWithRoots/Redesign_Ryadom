@@ -4,7 +4,7 @@
 .profile-setup-layout {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(to bottom, rgba(255, 106, 47, 0.05), #ffffff, #ffffff);
+  background: linear-gradient(135deg, rgba(255, 106, 47, 0.03) 0%, rgba(93, 90, 136, 0.02) 50%, #ffffff 100%);
   padding-top: var(--header-height);
   padding-bottom: 3rem;
 }
@@ -25,16 +25,17 @@
 /* ===== HEADER SECTION ===== */
 .profile-setup__header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
 }
 
 .profile-setup__title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 2rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
   color: var(--color-secondary);
   margin-bottom: 1rem;
+  letter-spacing: -0.5px;
 }
 
 @media (min-width: 1024px) {
@@ -50,8 +51,10 @@
 .profile-setup__subtitle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.125rem;
-  line-height: 1.6;
-  color: rgba(93, 90, 136, 0.6);
+  line-height: 1.7;
+  color: rgba(93, 90, 136, 0.65);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 @media (min-width: 1024px) {
@@ -68,7 +71,8 @@
 .profile-setup__progress-info {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.875rem;
   padding: 0 0.25rem;
 }
 
@@ -77,6 +81,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-secondary);
+  letter-spacing: 0.2px;
 }
 
 .profile-setup__progress-percentage {
@@ -89,27 +94,29 @@
 .profile-setup__progress-bar {
   width: 100%;
   height: 0.5rem;
-  background-color: var(--color-light-bg);
+  background-color: rgba(0, 0, 0, 0.06);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .profile-setup__progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), rgba(255, 106, 47, 0.8));
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent-orange) 100%);
   border-radius: 9999px;
-  transition: width 0.3s ease-out;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   width: 33%;
 }
 
 /* ===== ERROR & SUCCESS MESSAGES ===== */
 .profile-setup__message {
   margin-bottom: 1.5rem;
-  padding: 1rem;
-  border-radius: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
   border: 1px solid;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
   transition: all 0.3s ease;
   animation: slideDown 0.3s ease;
 }
@@ -126,31 +133,32 @@
 }
 
 .profile-setup__message--error {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
   color: #dc2626;
 }
 
 .profile-setup__message--success {
-  background-color: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.3);
+  background-color: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.2);
   color: #16a34a;
 }
 
 /* ===== CARD ===== */
 .card {
   background-color: var(--color-white);
-  border: 2px solid var(--color-border);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 1rem;
   padding: 2rem;
   transition: all var(--transition-fast);
   margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 @media (min-width: 640px) {
   .card {
     border-radius: 1.25rem;
-    padding: 2rem;
+    padding: 2.5rem;
   }
 }
 
@@ -161,12 +169,17 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-secondary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.3px;
 }
 
 /* Age & Gender Section */
 .profile-setup__section {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.profile-setup__section:last-child {
+  margin-bottom: 0;
 }
 
 .profile-setup__section-title {
@@ -174,7 +187,8 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.3px;
 }
 
 /* Age Input */
@@ -186,14 +200,19 @@
 
 .input {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 0.75rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1rem;
+  line-height: 1.5;
   color: var(--color-secondary);
   background-color: var(--color-white);
   transition: all var(--transition-fast);
+}
+
+.input:hover {
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
 .input:focus {
@@ -209,14 +228,17 @@
 .profile-setup__age-display {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   background-color: var(--color-light-bg);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 0.75rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
+  font-weight: 500;
   color: var(--color-secondary);
-  min-width: 80px;
+  min-width: 90px;
   text-align: center;
 }
 
@@ -235,7 +257,7 @@
 
 .profile-setup__gender-button {
   padding: 1rem;
-  border: 2px solid var(--color-border);
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
   border-radius: 1.5rem;
   background-color: var(--color-white);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -255,13 +277,15 @@
 }
 
 .profile-setup__gender-button:hover:not(.is-selected) {
-  border-color: rgba(255, 106, 47, 0.5);
+  border-color: rgba(255, 106, 47, 0.3);
+  background-color: rgba(255, 106, 47, 0.02);
 }
 
 .profile-setup__gender-button.is-selected {
   border-color: var(--color-primary);
-  background-color: rgba(255, 106, 47, 0.1);
+  background-color: var(--color-primary-light);
   color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(255, 106, 47, 0.1);
 }
 
 /* Bio Section */
@@ -272,23 +296,28 @@
 .profile-setup__bio-label {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
-  color: rgba(93, 90, 136, 0.6);
-  margin-bottom: 0.5rem;
+  color: rgba(93, 90, 136, 0.65);
+  margin-bottom: 0.75rem;
   display: block;
+  line-height: 1.5;
 }
 
 .profile-setup__bio-input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 0.75rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--color-secondary);
   background-color: var(--color-white);
   resize: none;
   transition: all var(--transition-fast);
+}
+
+.profile-setup__bio-input:hover {
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
 .profile-setup__bio-input:focus {
@@ -313,32 +342,33 @@
 .profile-setup__topics-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .profile-setup__topic-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border);
+  padding: 0.625rem 1.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 9999px;
   background-color: var(--color-white);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
+  line-height: 1.4;
   color: var(--color-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.profile-setup__topic-button:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+.profile-setup__topic-button:hover:not(.is-selected) {
+  border-color: rgba(255, 106, 47, 0.3);
+  background-color: rgba(255, 106, 47, 0.02);
 }
 
 .profile-setup__topic-button.is-selected {
-  background-color: var(--color-primary);
+  background: linear-gradient(90deg, var(--color-primary), rgba(255, 106, 47, 0.9));
   border-color: var(--color-primary);
   color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(255, 106, 47, 0.15);
+  box-shadow: 0 2px 8px rgba(255, 106, 47, 0.2);
 }
 
 /* Photo Upload Section */
@@ -372,7 +402,7 @@
 }
 
 .profile-setup__file-input-wrapper {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .profile-setup__file-input {
@@ -409,9 +439,10 @@
 }
 
 .profile-setup__info-box {
-  padding: 1rem;
+  padding: 1.25rem;
   background-color: var(--color-light-bg);
-  border-radius: 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
   color: rgba(93, 90, 136, 0.7);
@@ -438,38 +469,43 @@
 
 .profile-setup__button--secondary {
   flex-shrink: 0;
-  padding: 0.75rem 2rem;
+  padding: 0.875rem 2rem;
   color: var(--color-secondary);
-  border: 2px solid var(--color-border);
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
   background-color: var(--color-white);
 }
 
 .profile-setup__button--secondary:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  background-color: rgba(255, 106, 47, 0.02);
 }
 
 .profile-setup__button--primary {
   flex: 1;
-  background: linear-gradient(90deg, var(--color-primary), rgba(255, 106, 47, 0.9));
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-orange) 100%);
   color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(255, 106, 47, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 106, 47, 0.2);
 }
 
 .profile-setup__button--primary:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(255, 106, 47, 0.25);
+  box-shadow: 0 6px 16px rgba(255, 106, 47, 0.3);
   transform: translateY(-2px);
 }
 
+.profile-setup__button--primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .profile-setup__button--primary:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 /* ===== SKIP LINK ===== */
 .profile-setup__skip {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
 
 .profile-setup__skip-button {
@@ -480,28 +516,137 @@
   font-weight: 500;
   color: rgba(93, 90, 136, 0.6);
   cursor: pointer;
-  transition: color var(--transition-fast);
-  padding: 0;
+  transition: all var(--transition-fast);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
 }
 
 .profile-setup__skip-button:hover {
   color: var(--color-secondary);
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 /* ===== ANIMATIONS ===== */
 .profile-setup__fade-in {
-  animation: fadeInUp 0.3s ease-in;
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ===== PHOTO SECTION (STEP 3) ===== */
+.profile-setup__photo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.profile-setup__photo-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  margin-bottom: 1.5rem;
+}
+
+/* Photo Preview Container */
+.profile-setup__photo-display {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profile-setup__photo-preview-image {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 4px solid var(--color-primary-light);
+  display: block;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 4px 12px rgba(255, 106, 47, 0.15);
+}
+
+.profile-setup__photo-placeholder-container {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 9999px;
+  background-color: var(--color-light-bg);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+/* File Input Styling */
+.profile-setup__file-input-label {
+  display: block;
+}
+
+.profile-setup__file-input-hidden {
+  display: block;
+  width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+}
+
+.profile-setup__file-input-hidden::file-selector-button {
+  padding: 0.75rem 1.5rem;
+  margin-right: 1rem;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.profile-setup__file-input-hidden::file-selector-button:hover {
+  background-color: rgba(255, 106, 47, 0.9);
+}
+
+.profile-setup__file-size-info {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(93, 90, 136, 0.6);
+  margin-top: 0.5rem;
+}
+
+.profile-setup__photo-info-box {
+  padding: 1.25rem;
+  background-color: var(--color-light-bg);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.875rem;
+  color: rgba(93, 90, 136, 0.7);
+  line-height: 1.6;
+}
+
+/* ===== TRANSITIONS & ANIMATIONS ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -532,5 +677,25 @@
 
   .profile-setup__button--primary {
     order: 1;
+  }
+
+  .profile-setup__photo-title {
+    font-size: 1.25rem;
+  }
+
+  .profile-setup__photo-preview-image {
+    width: 8rem;
+    height: 8rem;
+  }
+
+  .profile-setup__photo-placeholder-container {
+    width: 8rem;
+    height: 8rem;
+    font-size: 2rem;
+  }
+
+  .profile-setup__file-input-hidden::file-selector-button {
+    margin-right: 0.5rem;
+    padding: 0.625rem 1rem;
   }
 }
