@@ -422,7 +422,7 @@ watch(
                     />
                   </div>
                   <div v-else class="profile-photo-placeholder">
-                    <span>📸</span>
+                    <img src="/src/images/gallery.svg" alt="Upload photo" class="profile-photo-placeholder__icon" />
                   </div>
                 </div>
                 <label class="profile-file-input">
@@ -921,6 +921,13 @@ watch(
   background-color: var(--color-light-bg);
   border: 4px dashed var(--color-border);
   font-size: 2rem;
+}
+
+.profile-photo-placeholder__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0.6;
+  color: var(--color-secondary);
 }
 
 .profile-file-input {
