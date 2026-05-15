@@ -5,6 +5,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, var(--color-white) 0%, var(--color-light-bg) 100%);
   padding: var(--spacing-3xl) var(--spacing-lg);
+  padding-top: calc(var(--spacing-3xl) + var(--header-height));
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -15,6 +16,7 @@
 @media (min-width: 768px) {
   .become-companion-wrapper {
     padding: var(--spacing-4xl) var(--spacing-2xl);
+    padding-top: calc(var(--spacing-4xl) + var(--header-height));
     align-items: center;
   }
 }
