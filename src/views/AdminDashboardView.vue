@@ -415,17 +415,17 @@ const handleRejectApplication = async (applicationId: string | number) => {
     <div class="layout-container">
       <!-- Header -->
       <div class="mb-8">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <div class="flex items-center gap-3 mb-2">
-              <img src="../images/shield-tick.svg" alt="Admin" class="w-10 h-10 object-contain" />
-              <h1 class="text-4xl font-bold text-secondary">Админ Панель</h1>
+        <div class="admin-header">
+          <div class="admin-header__title">
+            <img src="../images/shield-tick.svg" alt="Admin" class="admin-header__icon" />
+            <div class="admin-header__text">
+              <h1>Админ Панель</h1>
+              <p>Управление платформой и данными пользователей</p>
             </div>
-            <p class="text-secondary/60">Управление платформой и данными пользователей</p>
           </div>
           <button
             @click="navigate('/profile')"
-            class="px-6 py-2 text-secondary font-semibold border-2 border-border rounded-full hover:border-primary hover:text-primary transition-all"
+            class="btn btn-large btn--secondary rounded-full"
           >
             ← Вернуться
           </button>
@@ -453,141 +453,106 @@ const handleRejectApplication = async (applicationId: string | number) => {
       </transition>
 
       <!-- Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-2xl font-bold text-primary">{{ stats.totalUsers }}</div>
-            <img src="../images/user.svg" alt="Users" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+      <div class="grid grid-cols-1 gap-4 mb-8" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))">
+        <div class="stat-card group">
+          <div class="stat-card__header">
+            <div class="stat-card__value">{{ stats.totalUsers }}</div>
+            <img src="../images/user.svg" alt="Users" class="stat-card__icon group-hover:opacity-100" />
           </div>
-          <p class="text-secondary/60 text-sm">Пользователей</p>
+          <p class="stat-card__label">Пользователей</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-2xl font-bold text-primary">{{ stats.totalCompanions }}</div>
-            <img src="../images/user-story.svg" alt="Companions" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+        <div class="stat-card group">
+          <div class="stat-card__header">
+            <div class="stat-card__value">{{ stats.totalCompanions }}</div>
+            <img src="../images/user-story.svg" alt="Companions" class="stat-card__icon group-hover:opacity-100" />
           </div>
-          <p class="text-secondary/60 text-sm">Спутников</p>
+          <p class="stat-card__label">Спутников</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-2xl font-bold text-primary">{{ stats.totalChats }}</div>
-            <img src="../images/message-add-alt.svg" alt="Chats" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+        <div class="stat-card group">
+          <div class="stat-card__header">
+            <div class="stat-card__value">{{ stats.totalChats }}</div>
+            <img src="../images/message-add-alt.svg" alt="Chats" class="stat-card__icon group-hover:opacity-100" />
           </div>
-          <p class="text-secondary/60 text-sm">Всего чатов</p>
+          <p class="stat-card__label">Всего чатов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-2xl font-bold text-green-600">{{ stats.activeChats }}</div>
-            <img src="../images/shield-tick.svg" alt="Active" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+        <div class="stat-card group">
+          <div class="stat-card__header">
+            <div class="stat-card__value" style="color: #22c55e">{{ stats.activeChats }}</div>
+            <img src="../images/shield-tick.svg" alt="Active" class="stat-card__icon group-hover:opacity-100" />
           </div>
-          <p class="text-secondary/60 text-sm">Активных чатов</p>
+          <p class="stat-card__label">Активных чатов</p>
         </div>
-        <div class="bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-2xl font-bold text-primary">{{ stats.totalReviews }}</div>
-            <img src="../images/smile.svg" alt="Reviews" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+        <div class="stat-card group">
+          <div class="stat-card__header">
+            <div class="stat-card__value">{{ stats.totalReviews }}</div>
+            <img src="../images/smile.svg" alt="Reviews" class="stat-card__icon group-hover:opacity-100" />
           </div>
-          <p class="text-secondary/60 text-sm">Отзывов</p>
+          <p class="stat-card__label">Отзывов</p>
         </div>
-        <div :class="['bg-white border border-border/50 rounded-2xl p-6 shadow-card hover:shadow-hover transition-all group', stats.pendingReports > 0 ? 'border-red-500 bg-red-50/30' : '']">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-2xl font-bold" :class="stats.pendingReports > 0 ? 'text-red-600' : 'text-primary'">{{ stats.totalReports }}</div>
-            <svg v-if="stats.pendingReports > 0" class="w-6 h-6 text-red-600 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+        <div class="stat-card group" :style="{ backgroundColor: stats.pendingReports > 0 ? 'rgba(254, 242, 242, 0.3)' : 'transparent', borderColor: stats.pendingReports > 0 ? '#ef4444' : 'var(--color-border)' }">
+          <div class="stat-card__header">
+            <div class="stat-card__value" :style="{ color: stats.pendingReports > 0 ? '#ef4444' : 'var(--color-primary)' }">{{ stats.totalReports }}</div>
+            <svg v-if="stats.pendingReports > 0" class="stat-card__icon animate-pulse" fill="currentColor" viewBox="0 0 24 24" style="color: #ef4444">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
             </svg>
-            <img v-else src="../images/shield-tick.svg" alt="Reports" class="w-6 h-6 object-contain opacity-30 group-hover:opacity-100 transition-opacity" />
+            <img v-else src="../images/shield-tick.svg" alt="Reports" class="stat-card__icon group-hover:opacity-100" />
           </div>
-          <p class="text-secondary/60 text-sm">Жалоб <span v-if="stats.pendingReports > 0" class="font-bold text-red-600">({{ stats.pendingReports }} новых)</span></p>
+          <p class="stat-card__label">Жалоб <span v-if="stats.pendingReports > 0" style="font-weight: var(--font-weight-bold); color: #ef4444">({{ stats.pendingReports }} новых)</span></p>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-border">
+      <div class="tabs-nav">
         <button
           @click="activeTab = 'overview'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'overview'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'overview' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/shield-tick.svg" alt="Overview" class="w-5 h-5 inline mr-2 object-contain" />
+          <img src="../images/shield-tick.svg" alt="Overview" class="tab-btn__icon" />
           Обзор
         </button>
         <button
           @click="activeTab = 'users'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'users'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'users' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/user.svg" alt="Users" class="w-5 h-5 inline mr-2 object-contain" />
+          <img src="../images/user.svg" alt="Users" class="tab-btn__icon" />
           Пользователи ({{ users.length }})
         </button>
         <button
           @click="activeTab = 'companions'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'companions'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'companions' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/user-story.svg" alt="Companions" class="w-5 h-5 inline mr-2 object-contain" />
+          <img src="../images/user-story.svg" alt="Companions" class="tab-btn__icon" />
           Спутники ({{ companions.length }})
         </button>
         <button
           @click="activeTab = 'reviews'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'reviews'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'reviews' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/smile.svg" alt="Reviews" class="w-5 h-5 inline mr-2 object-contain" />
+          <img src="../images/smile.svg" alt="Reviews" class="tab-btn__icon" />
           Отзывы ({{ reviews.length }})
         </button>
         <button
           @click="activeTab = 'chats'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'chats'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'chats' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/message-add-alt.svg" alt="Chats" class="w-5 h-5 inline mr-2 object-contain" />
+          <img src="../images/message-add-alt.svg" alt="Chats" class="tab-btn__icon" />
           Чаты ({{ chats.length }})
         </button>
         <button
           @click="activeTab = 'applications'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'applications'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'applications' ? 'tab-btn--active' : '']"
         >
-          <img src="../images/send.svg" alt="Applications" class="w-5 h-5 inline mr-2 object-contain" />
-          Заявки <span v-if="stats.pendingApplications > 0" class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">{{ stats.pendingApplications }}</span>
+          <img src="../images/send.svg" alt="Applications" class="tab-btn__icon" />
+          Заявки <span v-if="stats.pendingApplications > 0" class="tab-btn__badge">{{ stats.pendingApplications }}</span>
         </button>
         <button
           @click="activeTab = 'reports'"
-          :class="[
-            'px-6 py-3 font-semibold border-b-2 transition-all whitespace-nowrap',
-            activeTab === 'reports'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-secondary/60 hover:text-secondary'
-          ]"
+          :class="['tab-btn', activeTab === 'reports' ? 'tab-btn--active' : '']"
         >
-          <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <svg class="tab-btn__icon" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
           </svg>
-          Жалобы <span v-if="stats.pendingReports > 0" class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">{{ stats.pendingReports }}</span>
+          Жалобы <span v-if="stats.pendingReports > 0" class="tab-btn__badge">{{ stats.pendingReports }}</span>
         </button>
       </div>
 
@@ -595,15 +560,15 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'overview'" class="space-y-6">
         <div class="card">
           <h2 class="text-2xl font-bold text-secondary mb-6">Добро пожаловать, Администратор!</h2>
-          <div class="space-y-4 text-secondary/70">
-            <p><img src="../images/shield-tick.svg" alt="Overview" class="w-5 h-5 inline mr-2 object-contain" />На этой панели вы можете управлять:</p>
-            <ul class="list-disc list-inside space-y-2">
+          <div class="space-y-4" style="color: var(--color-secondary-70)">
+            <p><img src="../images/shield-tick.svg" alt="Overview" style="width: 1.25rem; height: 1.25rem; display: inline; margin-right: 0.5rem; vertical-align: middle;" />На этой панели вы можете управлять:</p>
+            <ul style="list-style: disc; list-style-position: inside; display: flex; flex-direction: column; gap: 0.5rem;">
               <li><strong>Пользователи</strong> - просмотр, управление и удаление профилей</li>
               <li><strong>Спутники</strong> - управление статусом доступности и информацией</li>
               <li><strong>Отзывы</strong> - модерация отзывов пользователей</li>
               <li><strong>Чаты</strong> - просмотр истории коммуникации</li>
             </ul>
-            <p class="mt-6 pt-6 border-t border-border/50">
+            <p style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
               Используйте табы выше для переключения между разделами.
             </p>
           </div>
@@ -614,12 +579,12 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'users'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Пользователи ({{ users.length }})</h2>
 
-        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
-          Загрузка...
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-state__text">Загрузка...</div>
         </div>
 
         <div v-else-if="users.length > 0" class="card-table">
-          <div class="overflow-x-auto">
+          <div style="overflow-x: auto;">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-light-bg">
@@ -637,39 +602,29 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <td class="px-4 py-4 text-secondary font-medium">{{ user.name }}</td>
                   <td class="px-4 py-4 text-secondary text-sm">{{ user.email }}</td>
                   <td class="px-4 py-4">
-                    <span
-                      :class="[
-                        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
-                        user.role === 'admin'
-                          ? 'bg-primary/20 text-primary'
-                          : 'bg-secondary/10 text-secondary'
-                      ]"
-                    >
+                    <span class="status-badge" :class="[user.role === 'admin' ? 'status-badge--active' : 'status-badge--inactive']">
                       {{ user.role === 'admin' ? 'Администратор' : 'Пользователь' }}
                     </span>
                   </td>
                   <td class="px-4 py-4 text-secondary text-sm">
                     {{ new Date(user.created_at).toLocaleDateString('ru-RU') }}
                   </td>
-                  <td class="px-4 py-4 space-x-2">
-                    <button
-                      @click="handleToggleAdminStatus(user.id, user.role)"
-                      :class="[
-                        'px-3 py-1.5 text-xs font-semibold rounded transition-colors',
-                        user.role === 'admin'
-                          ? 'text-orange-600 hover:bg-orange-50'
-                          : 'text-green-600 hover:bg-green-50'
-                      ]"
-                    >
-                      {{ user.role === 'admin' ? 'Убрать' : 'Админ' }}
-                    </button>
-                    <button
-                      v-if="user.role !== 'admin'"
-                      @click="handleDeleteUser(user.id)"
-                      class="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors"
-                    >
-                      Удалить
-                    </button>
+                  <td class="px-4 py-4">
+                    <div style="display: flex; gap: 0.5rem;">
+                      <button
+                        @click="handleToggleAdminStatus(user.id, user.role)"
+                        :class="['btn btn-small', user.role === 'admin' ? 'btn--secondary' : 'btn--success']"
+                      >
+                        {{ user.role === 'admin' ? 'Убрать' : 'Админ' }}
+                      </button>
+                      <button
+                        v-if="user.role !== 'admin'"
+                        @click="handleDeleteUser(user.id)"
+                        class="btn btn-small btn--danger"
+                      >
+                        Удалить
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -677,8 +632,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-else class="text-center py-12 text-secondary/60">
-          Пользователей не найдено
+        <div v-else class="empty-state">
+          <div class="empty-state__text">Пользователей не найдено</div>
         </div>
       </div>
 
@@ -686,8 +641,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'companions'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companions.length }})</h2>
 
-        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
-          Загрузка...
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-state__text">Загрузка...</div>
         </div>
 
         <div v-else-if="companions.length > 0" class="grid gap-4">
@@ -696,25 +651,23 @@ const handleRejectApplication = async (applicationId: string | number) => {
             :key="companion.id"
             class="card-surface"
           >
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;">
+              <div style="flex: 1;">
                 <h3 class="text-lg font-bold text-secondary mb-2">{{ companion.name }}</h3>
-                <p class="text-secondary/60 text-sm mb-3">{{ companion.experience }}</p>
-                <div class="flex items-center gap-4 text-sm text-secondary/60">
-                  <span class="inline-flex items-center gap-1.5">
-                    <img src="../images/heart.svg" alt="Thanks" class="w-4 h-4 object-contain" />
+                <p style="color: var(--color-secondary-60); font-size: var(--font-size-sm); margin-bottom: 0.75rem;">{{ companion.experience }}</p>
+                <div style="display: flex; align-items: center; gap: 1rem; font-size: var(--font-size-sm); color: var(--color-secondary-60);">
+                  <span style="display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <img src="../images/heart.svg" alt="Thanks" style="width: 1rem; height: 1rem; object-fit: contain;" />
                     {{ companion.reviews_count }} отзывов
                   </span>
                 </div>
               </div>
               <button
                 @click="handleToggleCompanionStatus(companion.id, companion.is_available)"
-                :class="[
-                  'px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap transition-all',
-                  companion.is_available
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                    : 'bg-red-100 text-red-700 hover:bg-red-200'
-                ]"
+                class="btn btn-small rounded-full" :style="{
+                  backgroundColor: companion.is_available ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  color: companion.is_available ? '#16a34a' : '#dc2626'
+                }"
               >
                 {{ companion.is_available ? '✓ Доступен' : '✗ Недоступен' }}
               </button>
@@ -722,8 +675,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-else class="text-center py-12 text-secondary/60">
-          Спутников не найдено
+        <div v-else class="empty-state">
+          <div class="empty-state__text">Спутников не найдено</div>
         </div>
       </div>
 
@@ -731,32 +684,29 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'reviews'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Отзывы ({{ reviews.length }})</h2>
 
-        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
-          Загрузка...
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-state__text">Загрузка...</div>
         </div>
 
         <div v-else-if="reviews.length > 0" class="grid gap-4">
           <div
             v-for="review in reviews"
             :key="review.id"
-            class="bg-white border border-border/50 rounded-2xl p-6 shadow-card"
+            class="card"
           >
-            <div class="flex items-start justify-between gap-4 mb-4">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
               <div>
-                <div class="flex items-center gap-2 mb-2">
-                  <div class="flex gap-0.5">
-                    <span v-for="starIndex in 5" :key="starIndex" class="text-lg">
-                      <span v-if="starIndex <= review.rating" class="text-yellow-400">★</span>
-                      <span v-else class="text-secondary/20">★</span>
-                    </span>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <div class="rating-stars">
+                    <span v-for="starIndex in 5" :key="starIndex" class="rating-star" :class="starIndex <= review.rating ? 'rating-star--filled' : 'rating-star--empty'">★</span>
                   </div>
-                  <span class="text-sm font-semibold text-secondary">{{ review.title }}</span>
+                  <span style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-secondary);">{{ review.title }}</span>
                 </div>
-                <p class="text-secondary/60 text-sm">{{ review.comment }}</p>
+                <p style="color: var(--color-secondary-60); font-size: var(--font-size-sm);">{{ review.comment }}</p>
               </div>
               <button
                 @click="handleDeleteReview(review.id)"
-                class="px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors whitespace-nowrap"
+                class="btn btn-small btn--danger"
               >
                 Удалить
               </button>
@@ -764,8 +714,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-else class="text-center py-12 text-secondary/60">
-          Отзывов не найдено
+        <div v-else class="empty-state">
+          <div class="empty-state__text">Отзывов не найдено</div>
         </div>
       </div>
 
@@ -773,12 +723,12 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'chats'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Чаты ({{ chats.length }})</h2>
 
-        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
-          Загрузка...
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-state__text">Загрузка...</div>
         </div>
 
         <div v-else-if="chats.length > 0" class="card-table">
-          <div class="overflow-x-auto">
+          <div style="overflow-x: auto;">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-light-bg">
@@ -796,25 +746,18 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.user_id }}</td>
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion_id }}</td>
                   <td class="px-4 py-4">
-                    <span
-                      :class="[
-                        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
-                        chat.status === 'active'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-secondary/10 text-secondary'
-                      ]"
-                    >
+                    <span class="status-badge" :class="[chat.status === 'active' ? 'status-badge--active' : 'status-badge--inactive']">
                       {{ chat.status === 'active' ? '✓ Активен' : '✗ Завершен' }}
                     </span>
                   </td>
                   <td class="px-4 py-4 text-secondary text-sm">
                     <span
                       v-if="reports.filter((r: any) => r.chat_id === chat.id).length > 0"
-                      class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold"
+                      style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background-color: rgba(239, 68, 68, 0.1); color: #dc2626; border-radius: 9999px; font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);"
                     >
                       🚩 {{ reports.filter((r: any) => r.chat_id === chat.id).length }}
                     </span>
-                    <span v-else class="text-secondary/50">—</span>
+                    <span v-else style="color: var(--color-secondary-30);">—</span>
                   </td>
                   <td class="px-4 py-4 text-secondary text-sm">
                     {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
@@ -825,199 +768,198 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-else class="text-center py-12 text-secondary/60">
-          Чатов не найдено
+        <div v-else class="empty-state">
+          <div class="empty-state__text">Чатов не найдено</div>
         </div>
       </div>
 
       <!-- Applications Tab -->
       <div v-if="activeTab === 'applications'" class="space-y-4">
-        <div class="flex items-center justify-between mb-6">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
           <h2 class="text-2xl font-bold text-secondary">Заявки на становление спутником ({{ applications.length }})</h2>
-          <div class="text-sm text-secondary/60">
-            <span class="font-semibold text-orange-600">{{ stats.pendingApplications }}</span> ожидают рассмотрения
+          <div style="font-size: var(--font-size-sm); color: var(--color-secondary-60);">
+            <span style="font-weight: var(--font-weight-semibold); color: var(--color-primary);">{{ stats.pendingApplications }}</span> ожидают рассмотрения
           </div>
         </div>
 
-        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
-          Загрузка...
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-state__text">Загрузка...</div>
         </div>
 
         <div v-else-if="applications.length > 0" class="grid gap-6">
           <div
             v-for="app in applications"
             :key="app.id"
-            :class="[
-              'card-surface border-l-4',
-              app.status === 'pending' ? 'border-l-orange-500 bg-orange-50/30' :
-              app.status === 'approved' ? 'border-l-green-500 bg-green-50/30' :
-              'border-l-red-500 bg-red-50/30'
-            ]"
+            class="app-card" :class="{
+              'app-card--pending': app.status === 'pending',
+              'app-card--approved': app.status === 'approved',
+              'app-card--rejected': app.status === 'rejected'
+            }"
           >
             <div class="mb-4">
-              <div class="flex items-start justify-between mb-4">
+              <div class="app-card__header">
                 <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-lg font-bold text-secondary">{{ app.name }}</h3>
-                    <span
-                      :class="[
-                        'px-3 py-1 rounded-full text-xs font-semibold',
-                        app.status === 'pending' ? 'bg-orange-100 text-orange-700' :
-                        app.status === 'approved' ? 'bg-green-100 text-green-700' :
-                        'bg-red-100 text-red-700'
-                      ]"
-                    >
+                  <h3 class="app-card__title">
+                    {{ app.name }}
+                    <span class="status-badge" :class="{
+                      'status-badge--pending': app.status === 'pending',
+                      'status-badge--approved': app.status === 'approved',
+                      'status-badge--rejected': app.status === 'rejected'
+                    }">
                       {{
                         app.status === 'pending' ? '⏳ На рассмотрении' :
                         app.status === 'approved' ? '✅ Одобрена' :
                         '❌ Отклонена'
                       }}
                     </span>
-                  </div>
-                  <p class="text-secondary/60 text-sm mb-2">
+                  </h3>
+                  <p class="app-card__info">
                     <strong>От:</strong> {{ app.users?.name }} ({{ app.users?.email }})
                   </p>
-                  <div class="flex flex-wrap gap-4 text-sm text-secondary/60 mb-3">
-                    <span><strong>Возраст:</strong> {{ app.age }}</span>
-                    <span><strong>Пол:</strong> {{ getGenderInRussian(app.gender) }}</span>
-                    <span><strong>Опыт:</strong> {{ app.experience }}</span>
+                  <div class="app-card__details">
+                    <div class="app-card__detail">
+                      <span class="app-card__detail-label">Возраст:</span>
+                      <span class="app-card__detail-value">{{ app.age }}</span>
+                    </div>
+                    <div class="app-card__detail">
+                      <span class="app-card__detail-label">Пол:</span>
+                      <span class="app-card__detail-value">{{ getGenderInRussian(app.gender) }}</span>
+                    </div>
+                    <div class="app-card__detail">
+                      <span class="app-card__detail-label">Опыт:</span>
+                      <span class="app-card__detail-value">{{ app.experience }}</span>
+                    </div>
                   </div>
-                  <div class="mb-3">
-                    <p class="text-sm text-secondary/60 mb-2"><strong>О себе:</strong></p>
-                    <p class="text-secondary text-sm">{{ app.bio }}</p>
+                  <div class="app-card__bio">
+                    <strong style="display: block; margin-bottom: 0.5rem; color: var(--color-secondary-60); font-size: var(--font-size-xs);">О себе:</strong>
+                    {{ app.bio }}
                   </div>
-                  <div v-if="app.message" class="mb-3">
-                    <p class="text-sm text-secondary/60 mb-2"><strong>Мотивация:</strong></p>
-                    <p class="text-secondary text-sm">{{ app.message }}</p>
+                  <div v-if="app.message" class="app-card__message">
+                    <strong style="display: block; margin-bottom: 0.5rem; color: var(--color-secondary-60); font-size: var(--font-size-xs);">Мотивация:</strong>
+                    {{ app.message }}
                   </div>
-                  <div v-if="app.rejection_reason" class="mb-3 p-3 bg-red-100 rounded-lg">
-                    <p class="text-sm text-red-700"><strong>Причина отклонения:</strong> {{ app.rejection_reason }}</p>
+                  <div v-if="app.rejection_reason" style="margin-bottom: 1rem; padding: 0.75rem; background-color: rgba(239, 68, 68, 0.1); border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
+                    <p style="font-size: var(--font-size-sm); color: #dc2626;"><strong>Причина отклонения:</strong> {{ app.rejection_reason }}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Actions for Pending Applications -->
-            <div v-if="app.status === 'pending'" class="border-t border-border/50 pt-4">
-              <div class="space-y-3">
+            <div v-if="app.status === 'pending'" class="app-card__actions">
+              <button
+                @click="handleApproveApplication(app.id)"
+                class="btn btn-large btn--success btn-full"
+              >
+                ✓ Одобрить заявку
+              </button>
+              <div>
+                <label class="form-label">Причина отклонения (если отклоняете):</label>
+                <textarea
+                  v-model="rejectionReasons[app.id]"
+                  placeholder="Например: Недостаточно информации в профиле, требуется дополнительная верификация..."
+                  rows="3"
+                  class="form-textarea w-full"
+                ></textarea>
                 <button
-                  @click="handleApproveApplication(app.id)"
-                  class="w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                  @click="handleRejectApplication(app.id)"
+                  class="btn btn-large btn--danger btn-full mt-2"
                 >
-                  ✓ Одобрить заявку
+                  ✗ Отклонить заявку
                 </button>
-                <div>
-                  <label class="block text-xs text-secondary/60 mb-2 font-semibold">Причина отклонения (если отклоняете):</label>
-                  <textarea
-                    v-model="rejectionReasons[app.id]"
-                    placeholder="Например: Недостаточно информации в профиле, требуется дополнительная верификация..."
-                    rows="3"
-                    class="w-full px-3 py-2 rounded-lg border border-border/50 bg-white focus:outline-none focus:ring-2 focus:ring-red-500/50 transition text-sm resize-none"
-                  ></textarea>
-                  <button
-                    @click="handleRejectApplication(app.id)"
-                    class="w-full mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm"
-                  >
-                    ✗ Отклонить заявку
-                  </button>
-                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div v-else class="text-center py-12 text-secondary/60">
-          Заявок не найдено
+        <div v-else class="empty-state">
+          <div class="empty-state__text">Заявок не найдено</div>
         </div>
       </div>
 
       <!-- Reports Tab -->
       <div v-if="activeTab === 'reports'" class="space-y-4">
-        <div class="flex items-center justify-between mb-6">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
           <h2 class="text-2xl font-bold text-secondary">Жалобы ({{ reports.length }})</h2>
-          <div class="text-sm text-secondary/60">
-            <span class="font-semibold text-red-600">{{ stats.pendingReports }}</span> требуют внимания
+          <div style="font-size: var(--font-size-sm); color: var(--color-secondary-60);">
+            <span style="font-weight: var(--font-weight-semibold); color: #ef4444;">{{ stats.pendingReports }}</span> требуют внимания
           </div>
         </div>
 
-        <div v-if="isLoading" class="text-center py-12 text-secondary/60">
-          Загрузка...
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-state__text">Загрузка...</div>
         </div>
 
         <div v-else-if="reports.length > 0" class="grid gap-6">
           <div
             v-for="report in reports"
             :key="report.id"
-            :class="[
-              'bg-white border-l-4 rounded-2xl p-6 shadow-card',
-              report.status === 'pending' ? 'border-l-red-500 bg-red-50/30' : 'border-l-green-500 bg-green-50/30'
-            ]"
+            class="report-card" :class="{
+              'report-card--pending': report.status === 'pending',
+              'report-card--resolved': report.status === 'resolved'
+            }"
           >
-            <div class="flex items-start justify-between gap-4 mb-4">
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-3">
-                  <span
-                    :class="[
-                      'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
-                      report.status === 'pending'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-green-100 text-green-700'
-                    ]"
-                  >
+            <div class="report-card__header">
+              <div class="report-card__content">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <span class="status-badge" :class="{
+                    'status-badge--pending': report.status === 'pending',
+                    'status-badge--approved': report.status === 'resolved'
+                  }">
                     {{ report.status === 'pending' ? '⏳ На рассмотрении' : '✅ Обработана' }}
                   </span>
-                  <span class="text-xs font-medium text-secondary/60">ID: {{ report.id }}</span>
+                  <span style="font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); color: var(--color-secondary-60);">ID: {{ report.id }}</span>
                 </div>
 
-                <div class="space-y-3">
-                  <div>
-                    <p class="text-xs text-secondary/60 font-semibold mb-1">Причина:</p>
-                    <p class="text-secondary font-semibold">{{ report.reason }}</p>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <div class="report-card__field">
+                    <span class="report-card__field-label">Причина:</span>
+                    <span class="report-card__field-value">{{ report.reason }}</span>
                   </div>
 
-                  <div>
-                    <p class="text-xs text-secondary/60 font-semibold mb-1">Описание:</p>
-                    <p class="text-secondary text-sm">{{ report.message }}</p>
+                  <div class="report-card__field">
+                    <span class="report-card__field-label">Описание:</span>
+                    <span class="report-card__field-value">{{ report.message }}</span>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p class="text-xs text-secondary/60 font-semibold mb-1">ID чата:</p>
-                      <p class="text-secondary font-mono text-xs">{{ report.chat_id }}</p>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                    <div class="report-card__field">
+                      <span class="report-card__field-label">ID чата:</span>
+                      <span class="report-card__field-value" style="font-family: monospace; font-size: var(--font-size-xs);">{{ report.chat_id }}</span>
                     </div>
-                    <div>
-                      <p class="text-xs text-secondary/60 font-semibold mb-1">От пользователя:</p>
-                      <p class="text-secondary font-mono text-xs">{{ report.reporter_id }}</p>
+                    <div class="report-card__field">
+                      <span class="report-card__field-label">От пользователя:</span>
+                      <span class="report-card__field-value" style="font-family: monospace; font-size: var(--font-size-xs);">{{ report.reporter_id }}</span>
                     </div>
                   </div>
 
-                  <div>
-                    <p class="text-xs text-secondary/60 font-semibold mb-1">Дата:</p>
-                    <p class="text-secondary text-sm">{{ new Date(report.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</p>
+                  <div class="report-card__field">
+                    <span class="report-card__field-label">Дата:</span>
+                    <span class="report-card__field-value">{{ new Date(report.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Actions -->
-            <div v-if="report.status === 'pending'" class="border-t border-border/50 pt-4 flex gap-3">
+            <div v-if="report.status === 'pending'" class="report-card__actions">
               <button
                 @click="handleResolveReport(report.id)"
-                class="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors text-sm"
+                class="btn btn-large btn--success flex-1"
               >
                 ✓ Отметить как обработанную
               </button>
               <button
                 @click="handleDeleteReport(report.id)"
-                class="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm"
+                class="btn btn-large btn--danger flex-1"
               >
                 ✕ Удалить
               </button>
             </div>
-            <div v-else class="border-t border-border/50 pt-4">
+            <div v-else style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
               <button
                 @click="handleDeleteReport(report.id)"
-                class="w-full px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm"
+                class="btn btn-large btn--danger btn-full"
               >
                 ✕ Удалить
               </button>
@@ -1025,8 +967,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-else class="text-center py-12 text-secondary/60">
-          Жалоб не найдено
+        <div v-else class="empty-state">
+          <div class="empty-state__text">Жалоб не найдено</div>
         </div>
       </div>
     </div>
