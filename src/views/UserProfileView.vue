@@ -113,7 +113,7 @@ const navigateToChat = () => {
         <p class="profile-loading__text">Загрузка профиля...</p>
       </div>
 
-      <div v-else-if="companion" class="profile-layout">
+      <div v-else-if="companion" class="profile-layout" style="padding-top: 0;">
         <div v-if="isCurrentUserCompanion" class="profile-badge">
           <svg class="profile-badge__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
