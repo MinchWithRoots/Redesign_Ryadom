@@ -202,22 +202,34 @@ const handleToggleCompanionStatus = async (companionId: string | number, isAvail
 }
 
 const handleToggleAdminStatus = async (userId: string | number, currentRole: string) => {
-  try {
-    const newRole = currentRole === 'admin' ? 'user' : 'admin'
-    const { error } = await supabase
-      .from('users')
-      .update({ role: newRole })
-      .eq('id', userId)
+  const newRole = currentRole === 'admin' ? 'user' : 'admin'
+  const actionText = newRole === 'admin' ? 'Сделать администратором' : 'Убрать из администраторов'
+  const warningText = newRole === 'admin'
+    ? 'Пользователь получит полный доступ к админ панели'
+    : 'Пользователь потеряет доступ к админ панели'
 
-    if (error) throw error
+  showConfirmDialog(
+    actionText,
+    warningText,
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .update({ role: newRole })
+          .eq('id', userId)
 
-    successMessage.value = `Роль изменена на "${newRole === 'admin' ? 'Администратор' : 'Пользователь'}" ✓`
-    await loadUsers()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при изменении роли: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        if (error) throw error
+
+        successMessage.value = `Роль изменена на "${newRole === 'admin' ? 'Администратор' : 'Пользователь'}" ✓`
+        await loadUsers()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при изменении роли: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    },
+    newRole === 'admin' ? false : true
+  )
 }
 
 const handleDeleteReview = async (reviewId: string | number) => {
