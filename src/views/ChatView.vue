@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
+import '@/assets/chat.css'
 
 const router = useRouter()
 const route = useRoute()
@@ -365,57 +366,57 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-light-bg pt-[140px] pb-16 flex flex-col">
-    <div class="container mx-auto px-4 lg:px-8 max-w-4xl flex-1 flex flex-col">
+  <div class="chat-page">
+    <div class="chat-main-container">
       <!-- Loading or Chat Header -->
-      <div v-if="!chat && isLoadingMessages" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
-        <div class="flex items-center justify-center gap-3">
-          <div class="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
-          <p class="text-secondary/60">Загрузка чата...</p>
+      <div v-if="!chat && isLoadingMessages" class="chat-header-loading">
+        <div class="chat-header-loading-content">
+          <div class="chat-spinner"></div>
+          <p class="chat-loading-text">Загрузка чата...</p>
         </div>
       </div>
 
-      <div v-else-if="!chat && !isLoadingMessages" class="bg-white border border-border/50 rounded-3xl p-8 mb-6 shadow-card text-center">
-        <svg class="w-16 h-16 mx-auto mb-4 text-secondary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div v-else-if="!chat && !isLoadingMessages" class="chat-not-found">
+        <svg class="chat-not-found-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
-        <p class="text-secondary/60 mb-4 text-lg">Чат не найден</p>
-        <p class="text-secondary/50 mb-6 text-sm">Пожалуйста, выберите чат из списка или вернитесь в профиль</p>
+        <p class="chat-not-found-title">Чат не найден</p>
+        <p class="chat-not-found-text">Пожалуйста, выберите чат из списка или вернитесь в профиль</p>
         <button
           @click="router.push('/profile')"
-          class="px-8 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-all font-medium"
+          class="chat-button chat-button--primary"
         >
           Вернуться в профиль
         </button>
       </div>
 
       <!-- Chat Header -->
-      <div v-else-if="currentCompanion" class="bg-white border border-border/50 rounded-3xl p-4 mb-6 shadow-card flex items-center justify-between sticky top-[140px] z-40">
-        <div class="flex items-center gap-4">
+      <div v-else-if="currentCompanion" class="chat-header">
+        <div class="chat-header-info">
           <!-- Avatar -->
-          <div class="relative">
+          <div class="chat-avatar-wrapper">
             <img
               :src="currentCompanion?.image || 'https://via.placeholder.com/100'"
               :alt="currentCompanion?.name || 'Companion'"
-              class="w-12 h-12 rounded-full object-cover"
+              class="chat-avatar"
             />
-            <div v-if="currentCompanion?.status === 'Онлайн'" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            <div v-if="currentCompanion?.status === 'Онлайн'" class="chat-avatar-online"></div>
           </div>
 
           <!-- Info -->
-          <div>
-            <h2 class="font-bold text-secondary">{{ currentCompanion?.name }}</h2>
-            <p :class="['text-xs font-medium', currentCompanion?.status === 'Онлайн' ? 'text-green-500' : 'text-secondary/70']">{{ currentCompanion?.status }}</p>
+          <div class="chat-header-user-info">
+            <h2 class="chat-header-name">{{ currentCompanion?.name }}</h2>
+            <p class="chat-header-status" :class="{ 'chat-header-status--online': currentCompanion?.status === 'Онлайн' }">{{ currentCompanion?.status }}</p>
           </div>
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-2">
+        <div class="chat-header-actions">
           <!-- Kebab menu (3 dots) -->
-          <div class="relative">
+          <div class="chat-menu-wrapper">
             <button
               @click="showActionMenu = !showActionMenu"
-              class="p-2 hover:bg-light-bg rounded-lg transition-colors text-secondary/60 hover:text-secondary"
+              class="chat-menu-button"
               title="Ещё"
             >
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -425,11 +426,11 @@ onMounted(async () => {
 
             <!-- Dropdown menu -->
             <transition name="fade">
-              <div v-if="showActionMenu" class="absolute right-0 mt-2 w-48 bg-white border border-border/50 rounded-xl shadow-hover z-50 py-2">
+              <div v-if="showActionMenu" class="chat-dropdown-menu">
                 <!-- Report option -->
                 <button
                   @click="showReportModal = true; showActionMenu = false"
-                  class="w-full text-left px-4 py-3 text-secondary/80 hover:bg-light-bg hover:text-secondary transition-colors flex items-center gap-3 text-sm"
+                  class="chat-dropdown-item"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 6H2a1 1 0 00-1 1v1a6 6 0 006 6h8a6 6 0 006-6v-1a1 1 0 00-1-1h-1m-6-15a6 6 0 100 12 6 6 0 000-12z" />
@@ -442,9 +443,9 @@ onMounted(async () => {
                   v-if="!isBlocked"
                   @click="handleBlockUser"
                   :disabled="isBlockingUser"
-                  class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
+                  class="chat-dropdown-item chat-dropdown-item--danger"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="chat-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4m0 0H3m0 0v8m0-8l8 8" />
                   </svg>
                   <span v-if="!isBlockingUser">Заблокировать</span>
@@ -454,9 +455,9 @@ onMounted(async () => {
                   v-else
                   @click="handleUnblockUser"
                   :disabled="isBlockingUser"
-                  class="w-full text-left px-4 py-3 text-green-600 hover:bg-green-50 transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
+                  class="chat-dropdown-item chat-dropdown-item--success"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="chat-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <span v-if="!isBlockingUser">Разблокировать</span>
@@ -464,13 +465,13 @@ onMounted(async () => {
                 </button>
 
                 <!-- Divider -->
-                <div class="border-t border-border/30 my-2"></div>
+                <div class="chat-dropdown-divider"></div>
 
                 <!-- End session option -->
                 <button
                   @click="() => { handleEndSession(); showActionMenu = false }"
                   :disabled="isEndingSession"
-                  class="w-full text-left px-4 py-3 text-secondary/80 hover:bg-light-bg hover:text-secondary transition-colors flex items-center gap-3 text-sm disabled:opacity-50"
+                  class="chat-dropdown-item"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -485,60 +486,60 @@ onMounted(async () => {
 
       <!-- Session Ended Message -->
       <transition name="fade">
-        <div v-if="sessionEnded" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
-          <div class="bg-white rounded-2xl p-8 text-center">
-            <h2 class="text-2xl font-bold text-secondary mb-2">Сессия завершена</h2>
-            <p class="text-secondary/60">Спасибо за использование нашего сервиса!</p>
+        <div v-if="sessionEnded" class="chat-modal-overlay">
+          <div class="chat-modal">
+            <h2 class="chat-modal-title">Сессия завершена</h2>
+            <p class="chat-modal-text">Спасибо за использование нашего сервиса!</p>
           </div>
         </div>
       </transition>
 
       <!-- Block/Unblock Success Message -->
       <transition name="fade">
-        <div v-if="blockSuccess" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
-          <div class="bg-white rounded-2xl p-8 text-center">
-            <div class="mb-4">
-              <svg class="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-if="blockSuccess" class="chat-modal-overlay">
+          <div class="chat-modal">
+            <div class="chat-modal-icon-wrapper">
+              <svg class="chat-modal-icon chat-modal-icon--success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 class="text-2xl font-bold text-secondary mb-2">{{ blockSuccess }}</h2>
-            <p v-if="blockSuccess.includes('разблокир')" class="text-secondary/60">Вы сможете общаться с этим пользователем снова</p>
-            <p v-else class="text-secondary/60">Вы больше не сможете общаться с этим пользователем</p>
+            <h2 class="chat-modal-title">{{ blockSuccess }}</h2>
+            <p class="chat-modal-text" v-if="blockSuccess.includes('разблокир')">Вы сможете общаться с этим пользователем снова</p>
+            <p class="chat-modal-text" v-else>Вы больше не сможете общаться с этим пользователем</p>
           </div>
         </div>
       </transition>
 
       <!-- Report Modal -->
       <transition name="fade">
-        <div v-if="showReportModal" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-3xl">
-          <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-hover">
+        <div v-if="showReportModal" class="chat-modal-overlay">
+          <div class="chat-modal chat-modal--report">
             <button
               @click="showReportModal = false"
-              class="ml-auto block text-secondary/50 hover:text-secondary transition-colors mb-4"
+              class="chat-modal-close"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <h2 class="text-2xl font-bold text-secondary mb-2">SOS/Пожаловаться</h2>
-            <p class="text-sm text-secondary/60 mb-6">Если вы чувствуете себя в опасности или встретили неадекватное поведение, расскажите нам.</p>
+            <h2 class="chat-modal-title">SOS/Пожаловаться</h2>
+            <p class="chat-modal-description">Если вы чувствуете себя в опасности или встретили неадекватное поведение, расскажите нам.</p>
 
             <!-- Success Message -->
             <transition name="fade">
-              <div v-if="reportSuccess" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
+              <div v-if="reportSuccess" class="chat-modal-success">
                 {{ reportSuccess }}
               </div>
             </transition>
 
-            <div class="space-y-4">
+            <div class="chat-form-group">
               <!-- Reason Select -->
-              <div>
-                <label class="form-label">Причина</label>
+              <div class="chat-form-field">
+                <label class="chat-form-label">Причина</label>
                 <select
                   v-model="reportReason"
-                  class="w-full px-4 py-2 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="chat-form-select"
                 >
                   <option value="">Выберите причину...</option>
                   <option value="harassment">Оскорбления/Harassing</option>
@@ -550,13 +551,13 @@ onMounted(async () => {
               </div>
 
               <!-- Message -->
-              <div>
-                <label class="form-label">Описание</label>
+              <div class="chat-form-field">
+                <label class="chat-form-label">Описание</label>
                 <textarea
                   v-model="reportMessage"
                   rows="3"
                   placeholder="Опишите, что произошло..."
-                  class="w-full px-4 py-2 border border-border rounded-xl text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                  class="chat-form-textarea"
                 ></textarea>
               </div>
 
@@ -564,13 +565,13 @@ onMounted(async () => {
               <button
                 @click="handleReportUser"
                 :disabled="isReporting"
-                class="w-full py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                class="chat-button chat-button--danger"
               >
                 <span v-if="!isReporting">Отправить отчёт</span>
                 <span v-else>Отправка...</span>
               </button>
 
-              <p class="text-xs text-secondary/60 text-center">
+              <p class="chat-form-hint">
                 Ваши сообщения остаются конфиденциальными. Мы проверим все отчёты.
               </p>
             </div>
@@ -582,105 +583,91 @@ onMounted(async () => {
       <template v-if="currentCompanion">
       <div
         ref="messagesContainer"
-        class="flex-1 overflow-y-auto mb-6 space-y-3 px-2 py-4 scroll-smooth"
-        style="scroll-behavior: smooth;"
+        class="chat-messages-container"
       >
         <!-- Empty state -->
-        <div v-if="chatMessages.length === 0" class="flex items-center justify-center h-full py-12">
-          <div class="text-center max-w-sm">
-            <!-- Avatar -->
-            <div class="mb-6 flex justify-center">
-              <div class="relative">
-                <img
-                  :src="currentCompanion?.image || 'https://via.placeholder.com/120'"
-                  :alt="currentCompanion?.name"
-                  class="w-24 h-24 rounded-full object-cover border-4 border-light-bg shadow-md"
-                />
-                <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-3 border-white"></div>
-              </div>
+        <div v-if="chatMessages.length === 0" class="chat-empty-state">
+          <!-- Avatar -->
+          <div class="chat-empty-avatar-wrapper">
+            <div class="chat-empty-avatar">
+              <img
+                :src="currentCompanion?.image || 'https://via.placeholder.com/120'"
+                :alt="currentCompanion?.name"
+                class="chat-empty-avatar-image"
+              />
+              <div class="chat-empty-avatar-status"></div>
             </div>
-
-            <!-- Greeting -->
-            <h3 class="text-2xl font-bold text-secondary mb-2">
-              Привет! 👋
-            </h3>
-            <p class="text-secondary/70 mb-2">
-              Вы в чате с <span class="font-semibold text-secondary">{{ currentCompanion.name }}</span>
-            </p>
-            <p class="text-secondary/60 text-sm mb-6">
-              Начните разговор - поделитесь интересующей вас темой или просто скажите привет!
-            </p>
-
-            <!-- Status indicator -->
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-light-bg rounded-full mb-6">
-              <div :class="['w-2 h-2 rounded-full', currentCompanion?.status === 'Онлайн' ? 'bg-green-500' : 'bg-secondary/30']"></div>
-              <span class="text-xs font-medium text-secondary/70">
-                {{ currentCompanion?.status }}
-              </span>
-            </div>
-
-            <!-- Call to action -->
-            <p class="text-xs text-secondary/50">
-              💬 Отправьте первое сообщение, чтобы начать
-            </p>
           </div>
+
+          <!-- Greeting -->
+          <h3 class="chat-empty-greeting">
+            Привет! 👋
+          </h3>
+          <p class="chat-empty-text">
+            Вы в чате с <span class="chat-empty-name">{{ currentCompanion.name }}</span>
+          </p>
+          <p class="chat-empty-description">
+            Начните разговор - поделитесь интересующей вас темой или просто скажите привет!
+          </p>
+
+          <!-- Status indicator -->
+          <div class="chat-empty-status">
+            <div class="chat-empty-status-dot" :class="{ 'chat-empty-status-dot--online': currentCompanion?.status === 'Онлайн' }"></div>
+            <span class="chat-empty-status-text">
+              {{ currentCompanion?.status }}
+            </span>
+          </div>
+
+          <!-- Call to action -->
+          <p class="chat-empty-cta">
+            💬 Отправьте первое сообщение, чтобы начать
+          </p>
         </div>
 
         <!-- Messages -->
         <div
           v-for="message in chatMessages"
           :key="message.id"
-          :class="[
-            'flex gap-2 animate-fadeIn',
-            message.isMine ? 'justify-end' : 'justify-start'
-          ]"
+          class="chat-message-group"
+          :class="{ 'chat-message-group--sent': message.isMine }"
         >
           <!-- Avatar (for other) -->
-          <div v-if="!message.isMine" class="flex-shrink-0 mt-1">
+          <div v-if="!message.isMine" class="chat-message-avatar">
             <img
               :src="message.image || currentCompanion?.image || 'https://via.placeholder.com/28'"
               :alt="currentCompanion?.name || 'User'"
-              class="w-7 h-7 rounded-full object-cover"
+              class="chat-message-avatar-image"
             />
           </div>
 
           <!-- Message Bubble -->
           <div
-            :class="[
-              'max-w-xs lg:max-w-md px-4 py-3 rounded-3xl break-words',
-              message.isMine
-                ? 'bg-gradient-to-r from-primary to-primary/90 text-white rounded-br-none'
-                : 'bg-light-bg text-secondary rounded-bl-none shadow-sm'
-            ]"
+            class="chat-message-bubble"
+            :class="{ 'chat-message-bubble--sent': message.isMine }"
           >
-            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ message.text }}</p>
-            <p :class="[
-              'text-xs mt-1 font-medium',
-              message.isMine ? 'text-white/70' : 'text-secondary/50'
-            ]">
+            <p class="chat-message-text">{{ message.text }}</p>
+            <p class="chat-message-time" :class="{ 'chat-message-time--sent': message.isMine }">
               {{ formatTime(message.created_at) }}
             </p>
           </div>
 
           <!-- Avatar (for me) -->
-          <div v-if="message.isMine" class="flex-shrink-0 mt-1">
-            <div class="w-7 h-7 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-bold text-secondary">
-              Я
-            </div>
+          <div v-if="message.isMine" class="chat-message-avatar chat-message-avatar--mine">
+            <div class="chat-message-avatar-mine-text">Я</div>
           </div>
         </div>
       </div>
 
       <!-- Input Area -->
-      <div class="bg-white border border-border/50 rounded-3xl p-4 shadow-card sticky bottom-0">
-        <div class="flex gap-3 items-end">
+      <div class="chat-input-wrapper">
+        <div class="chat-input-container">
           <!-- Attachment Button -->
           <button
             type="button"
-            class="flex-shrink-0 p-2 text-secondary/60 hover:text-secondary hover:bg-light-bg rounded-lg transition-all"
+            class="chat-input-button"
             title="Загрузить файл"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
           </button>
@@ -692,7 +679,7 @@ onMounted(async () => {
             placeholder="Напишите сообщение..."
             @keyup.enter="sendMessage"
             :disabled="isSending"
-            class="flex-1 px-4 py-2.5 bg-light-bg rounded-full focus:outline-none text-secondary placeholder-secondary/50 disabled:opacity-50 transition-all"
+            class="chat-input-field"
           />
 
           <!-- Send Button -->
@@ -700,13 +687,13 @@ onMounted(async () => {
             @click="sendMessage"
             :disabled="!messageInput.trim() || isSending"
             type="button"
-            class="flex-shrink-0 p-2.5 bg-primary text-white rounded-full hover:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium hover:bg-primary/90"
+            class="chat-send-button"
             title="Отправить сообщение"
           >
-            <svg v-if="!isSending" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <svg v-if="!isSending" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-2.976 5.951 2.976a1 1 0 001.169-1.409l-7-14z" />
             </svg>
-            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg v-else class="chat-send-spinner" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -714,7 +701,7 @@ onMounted(async () => {
         </div>
 
         <!-- Info -->
-        <p class="text-xs text-secondary/50 mt-3 text-center font-medium">
+        <p class="chat-input-info">
           💬 Сессия активна
         </p>
       </div>
@@ -724,46 +711,13 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Smooth scrolling for messages */
-div::-webkit-scrollbar {
-  width: 6px;
-}
-
-div::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-div::-webkit-scrollbar-thumb {
-  background: #d3d2e3;
-  border-radius: 3px;
-}
-
-div::-webkit-scrollbar-thumb:hover {
-  background: #d4846a;
-}
-
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-normal);
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
 }
 </style>
