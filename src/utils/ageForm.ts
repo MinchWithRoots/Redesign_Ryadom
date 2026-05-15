@@ -3,7 +3,9 @@
  * @param age - The age number
  * @returns 'год' (1), 'года' (2-4), or 'лет' (5-20, 25+)
  */
-export const getAgeForm = (age: number): string => {
+export const getAgeForm = (age?: number | null): string => {
+  if (!age) return ''
+
   const lastDigit = age % 10
   const lastTwoDigits = age % 100
 

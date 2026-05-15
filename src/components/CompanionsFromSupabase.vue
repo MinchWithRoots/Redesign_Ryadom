@@ -104,7 +104,7 @@ const { companions, loading, error, fetchCompanions, searchCompanions } =
   useCompanions()
 
 const searchQuery = ref('')
-let searchTimeout: NodeJS.Timeout
+let searchTimeout: ReturnType<typeof setTimeout> | undefined
 
 // Загрузить спутников при монтировании
 onMounted(() => {

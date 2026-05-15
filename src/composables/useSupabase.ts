@@ -51,11 +51,11 @@ export function useChat() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const fetchUserChats = async (userId: number) => {
+  const fetchUserChats = async (userId: string | number) => {
     loading.value = true
     error.value = null
     try {
-      const data = await supabaseService.getUserChats(userId)
+      const data = await supabaseService.getUserChats(String(userId))
       if (data) {
         chats.value = data
       }
@@ -66,11 +66,11 @@ export function useChat() {
     }
   }
 
-  const fetchChatMessages = async (chatId: number) => {
+  const fetchChatMessages = async (chatId: string | number) => {
     loading.value = true
     error.value = null
     try {
-      const data = await supabaseService.getChatMessages(chatId)
+      const data = await supabaseService.getChatMessages(String(chatId))
       if (data) {
         messages.value = data
       }
@@ -82,12 +82,12 @@ export function useChat() {
   }
 
   const sendMessage = async (
-    chatId: number,
-    senderId: number,
+    chatId: string | number,
+    senderId: string | number,
     text: string
   ) => {
     try {
-      const data = await supabaseService.sendMessage(chatId, senderId, text)
+      const data = await supabaseService.sendMessage(String(chatId), String(senderId), text)
       if (data) {
         messages.value.push(data)
       }
@@ -97,9 +97,9 @@ export function useChat() {
     }
   }
 
-  const createNewChat = async (userId: number, companionId: number) => {
+  const createNewChat = async (userId: string | number, companionId: string | number) => {
     try {
-      const data = await supabaseService.createChat(userId, companionId)
+      const data = await supabaseService.createChat(String(userId), String(companionId))
       if (data) {
         chats.value.push(data)
       }
@@ -126,11 +126,11 @@ export function useFavorites() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const fetchFavorites = async (userId: number) => {
+  const fetchFavorites = async (userId: string | number) => {
     loading.value = true
     error.value = null
     try {
-      const data = await supabaseService.getUserFavorites(userId)
+      const data = await supabaseService.getUserFavorites(String(userId))
       if (data) {
         favorites.value = data
       }
@@ -141,17 +141,17 @@ export function useFavorites() {
     }
   }
 
-  const addFavorite = async (userId: number, companionId: number) => {
+  const addFavorite = async (userId: string | number, companionId: string | number) => {
     try {
-      await supabaseService.addToFavorites(userId, companionId)
+      await supabaseService.addToFavorites(String(userId), String(companionId))
     } catch (err: any) {
       error.value = err.message
     }
   }
 
-  const removeFavorite = async (userId: number, companionId: number) => {
+  const removeFavorite = async (userId: string | number, companionId: string | number) => {
     try {
-      await supabaseService.removeFromFavorites(userId, companionId)
+      await supabaseService.removeFromFavorites(String(userId), String(companionId))
     } catch (err: any) {
       error.value = err.message
     }

@@ -36,12 +36,15 @@ const chat = computed(() => {
 
 const chatMessages = computed(() => messages.value)
 
-const isBlocked = computed(() => chat.value?.status === 'blocked')
+const isBlocked = computed(() => {
+  const status = chat.value?.status
+  return status === 'offline'
+})
 
 const currentCompanion = computed(() => {
   if (chat.value) {
     // Determine status - show as "Онлайн" for active status or "Оффлайн" otherwise
-    const statusText = chat.value.status === 'online' || chat.value.status === 'active' ? 'Онлайн' : 'Оффлайн'
+    const statusText = chat.value.status === 'active' ? 'Онлайн' : 'Оффлайн'
     return {
       name: chat.value.name,
       status: statusText,

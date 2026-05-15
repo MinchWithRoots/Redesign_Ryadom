@@ -16,7 +16,7 @@ const existingApplication = ref<any>(null)
 
 const form = ref({
   name: '',
-  age: null,
+  age: null as number | null,
   gender: '',
   experience: 'beginner',
   bio: '',
