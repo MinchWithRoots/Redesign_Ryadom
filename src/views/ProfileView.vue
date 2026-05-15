@@ -22,12 +22,12 @@ const companionData = ref<any>(null)
 const companionId = ref<string | null>(null)
 
 // Initialize with current user data
-const userProfile = computed(() => currentUser.value || {})
+const userProfile = computed(() => currentUser.value)
 
 const userEditForm = ref({
-  bio: userProfile.value?.bio || '',
-  image: userProfile.value?.image || '',
-  selectedTopics: (userProfile.value?.topics as string[]) || [],
+  bio: currentUser.value?.bio || '',
+  image: currentUser.value?.image || '',
+  selectedTopics: (currentUser.value?.topics as string[]) || [],
 })
 
 // Watch for changes to currentUser and update form
@@ -259,6 +259,7 @@ watch(
             <!-- Profile Card Header -->
             <div class="profile-card__header">
               <img
+                v-if="userProfile"
                 :src="userProfile.image"
                 :alt="userProfile.name"
                 class="profile-card__avatar"
@@ -314,7 +315,7 @@ watch(
               </button>
               <!-- Show "Мои заявки" only for companions -->
               <button
-                v-if="userProfile.role === 'companion'"
+                v-if="userProfile?.role === 'companion'"
                 @click="activeTab = 'companion-requests'"
                 :class="[
                   'profile-menu__item',
@@ -329,7 +330,7 @@ watch(
 
               <!-- Show "Мои запросы" for regular users -->
               <button
-                v-if="userProfile.role !== 'companion'"
+                v-if="userProfile?.role !== 'companion'"
                 @click="activeTab = 'user-requests'"
                 :class="[
                   'profile-menu__item',
@@ -362,7 +363,7 @@ watch(
                 <img src="../images/settings.svg" alt="Settings" class="profile-menu__icon" />
                 Настройки
               </button>
-              <template v-if="userProfile.role === 'admin'">
+              <template v-if="userProfile?.role === 'admin'">
                 <div class="profile-menu__admin-section">
                   <button
                     @click="navigate('/admin')"
@@ -441,7 +442,7 @@ watch(
                 <label class="form-label">Полное имя</label>
                 <input
                   type="text"
-                  :value="userProfile?.name"
+                  :value="userProfile?.name || ''"
                   disabled
                   class="profile-input profile-input--disabled"
                 />
@@ -452,7 +453,7 @@ watch(
                 <label class="form-label">Email</label>
                 <input
                   type="email"
-                  :value="userProfile?.email"
+                  :value="userProfile?.email || ''"
                   disabled
                   class="profile-input profile-input--disabled"
                 />
@@ -462,7 +463,7 @@ watch(
               <div class="profile-form__group">
                 <label class="form-label">Возраст</label>
                 <div class="profile-display-field">
-                  {{ userProfile?.age }} {{ getAgeForm(userProfile?.age) }}
+                  {{ userProfile?.age }} {{ userProfile?.age ? getAgeForm(userProfile.age) : '' }}
                 </div>
               </div>
 
@@ -549,12 +550,12 @@ watch(
               :key="chat.id"
               :class="[
                 'profile-chat-item',
-                chat.status === 'blocked' && 'profile-chat-item--blocked'
+                chat.status === 'offline' && 'profile-chat-item--blocked'
               ]"
             >
               <div
-                @click="chat.status !== 'blocked' && handleOpenChat(chat.id)"
-                :class="['profile-chat-item__main', chat.status !== 'blocked' ? 'profile-chat-item__main--clickable' : '']"
+                @click="chat.status !== 'offline' && handleOpenChat(chat.id)"
+                :class="['profile-chat-item__main', chat.status !== 'offline' ? 'profile-chat-item__main--clickable' : '']"
               >
                 <!-- Avatar -->
                 <div class="profile-chat-item__avatar-wrapper">
@@ -576,8 +577,8 @@ watch(
                   <div class="profile-chat-item__header">
                     <h3 class="profile-chat-item__name">{{ chat.name }}</h3>
                     <!-- Blocked Badge -->
-                    <span v-if="chat.status === 'blocked'" class="profile-chat-item__badge profile-chat-item__badge--blocked">
-                      заблокирован
+                    <span v-if="chat.status === 'offline'" class="profile-chat-item__badge profile-chat-item__badge--blocked">
+                      завершён
                     </span>
                     <span v-else-if="chat.unread_count > 0" class="profile-chat-item__badge profile-chat-item__badge--unread">
                       {{ chat.unread_count }}
@@ -588,17 +589,17 @@ watch(
                 </div>
 
                 <!-- Arrow (hidden for blocked) -->
-                <img v-if="chat.status !== 'blocked'" src="../images/send.svg" alt="Open" class="profile-chat-item__arrow" />
+                <img v-if="chat.status !== 'offline'" src="../images/send.svg" alt="Open" class="profile-chat-item__arrow" />
               </div>
 
               <!-- Action Buttons -->
               <div class="profile-chat-item__actions">
-                <!-- Unblock Button (for blocked chats) -->
+                <!-- Unblock Button (for offline chats) -->
                 <button
-                  v-if="chat.status === 'blocked'"
+                  v-if="chat.status === 'offline'"
                   @click.stop="handleUnblockChat(chat.id, $event)"
                   class="profile-chat-item__action-btn profile-chat-item__action-btn--unblock"
-                  title="Разблокировать"
+                  title="Активировать чат"
                 >
                   <svg class="profile-chat-item__action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -619,7 +620,7 @@ watch(
         </div>
 
         <!-- Chat Requests Tab (only for companions) -->
-        <div v-if="activeTab === 'companion-requests' && userProfile.role === 'companion'" class="profile-main-content">
+        <div v-if="activeTab === 'companion-requests' && userProfile?.role === 'companion'" class="profile-main-content">
           <h2 class="profile-section__title">Мои заявки на чат</h2>
           <div class="profile-section">
             <CompanionChatRequests
@@ -633,7 +634,7 @@ watch(
         </div>
 
         <!-- User Chat Requests Tab (for regular users) -->
-        <div v-if="activeTab === 'user-requests' && userProfile.role !== 'companion'" class="profile-main-content">
+        <div v-if="activeTab === 'user-requests' && userProfile?.role !== 'companion'" class="profile-main-content">
           <h2 class="profile-section__title">Мои запросы на чат</h2>
           <div class="profile-section">
             <UserChatRequests />
