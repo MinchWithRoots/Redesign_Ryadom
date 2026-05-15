@@ -15,6 +15,7 @@ const successMessage = ref('')
 const errorMessage = ref('')
 const editBio = ref('')
 const previewImage = ref<string>('')
+const imageLoadErrors = ref<Set<string>>(new Set())
 
 // Session history - loaded from chats table where status = 'offline'
 const sessionHistory = ref<any[]>([])
@@ -47,6 +48,10 @@ watch(currentUser, (newUser) => {
 const handleLogout = () => {
   logoutUser()
   router.push('/')
+}
+
+const handleImageError = (imageId: string) => {
+  imageLoadErrors.value.add(imageId)
 }
 
 const handleImageUpload = (event: Event) => {
@@ -258,12 +263,18 @@ watch(
           <div class="profile-card">
             <!-- Profile Card Header -->
             <div class="profile-card__header">
-              <img
-                v-if="userProfile"
-                :src="userProfile.image"
-                :alt="userProfile.name"
-                class="profile-card__avatar"
-              />
+              <div class="profile-card__avatar-wrapper">
+                <img
+                  v-if="userProfile && userProfile.image && !imageLoadErrors.has('profile-avatar')"
+                  :src="userProfile.image"
+                  :alt="userProfile.name"
+                  class="profile-card__avatar"
+                  @error="handleImageError('profile-avatar')"
+                />
+                <div v-else-if="userProfile" class="profile-card__avatar-fallback">
+                  <img src="/src/images/gallery.svg" alt="Gallery" class="profile-card__avatar-icon" />
+                </div>
+              </div>
               <h2 v-if="userProfile" class="profile-card__name">{{ userProfile.name }}</h2>
               <p v-if="userProfile" class="profile-card__age">{{ userProfile.age }} {{ getAgeForm(userProfile.age) }}</p>
 
@@ -560,10 +571,15 @@ watch(
                 <!-- Avatar -->
                 <div class="profile-chat-item__avatar-wrapper">
                   <img
+                    v-if="chat.image && !imageLoadErrors.has(`chat-${chat.id}`)"
                     :src="chat.image"
                     :alt="chat.name"
                     class="profile-chat-item__avatar"
+                    @error="handleImageError(`chat-${chat.id}`)"
                   />
+                  <div v-else class="profile-chat-item__avatar-fallback">
+                    <img src="/src/images/gallery.svg" alt="Gallery" class="profile-chat-item__avatar-icon" />
+                  </div>
                   <div
                     :class="[
                       'profile-chat-item__status',
@@ -1382,5 +1398,59 @@ watch(
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+.profile-card__avatar-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card__avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.profile-card__avatar-icon {
+  width: 60px;
+  height: 60px;
+  opacity: 0.6;
+}
+
+.profile-chat-item__avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-chat-item__avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.profile-chat-item__avatar-icon {
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
 }
 </style>
