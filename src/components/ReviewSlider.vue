@@ -55,17 +55,15 @@ const handleSwiperInit = (swiper: any) => {
     <!-- Slider Content -->
     <Swiper
       :modules="modules"
-      :slides-per-view="3"
-      :space-between="40"
+      :slides-per-view="1"
+      :space-between="20"
       :speed="600"
       :loop="true"
       :centered-slides="true"
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
-        1024: { slidesPerView: 3, spaceBetween: 40, centeredSlides: true },
-        768: { slidesPerView: 2, spaceBetween: 30, centeredSlides: true },
-        480: { slidesPerView: 1, spaceBetween: 20, centeredSlides: true }
+        1024: { slidesPerView: 3, spaceBetween: 40, centeredSlides: true }
       }"
       @swiper="handleSwiperInit"
       class="emotions-slider__slider swiper"
@@ -215,7 +213,7 @@ const handleSwiperInit = (swiper: any) => {
   }
 }
 
-@media screen and (max-width: 767.9px) {
+@media screen and (max-width: 1023px) {
   .slider-nav {
     display: none;
   }
@@ -288,10 +286,10 @@ const handleSwiperInit = (swiper: any) => {
   }
 }
 
-@media screen and (max-width: 767.9px) {
+@media screen and (max-width: 1023px) {
   .emotions-slider-item {
     width: calc(100dvw - 60px);
-    max-width: 100%;
+    max-width: 400px;
   }
 }
 
@@ -477,23 +475,19 @@ const handleSwiperInit = (swiper: any) => {
   }
 }
 
-@media screen and (max-width: 767.9px) {
-  .emotions-slider {
-    padding: 0;
-    margin-inline: -20px;
+@media screen and (max-width: 1023px) {
+  .emotions-slider__slider {
+    display: flex;
+    justify-content: center;
   }
 
-  .emotions-slider-item {
-    max-width: 100%;
+  .swiper-slide {
+    justify-content: center;
   }
 
   .emotions-slider-item__content {
     gap: 14px;
     padding: 18px 16px;
-  }
-
-  .emotions-slider-item__title {
-    font-size: 16px;
   }
 
   .emotions-slider-item__star {
