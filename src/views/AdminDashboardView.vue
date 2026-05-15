@@ -32,6 +32,7 @@ const confirmDialog = ref({
 })
 
 const showConfirmDialog = (title: string, message: string, onConfirm: () => Promise<void>, isDangerous = false) => {
+  console.log('showConfirmDialog called with title:', title)
   confirmDialog.value = {
     isOpen: true,
     title,
@@ -41,6 +42,7 @@ const showConfirmDialog = (title: string, message: string, onConfirm: () => Prom
     onConfirm,
     isDangerous
   }
+  console.log('Confirm dialog opened, callback set:', !!onConfirm)
 }
 
 const closeConfirmDialog = () => {
@@ -56,8 +58,16 @@ const handleConfirmDialog = async () => {
 }
 
 const handleDialogConfirm = async () => {
+  console.log('handleDialogConfirm called, onConfirm exists:', !!confirmDialog.value.onConfirm)
   if (confirmDialog.value.onConfirm) {
-    await confirmDialog.value.onConfirm()
+    try {
+      console.log('Executing onConfirm callback...')
+      await confirmDialog.value.onConfirm()
+      console.log('onConfirm callback completed successfully')
+    } catch (err) {
+      console.error('Error in onConfirm callback:', err)
+      throw err
+    }
   }
   closeConfirmDialog()
 }
@@ -267,28 +277,40 @@ const handleToggleCompanionStatus = async (companionId: string | number, isAvail
 }
 
 const handleToggleAdminStatus = async (userId: string | number, currentRole: string) => {
+  console.log('handleToggleAdminStatus called with userId:', userId, 'currentRole:', currentRole)
   const newRole = currentRole === 'admin' ? 'user' : 'admin'
   const actionText = newRole === 'admin' ? 'Сделать администратором' : 'Убрать из администраторов'
   const warningText = newRole === 'admin'
     ? 'Пользователь получит полный доступ к админ панели'
     : 'Пользователь потеряет доступ к админ панели'
 
+  console.log('Showing confirm dialog with newRole:', newRole)
   showConfirmDialog(
     actionText,
     warningText,
     async () => {
+      console.log('Dialog callback executing: updating user', userId, 'to role:', newRole)
       try {
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from('users')
           .update({ role: newRole })
           .eq('id', userId)
+          .select()
 
-        if (error) throw error
+        console.log('Update result:', { error, data })
 
-        successMessage.value = `Роль изменена на "${newRole === 'admin' ? 'Администратор' : 'Пользователь'}" ✓`
+        if (error) {
+          console.error('Supabase error:', error)
+          throw error
+        }
+
+        console.log('Update successful, reloading users...')
+        successMessage.value = `Роль изменена на "${newRole === 'admin' ? 'Администратор' : 'Пользователь'}"`
         await loadUsers()
+        console.log('Users reloaded, users.value:', users.value.map(u => ({ id: u.id, role: u.role })))
         setTimeout(() => (successMessage.value = ''), 3000)
       } catch (err) {
+        console.error('Error in handleToggleAdminStatus callback:', err)
         errorMessage.value = `Ошибка при изменении роли: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
         setTimeout(() => (errorMessage.value = ''), 3000)
       }
