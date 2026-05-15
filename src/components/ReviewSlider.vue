@@ -20,9 +20,14 @@ defineProps<{
 
 const modules = [Navigation, Pagination, Autoplay, Virtual]
 const swiperInstance = ref<any>(null)
+const imageLoadErrors = ref<Set<number | string>>(new Set())
 
 const handleSwiperInit = (swiper: any) => {
   swiperInstance.value = swiper
+}
+
+const handleImageError = (reviewId: number | string) => {
+  imageLoadErrors.value.add(reviewId)
 }
 </script>
 
@@ -72,7 +77,15 @@ const handleSwiperInit = (swiper: any) => {
         <div class="emotions-slider__item emotions-slider-item">
           <!-- Avatar as Image -->
           <div class="emotions-slider-item__image">
-            <img :src="review.avatar" :alt="review.name" />
+            <img
+              v-if="!imageLoadErrors.has(review.id)"
+              :src="review.avatar"
+              :alt="review.name"
+              @error="handleImageError(review.id)"
+            />
+            <div v-else class="emotions-slider-item__image-fallback">
+              <img src="../images/gallery.svg" alt="Gallery" class="emotions-slider-item__image-icon" />
+            </div>
           </div>
 
           <!-- Content -->
@@ -87,7 +100,15 @@ const handleSwiperInit = (swiper: any) => {
                 <!-- Author -->
                 <div class="emotions-slider-item__author">
                   <div class="emotions-slider-item__author-image">
-                    <img :src="review.avatar" :alt="review.name" />
+                    <img
+                      v-if="!imageLoadErrors.has(review.id)"
+                      :src="review.avatar"
+                      :alt="review.name"
+                      @error="handleImageError(review.id)"
+                    />
+                    <div v-else class="emotions-slider-item__author-image-fallback">
+                      <img src="../images/gallery.svg" alt="Gallery" class="emotions-slider-item__author-icon" />
+                    </div>
                   </div>
                   <div class="emotions-slider-item__author-name">
                     {{ review.name }}
@@ -297,6 +318,9 @@ const handleSwiperInit = (swiper: any) => {
   aspect-ratio: 400 / 270;
   overflow: hidden;
   background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .emotions-slider-item__image img {
@@ -304,6 +328,20 @@ const handleSwiperInit = (swiper: any) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.emotions-slider-item__image-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.emotions-slider-item__image-icon {
+  width: 80px;
+  height: 80px;
+  opacity: 0.6;
 }
 
 .emotions-slider-item__content {
@@ -348,6 +386,14 @@ const handleSwiperInit = (swiper: any) => {
 
 .emotions-slider-item__author-image {
   display: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
 }
 
 .emotions-slider-item__author-image img {
@@ -356,6 +402,20 @@ const handleSwiperInit = (swiper: any) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.emotions-slider-item__author-image-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.emotions-slider-item__author-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
 }
 
 .emotions-slider-item__author-name {
