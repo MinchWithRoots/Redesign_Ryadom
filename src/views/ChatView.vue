@@ -5,6 +5,9 @@ import { currentUser, messages, getChatById, endSession, loadChats, chats as glo
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import '@/assets/chat.css'
+import infoIcon from '../images/info-triangle.svg'
+import blockIcon from '../images/block.svg'
+import sendIcon from '../images/send.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -432,9 +435,7 @@ onMounted(async () => {
                   @click="showReportModal = true; showActionMenu = false"
                   class="chat-dropdown-item"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 6H2a1 1 0 00-1 1v1a6 6 0 006 6h8a6 6 0 006-6v-1a1 1 0 00-1-1h-1m-6-15a6 6 0 100 12 6 6 0 000-12z" />
-                  </svg>
+                  <img :src="infoIcon" alt="Report" class="chat-dropdown-icon" />
                   <span>Пожаловаться</span>
                 </button>
 
@@ -445,9 +446,7 @@ onMounted(async () => {
                   :disabled="isBlockingUser"
                   class="chat-dropdown-item chat-dropdown-item--danger"
                 >
-                  <svg class="chat-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4m0 0H3m0 0v8m0-8l8 8" />
-                  </svg>
+                  <img :src="blockIcon" alt="Block" class="chat-dropdown-icon" />
                   <span v-if="!isBlockingUser">Заблокировать</span>
                   <span v-else>Блокировка...</span>
                 </button>
@@ -457,9 +456,7 @@ onMounted(async () => {
                   :disabled="isBlockingUser"
                   class="chat-dropdown-item chat-dropdown-item--success"
                 >
-                  <svg class="chat-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+                  <img :src="blockIcon" alt="Unblock" class="chat-dropdown-icon" />
                   <span v-if="!isBlockingUser">Разблокировать</span>
                   <span v-else>Разблокировка...</span>
                 </button>
@@ -473,9 +470,7 @@ onMounted(async () => {
                   :disabled="isEndingSession"
                   class="chat-dropdown-item"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img :src="sendIcon" alt="Close" class="chat-dropdown-icon" style="transform: rotate(45deg);" />
                   <span>Завершить сессию</span>
                 </button>
               </div>
@@ -690,9 +685,7 @@ onMounted(async () => {
             class="chat-send-button"
             title="Отправить сообщение"
           >
-            <svg v-if="!isSending" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-2.976 5.951 2.976a1 1 0 001.169-1.409l-7-14z" />
-            </svg>
+            <img v-if="!isSending" :src="sendIcon" alt="Send" class="chat-send-icon" />
             <svg v-else class="chat-send-spinner" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

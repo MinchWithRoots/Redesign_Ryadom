@@ -276,6 +276,12 @@
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.chat-dropdown-item img.chat-dropdown-icon {
+  filter: currentColor;
 }
 
 .chat-dropdown-divider {
@@ -604,9 +610,14 @@
   transform: none;
 }
 
-.chat-send-button svg {
+.chat-send-button svg,
+.chat-send-button img {
   width: 1.25rem;
   height: 1.25rem;
+}
+
+.chat-send-icon {
+  filter: brightness(0) invert(1);
 }
 
 .chat-send-spinner {
