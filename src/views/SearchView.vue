@@ -219,9 +219,9 @@ const navigateToProfile = (companionId: string | number) => {
                   <input
                     v-model="filters.experience"
                     type="radio"
-                    value="experienced"
+                    value="intermediate"
                   />
-                  <span>2+ года</span>
+                  <span>1–3 года</span>
                 </label>
                 <label class="filter-option">
                   <input
@@ -229,7 +229,7 @@ const navigateToProfile = (companionId: string | number) => {
                     type="radio"
                     value="expert"
                   />
-                  <span>5+ лет</span>
+                  <span>3+ лет</span>
                 </label>
               </div>
             </div>
