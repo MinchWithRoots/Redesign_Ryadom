@@ -18,7 +18,7 @@ const form = ref({
   name: '',
   age: null,
   gender: '',
-  experience: 'Начинающий',
+  experience: 'beginner',
   bio: '',
   image: '',
   topics: [] as number[],
@@ -250,7 +250,7 @@ const submitApplication = async () => {
       <div class="become-companion-header">
         <h1 class="become-companion-title">Стань спутником</h1>
         <p class="become-companion-subtitle">
-          Помогайте людям в их пути
+          Помогайте людям в их пути и получайте вознаграждение за вашу поддержку
         </p>
       </div>
 
@@ -377,8 +377,9 @@ const submitApplication = async () => {
               class="become-companion-select"
               required
             >
-              <option value="Начинающий">Начинающий (первый раз помогу людям)</option>
-              <option value="Опытный специалист">Опытный специалист (имею опыт в поддержке)</option>
+              <option value="beginner">До 1 года (первый раз помогу людям)</option>
+              <option value="intermediate">1–3 года (имею опыт в поддержке)</option>
+              <option value="expert">3+ лет (многолетний опыт в поддержке)</option>
             </select>
           </div>
 

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { currentUser, isAdmin, loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import { getGenderInRussian } from '@/utils/genderForm'
+import { getExperienceText } from '@/utils/experienceForm'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const router = useRouter()
