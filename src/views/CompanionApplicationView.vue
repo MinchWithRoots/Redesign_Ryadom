@@ -250,7 +250,7 @@ const submitApplication = async () => {
       <div class="become-companion-header">
         <h1 class="become-companion-title">Стань спутником</h1>
         <p class="become-companion-subtitle">
-          Помогайте людям в их пути и получайте вознаграждение за вашу поддержку
+          Помогайте людям в их пути
         </p>
       </div>
 
