@@ -18,6 +18,41 @@ const isLoading = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
 
+// Confirm Dialog
+const confirmDialog = ref({
+  isOpen: false,
+  title: '',
+  message: '',
+  confirmText: 'Подтвердить',
+  cancelText: 'Отмена',
+  onConfirm: null as (() => void) | null,
+  isDangerous: false
+})
+
+const showConfirmDialog = (title: string, message: string, onConfirm: () => void, isDangerous = false) => {
+  confirmDialog.value = {
+    isOpen: true,
+    title,
+    message,
+    confirmText: isDangerous ? '🚫 Да, удалить' : '✓ Подтвердить',
+    cancelText: '✕ Отмена',
+    onConfirm,
+    isDangerous
+  }
+}
+
+const closeConfirmDialog = () => {
+  confirmDialog.value.isOpen = false
+  confirmDialog.value.onConfirm = null
+}
+
+const handleConfirmDialog = async () => {
+  if (confirmDialog.value.onConfirm) {
+    await confirmDialog.value.onConfirm()
+  }
+  closeConfirmDialog()
+}
+
 // Check admin access
 onMounted(async () => {
   if (!isAdmin()) {
@@ -115,23 +150,28 @@ const stats = computed(() => ({
 }))
 
 const handleDeleteUser = async (userId: string | number) => {
-  if (!confirm('Вы уверены? Это удалит пользователя и все его данные.')) return
+  showConfirmDialog(
+    'Удалить пользователя',
+    'Это действие удалит пользователя и все его данные. Это невозможно отменить.',
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .delete()
+          .eq('id', userId)
 
-  try {
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId)
+        if (error) throw error
 
-    if (error) throw error
-
-    successMessage.value = 'Пользователь удален ✓'
-    await loadUsers()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        successMessage.value = 'Пользователь удален ✓'
+        await loadUsers()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    },
+    true
+  )
 }
 
 const handleToggleCompanionStatus = async (companionId: string | number, isAvailable: boolean) => {
@@ -172,23 +212,28 @@ const handleToggleAdminStatus = async (userId: string | number, currentRole: str
 }
 
 const handleDeleteReview = async (reviewId: string | number) => {
-  if (!confirm('Удалить этот отзыв?')) return
+  showConfirmDialog(
+    'Удалить отзыв',
+    'Отзыв будет удален и его больше нельзя будет восстановить.',
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('reviews')
+          .delete()
+          .eq('id', reviewId)
 
-  try {
-    const { error } = await supabase
-      .from('reviews')
-      .delete()
-      .eq('id', reviewId)
+        if (error) throw error
 
-    if (error) throw error
-
-    successMessage.value = 'Отзыв удален ✓'
-    await loadReviews()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        successMessage.value = 'Отзыв удален ✓'
+        await loadReviews()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    },
+    true
+  )
 }
 
 const navigate = (path: string) => {
@@ -196,61 +241,77 @@ const navigate = (path: string) => {
 }
 
 const handleResolveReport = async (reportId: string | number) => {
-  try {
-    const { error } = await supabase
-      .from('reports')
-      .update({ status: 'resolved' })
-      .eq('id', reportId)
+  showConfirmDialog(
+    'Отметить как обработанную',
+    'Жалоба будет отмечена как обработанная и исчезнет из списка ожидающих.',
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('reports')
+          .update({ status: 'resolved' })
+          .eq('id', reportId)
 
-    if (error) throw error
+        if (error) throw error
 
-    successMessage.value = 'Жалоба отмечена как обработанная ✓'
-    await loadReports()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при обработке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        successMessage.value = 'Жалоба отмечена как обработанная ✓'
+        await loadReports()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при обработке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    }
+  )
 }
 
 const handleDeleteReport = async (reportId: string | number) => {
-  if (!confirm('Удалить эту жалобу?')) return
+  showConfirmDialog(
+    'Удалить жалобу',
+    'Жалоба будет полностью удалена из системы. Это действие невозможно отменить.',
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('reports')
+          .delete()
+          .eq('id', reportId)
 
-  try {
-    const { error } = await supabase
-      .from('reports')
-      .delete()
-      .eq('id', reportId)
+        if (error) throw error
 
-    if (error) throw error
-
-    successMessage.value = 'Жалоба удалена ✓'
-    await loadReports()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        successMessage.value = 'Жалоба удалена ✓'
+        await loadReports()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при удалении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    },
+    true
+  )
 }
 
 const handleBlockCompanion = async (companionId: string | number, companionName: string) => {
-  if (!confirm(`Заблокировать спутника "${companionName}"? Они не смогут принимать новые чаты.`)) return
+  showConfirmDialog(
+    'Заблокировать спутника',
+    `Спутник "${companionName}" не сможет принимать новые чаты. Текущие чаты останутся активными.`,
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('companions')
+          .update({ is_available: false })
+          .eq('id', companionId)
 
-  try {
-    const { error } = await supabase
-      .from('companions')
-      .update({ is_available: false })
-      .eq('id', companionId)
+        if (error) throw error
 
-    if (error) throw error
-
-    successMessage.value = `Спутник "${companionName}" заблокирован ✓`
-    await loadCompanions()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при блокировке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        successMessage.value = `Спутник "${companionName}" заблокирован ✓`
+        await loadCompanions()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при блокировке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    },
+    true
+  )
 }
 
 const handleApproveApplication = async (applicationId: string | number) => {
@@ -405,28 +466,33 @@ const handleRejectApplication = async (applicationId: string | number) => {
     return
   }
 
-  if (!confirm(`Отклонить заявку с причиной: "${reason}"?`)) return
+  showConfirmDialog(
+    'Отклонить заявку',
+    `Причина отклонения: "${reason}"\n\nПосле подтверждения заявка будет отклонена.`,
+    async () => {
+      try {
+        const { error } = await supabase
+          .from('companion_applications')
+          .update({
+            status: 'rejected',
+            rejection_reason: reason,
+            rejected_at: new Date().toISOString(),
+          })
+          .eq('id', applicationId)
 
-  try {
-    const { error } = await supabase
-      .from('companion_applications')
-      .update({
-        status: 'rejected',
-        rejection_reason: reason,
-        rejected_at: new Date().toISOString(),
-      })
-      .eq('id', applicationId)
+        if (error) throw error
 
-    if (error) throw error
-
-    delete rejectionReasons.value[applicationId]
-    successMessage.value = 'Заявка отклонена ✓'
-    await loadApplications()
-    setTimeout(() => (successMessage.value = ''), 3000)
-  } catch (err) {
-    errorMessage.value = `Ошибка при отклонении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-    setTimeout(() => (errorMessage.value = ''), 3000)
-  }
+        delete rejectionReasons.value[applicationId]
+        successMessage.value = 'Заявка отклонена ✓'
+        await loadApplications()
+        setTimeout(() => (successMessage.value = ''), 3000)
+      } catch (err) {
+        errorMessage.value = `Ошибка при отклонении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+        setTimeout(() => (errorMessage.value = ''), 3000)
+      }
+    },
+    true
+  )
 }
 </script>
 
