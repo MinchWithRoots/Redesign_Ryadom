@@ -459,7 +459,7 @@ const handleApproveApplication = async (applicationId: string | number) => {
       age: app.age,
       gender: app.gender,
       experience: app.experience,
-      bio: app.bio,
+      bio: app.bio.substring(0, 500),
       image: imageUrl,
       topics: app.topics || [],
       is_available: true,

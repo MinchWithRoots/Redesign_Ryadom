@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
+import ImageWithFallback from '../components/ImageWithFallback.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import ReviewsList from '../components/ReviewsList.vue'
 import supportIcon from '../images/support.svg'
@@ -127,10 +128,13 @@ const navigateToChat = () => {
         <div class="profile-layout__container">
           <div class="profile-layout__sidebar">
             <div class="profile-card">
-              <img
+              <ImageWithFallback
                 :src="companion.image"
                 :alt="companion.name"
-                class="profile-card__avatar profile-card__avatar--large"
+                class="profile-card__avatar-large-wrapper"
+                imageClass="profile-card__avatar profile-card__avatar--large"
+                fallbackClass="profile-card__avatar-fallback"
+                iconClass="profile-card__avatar-icon-large"
               />
 
               <div class="profile-card__header">

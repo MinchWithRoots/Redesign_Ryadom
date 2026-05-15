@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, companions, chats, sendConnectionRequest, loadCompanions, topics, loadTopics } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
+import ImageWithFallback from '../components/ImageWithFallback.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 import '@/assets/search.css'
@@ -280,13 +281,15 @@ const navigateToProfile = (companionId: string | number) => {
               @click="selectedCompanion = companion"
             >
               <!-- Image -->
-              <div class="companion-card-image">
-                <img
-                  :src="companion.image"
-                  :alt="companion.name"
-                />
-                <div class="companion-card-overlay"></div>
-              </div>
+              <ImageWithFallback
+                :src="companion.image"
+                :alt="companion.name"
+                class="companion-card-image"
+                imageClass="companion-card-image__img"
+                fallbackClass="companion-card-image__fallback"
+                iconClass="companion-card-image__icon"
+              />
+              <div class="companion-card-overlay"></div>
 
               <!-- Info -->
               <div class="companion-card-content">
@@ -354,10 +357,13 @@ const navigateToProfile = (companionId: string | number) => {
           </button>
 
           <div class="modal-center">
-            <img
+            <ImageWithFallback
               :src="selectedCompanion.image"
               :alt="selectedCompanion.name"
-              class="modal-avatar"
+              class="modal-avatar-wrapper"
+              imageClass="modal-avatar"
+              fallbackClass="modal-avatar-fallback"
+              iconClass="modal-avatar-icon"
             />
             <h2 class="modal-title">{{ selectedCompanion.name }}</h2>
             <p class="modal-subtitle">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>

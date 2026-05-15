@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
+import ImageWithFallback from '../components/ImageWithFallback.vue'
 import '@/assets/chat.css'
 import infoIcon from '../images/info-triangle.svg'
 import blockIcon from '../images/block.svg'
@@ -401,14 +402,15 @@ onMounted(async () => {
       <div v-else-if="currentCompanion" class="chat-header">
         <div class="chat-header-info">
           <!-- Avatar -->
-          <div class="chat-avatar-wrapper">
-            <img
-              :src="currentCompanion?.image || 'https://via.placeholder.com/100'"
-              :alt="currentCompanion?.name || 'Companion'"
-              class="chat-avatar"
-            />
-            <div v-if="currentCompanion?.status === 'Онлайн'" class="chat-avatar-online"></div>
-          </div>
+          <ImageWithFallback
+            :src="currentCompanion?.image"
+            :alt="currentCompanion?.name || 'Companion'"
+            class="chat-avatar-wrapper"
+            imageClass="chat-avatar"
+            fallbackClass="chat-avatar-fallback"
+            iconClass="chat-avatar-icon"
+          />
+          <div v-if="currentCompanion?.status === 'Онлайн'" class="chat-avatar-online"></div>
 
           <!-- Info -->
           <div class="chat-header-user-info">
@@ -588,14 +590,15 @@ onMounted(async () => {
         <div v-if="chatMessages.length === 0" class="chat-empty-state">
           <!-- Avatar -->
           <div class="chat-empty-avatar-wrapper">
-            <div class="chat-empty-avatar">
-              <img
-                :src="currentCompanion?.image || 'https://via.placeholder.com/120'"
-                :alt="currentCompanion?.name"
-                class="chat-empty-avatar-image"
-              />
-              <div class="chat-empty-avatar-status"></div>
-            </div>
+            <ImageWithFallback
+              :src="currentCompanion?.image"
+              :alt="currentCompanion?.name"
+              class="chat-empty-avatar"
+              imageClass="chat-empty-avatar-image"
+              fallbackClass="chat-empty-avatar-fallback"
+              iconClass="chat-empty-avatar-icon"
+            />
+            <div class="chat-empty-avatar-status"></div>
           </div>
 
           <!-- Greeting -->
@@ -631,13 +634,15 @@ onMounted(async () => {
           :class="{ 'chat-message-group--sent': message.isMine }"
         >
           <!-- Avatar (for other) -->
-          <div v-if="!message.isMine" class="chat-message-avatar">
-            <img
-              :src="message.image || currentCompanion?.image || 'https://via.placeholder.com/28'"
-              :alt="currentCompanion?.name || 'User'"
-              class="chat-message-avatar-image"
-            />
-          </div>
+          <ImageWithFallback
+            v-if="!message.isMine"
+            :src="message.image || currentCompanion?.image"
+            :alt="currentCompanion?.name || 'User'"
+            class="chat-message-avatar"
+            imageClass="chat-message-avatar-image"
+            fallbackClass="chat-message-avatar-fallback"
+            iconClass="chat-message-avatar-icon"
+          />
 
           <!-- Message Bubble -->
           <div
