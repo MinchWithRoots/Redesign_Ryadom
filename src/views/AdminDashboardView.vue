@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, isAdmin, companions, loadCompanions, loadCurrentUser } from '../composables/useAppState'
+import { currentUser, isAdmin, loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import { getGenderInRussian } from '@/utils/genderForm'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const router = useRouter()
 const activeTab = ref('overview')
 const users = ref<any[]>([])
-const companions = ref<any[]>([])
+const companionsList = ref<any[]>([])
 const reviews = ref<any[]>([])
 const chats = ref<any[]>([])
 const applications = ref<any[]>([])
@@ -53,6 +54,13 @@ const handleConfirmDialog = async () => {
   closeConfirmDialog()
 }
 
+const handleDialogConfirm = async () => {
+  if (confirmDialog.value.onConfirm) {
+    await confirmDialog.value.onConfirm()
+  }
+  closeConfirmDialog()
+}
+
 // Check admin access
 onMounted(async () => {
   if (!isAdmin()) {
@@ -65,7 +73,7 @@ onMounted(async () => {
 const loadDashboardData = async () => {
   try {
     isLoading.value = true
-    await Promise.all([loadUsers(), loadCompanions(), loadReviews(), loadChats(), loadApplications(), loadReports()])
+    await Promise.all([loadUsers(), loadCompanionsList(), loadReviews(), loadChats(), loadApplications(), loadReports()])
   } finally {
     isLoading.value = false
   }
@@ -82,14 +90,14 @@ const loadUsers = async () => {
   }
 }
 
-const loadCompanions = async () => {
+const loadCompanionsList = async () => {
   const { data, error } = await supabase
     .from('companions')
     .select('*')
     .order('created_at', { ascending: false })
 
   if (!error) {
-    companions.value = data || []
+    companionsList.value = data || []
   }
 }
 
@@ -140,7 +148,7 @@ const loadReports = async () => {
 // Stats
 const stats = computed(() => ({
   totalUsers: users.value.length,
-  totalCompanions: companions.value.length,
+  totalCompanions: companionsList.value.length,
   totalChats: chats.value.length,
   totalReviews: reviews.value.length,
   activeChats: chats.value.filter((c: any) => c.status === 'active').length,
@@ -184,7 +192,7 @@ const handleToggleCompanionStatus = async (companionId: string | number, isAvail
     if (error) throw error
 
     successMessage.value = `Статус изменен на "${!isAvailable ? 'Доступен' : 'Недоступен'}" ✓`
-    await loadCompanions()
+    await loadCompanionsList()
     setTimeout(() => (successMessage.value = ''), 3000)
   } catch (err) {
     errorMessage.value = `Ошибка при обновлении: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
@@ -303,7 +311,7 @@ const handleBlockCompanion = async (companionId: string | number, companionName:
         if (error) throw error
 
         successMessage.value = `Спутник "${companionName}" заблокирован ✓`
-        await loadCompanions()
+        await loadCompanionsList()
         setTimeout(() => (successMessage.value = ''), 3000)
       } catch (err) {
         errorMessage.value = `Ошибка при блокировке: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
@@ -435,10 +443,10 @@ const handleApproveApplication = async (applicationId: string | number) => {
     successMessage.value = `Заявка одобрена! ${app.name} добавлена в качестве спутника ✓`
 
     // Reload both applications and companions lists to reflect changes globally
-    // This is critical: loadCompanions() updates the global companions ref so new companion appears everywhere
+    // This is critical: loadCompanionsList() updates the companionsList ref so new companion appears everywhere
     const reloadTasks = [
       loadApplications(),
-      loadCompanions()
+      loadCompanionsList()
     ]
 
     // If the currently logged-in user was approved, reload their profile to show the new role
@@ -563,7 +571,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
         <div class="stat-card group">
           <div class="stat-card__header">
-            <div class="stat-card__value" style="color: #22c55e">{{ stats.activeChats }}</div>
+            <div class="stat-card__value" style="color: #576445">{{ stats.activeChats }}</div>
             <img src="../images/shield-tick.svg" alt="Active" class="stat-card__icon group-hover:opacity-100" />
           </div>
           <p class="stat-card__label">Активных чатов</p>
@@ -608,7 +616,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
           :class="['tab-btn', activeTab === 'companions' ? 'tab-btn--active' : '']"
         >
           <img src="../images/user-story.svg" alt="Companions" class="tab-btn__icon" />
-          Спутники ({{ companions.length }})
+          Спутники ({{ companionsList.length }})
         </button>
         <button
           @click="activeTab = 'reviews'"
@@ -725,15 +733,15 @@ const handleRejectApplication = async (applicationId: string | number) => {
 
       <!-- Companions Tab -->
       <div v-if="activeTab === 'companions'" class="space-y-4">
-        <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companions.length }})</h2>
+        <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companionsList.length }})</h2>
 
         <div v-if="isLoading" class="loading-state">
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
-        <div v-else-if="companions.length > 0" class="grid gap-4">
+        <div v-else-if="companionsList.length > 0" class="grid gap-4">
           <div
-            v-for="companion in companions"
+            v-for="companion in companionsList"
             :key="companion.id"
             class="card-surface"
           >
@@ -752,8 +760,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 <button
                   @click="handleToggleCompanionStatus(companion.id, companion.is_available)"
                   class="btn btn-small rounded-full" :style="{
-                    backgroundColor: companion.is_available ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    color: companion.is_available ? '#16a34a' : '#dc2626'
+                    backgroundColor: companion.is_available ? 'rgba(87, 100, 69, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    color: companion.is_available ? '#576445' : '#dc2626'
                   }"
                 >
                   {{ companion.is_available ? '✓ Доступен' : '✗ Недоступен' }}
@@ -1091,6 +1099,18 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
       </div>
     </div>
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog
+      :isOpen="confirmDialog.isOpen"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      :confirmText="confirmDialog.confirmText"
+      :cancelText="confirmDialog.cancelText"
+      :isDangerous="confirmDialog.isDangerous"
+      @confirm="handleDialogConfirm"
+      @cancel="closeConfirmDialog"
+    />
   </div>
 </template>
 

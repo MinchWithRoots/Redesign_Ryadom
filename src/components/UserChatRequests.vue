@@ -226,8 +226,8 @@ onMounted(async () => {
 }
 
 .user-request-item__badge--approved {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
+  background-color: rgba(87, 100, 69, 0.1);
+  color: #576445;
 }
 
 .user-request-item__badge--rejected {
