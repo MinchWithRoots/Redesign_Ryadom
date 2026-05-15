@@ -27,17 +27,17 @@ const confirmDialog = ref({
   message: '',
   confirmText: 'Подтвердить',
   cancelText: 'Отмена',
-  onConfirm: null as (() => void) | null,
+  onConfirm: null as (() => Promise<void>) | null,
   isDangerous: false
 })
 
-const showConfirmDialog = (title: string, message: string, onConfirm: () => void, isDangerous = false) => {
+const showConfirmDialog = (title: string, message: string, onConfirm: () => Promise<void>, isDangerous = false) => {
   confirmDialog.value = {
     isOpen: true,
     title,
     message,
-    confirmText: isDangerous ? '🚫 Да, удалить' : '✓ Подтвердить',
-    cancelText: '✕ Отмена',
+    confirmText: isDangerous ? 'Да, удалить' : 'Подтвердить',
+    cancelText: 'Отмена',
     onConfirm,
     isDangerous
   }
@@ -545,7 +545,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
           v-if="successMessage"
           class="alert-success-row"
         >
-          <span>✅</span>
+          <img src="/src/images/shield-tick.svg" alt="Success" style="width: 1.25rem; height: 1.25rem;" />
           <span>{{ successMessage }}</span>
         </div>
       </transition>
@@ -554,7 +554,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
           v-if="errorMessage"
           class="alert-error-row"
         >
-          <span>❌</span>
+          <img src="/src/images/block.svg" alt="Error" style="width: 1.25rem; height: 1.25rem;" />
           <span>{{ errorMessage }}</span>
         </div>
       </transition>
@@ -777,14 +777,15 @@ const handleRejectApplication = async (applicationId: string | number) => {
                     color: companion.is_available ? '#576445' : '#dc2626'
                   }"
                 >
-                  {{ companion.is_available ? '✓ Доступен' : '✗ Недоступен' }}
+                  {{ companion.is_available ? 'Доступен' : 'Недоступен' }}
                 </button>
                 <button
                   @click="handleBlockCompanion(companion.id, companion.name)"
                   class="btn btn-small rounded-full"
                   style="background-color: rgba(239, 68, 68, 0.1); color: #dc2626;"
                 >
-                  🚫 Заблокировать
+                  <img src="/src/images/block.svg" alt="Block" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.25rem;" />
+                  Заблокировать
                 </button>
               </div>
             </div>
@@ -863,7 +864,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion_id }}</td>
                   <td class="px-4 py-4">
                     <span class="status-badge" :class="[chat.status === 'active' ? 'status-badge--active' : 'status-badge--inactive']">
-                      {{ chat.status === 'active' ? '✓ Активен' : '✗ Завершен' }}
+                      {{ chat.status === 'active' ? 'Активен' : 'Завершен' }}
                     </span>
                   </td>
                   <td class="px-4 py-4 text-secondary text-sm">
@@ -923,9 +924,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
                       'status-badge--rejected': app.status === 'rejected'
                     }">
                       {{
-                        app.status === 'pending' ? '⏳ На рассмотрении' :
-                        app.status === 'approved' ? '✅ Одобрена' :
-                        '❌ Отклонена'
+                        app.status === 'pending' ? 'На рассмотрении' :
+                        app.status === 'approved' ? 'Одобрена' :
+                        'Отклонена'
                       }}
                     </span>
                   </h3>
@@ -967,7 +968,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 @click="handleApproveApplication(app.id)"
                 class="btn btn-large btn--success btn-full"
               >
-                ✓ Одобрить заявку
+                <img src="/src/images/shield-tick.svg" alt="Approve" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem;" />
+                Одобрить заявку
               </button>
               <div>
                 <label class="form-label">Причина отклонения (если отклоняете):</label>
@@ -981,7 +983,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   @click="handleRejectApplication(app.id)"
                   class="btn btn-large btn--danger btn-full mt-2"
                 >
-                  ✗ Отклонить заявку
+                  <img src="/src/images/block.svg" alt="Reject" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem;" />
+                  Отклонить заявку
                 </button>
               </div>
             </div>
@@ -1031,11 +1034,11 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <!-- От кого и На кого -->
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 0.75rem; background-color: var(--color-light-bg); border-radius: var(--radius-md);">
                     <div class="report-card__field">
-                      <span class="report-card__field-label">🔴 На кого (спутник):</span>
+                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Companion" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого (спутник):</span>
                       <span class="report-card__field-value">{{ report.chats?.companion_id || 'N/A' }}</span>
                     </div>
                     <div class="report-card__field">
-                      <span class="report-card__field-label">🟢 От кого (жалобщик):</span>
+                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reporter" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />От кого (жалобщик):</span>
                       <span class="report-card__field-value">{{ report.reporter?.name || 'Анонимно' }} ({{ report.reporter?.email || 'нет email' }})</span>
                     </div>
                   </div>
@@ -1071,7 +1074,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 @click="handleResolveReport(report.id)"
                 class="btn btn-large btn--success flex-1"
               >
-                ✓ Отметить как обработанную
+                <img src="/src/images/shield-tick.svg" alt="Resolve" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem;" />
+                Отметить как обработанную
               </button>
               <button
                 @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
@@ -1079,13 +1083,15 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 class="btn btn-large btn-block flex-1"
                 style="background-color: #ef4444; color: white;"
               >
-                🚫 Заблокировать спутника
+                <img src="/src/images/block.svg" alt="Block" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem; filter: brightness(0) invert(1);" />
+                Заблокировать спутника
               </button>
               <button
                 @click="handleDeleteReport(report.id)"
                 class="btn btn-large btn--danger flex-1"
               >
-                ✕ Удалить
+                <img src="/src/images/close.svg" alt="Delete" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem;" />
+                Удалить
               </button>
             </div>
             <div v-else style="border-top: 1px solid var(--color-border); padding-top: 1rem; display: flex; gap: 1rem;">
@@ -1095,13 +1101,15 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 class="btn btn-large btn-block flex-1"
                 style="background-color: #ef4444; color: white;"
               >
-                🚫 Заблокировать спутника
+                <img src="/src/images/block.svg" alt="Block" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem; filter: brightness(0) invert(1);" />
+                Заблокировать спутника
               </button>
               <button
                 @click="handleDeleteReport(report.id)"
                 class="btn btn-large btn--danger flex-1"
               >
-                ✕ Удалить
+                <img src="/src/images/close.svg" alt="Delete" style="width: 1rem; height: 1rem; display: inline-block; margin-right: 0.5rem;" />
+                Удалить
               </button>
             </div>
           </div>
