@@ -471,7 +471,7 @@ onMounted(async () => {
                   :disabled="isEndingSession"
                   class="chat-dropdown-item"
                 >
-                  <img :src="closeIcon" alt="Close" class="chat-dropdown-icon" style="transform: rotate(45deg);" />
+                  <img :src="closeIcon" alt="Close" class="chat-dropdown-icon" />
                   <span>Завершить сессию</span>
                 </button>
               </div>
