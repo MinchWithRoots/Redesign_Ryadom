@@ -130,7 +130,13 @@ onMounted(() => {
       <img
         src="/src/images/hero.png"
         alt=""
-        class="hero-bg-image"
+        class="hero-bg-image hero-bg-image--desktop"
+        aria-hidden="true"
+      />
+      <img
+        src="/src/images/background-mobile.png"
+        alt=""
+        class="hero-bg-image hero-bg-image--mobile"
         aria-hidden="true"
       />
 
