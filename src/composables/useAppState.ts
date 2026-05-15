@@ -497,6 +497,7 @@ export const loadCompanions = async () => {
     const { data: result, error: loadCompanionsError } = await supabase
       .from('companions')
       .select('*')
+      .eq('is_available', true)
       .order('created_at', { ascending: false })
 
     if (loadCompanionsError) {
