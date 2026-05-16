@@ -1731,3 +1731,28 @@ export const incrementUserSessions = async (userId: string) => {
     console.error('Error in incrementUserSessions:', err)
   }
 }
+
+// Refresh companion data to update review counts and ratings
+export const refreshCompanionData = async (companionId: string | number) => {
+  try {
+    const companionIdStr = companionId.toString()
+    const updatedCompanion = await getCompanionById(companionIdStr)
+
+    if (updatedCompanion) {
+      // Also fetch updated review stats
+      const { averageRating, reviewCount } = await getCompanionRatingStats(companionIdStr)
+      const companionWithStats = {
+        ...updatedCompanion,
+        average_rating: averageRating,
+        reviews_count: reviewCount
+      }
+
+      const index = companions.value.findIndex(c => c.id.toString() === companionIdStr)
+      if (index !== -1) {
+        companions.value[index] = companionWithStats
+      }
+    }
+  } catch (err) {
+    console.error('Error refreshing companion data:', err)
+  }
+}

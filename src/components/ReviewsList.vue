@@ -78,7 +78,8 @@ const formatSessionDate = (dateString: string | null | undefined) => {
   }
 }
 
-onMounted(async () => {
+const loadReviews = async () => {
+  isLoading.value = true
   try {
     const companionIdStr = typeof props.companionId === 'string' ? props.companionId : props.companionId.toString()
     reviews.value = await getCompanionReviews(companionIdStr)
@@ -87,5 +88,13 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+onMounted(async () => {
+  await loadReviews()
+})
+
+defineExpose({
+  loadReviews
 })
 </script>

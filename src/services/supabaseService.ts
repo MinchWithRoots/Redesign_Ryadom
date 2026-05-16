@@ -233,7 +233,7 @@ export async function addReview(
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .upsert([
+      .insert([
         {
           companion_id: companionId,
           user_id: userId,
@@ -248,11 +248,16 @@ export async function addReview(
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error)
+      console.error('Error adding review - Supabase error:', errorMessage, error)
+      throw error
+    }
     return data
   } catch (error) {
-    console.error('Error adding review:', error)
-    return null
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Error adding review:', errorMessage, error)
+    throw error
   }
 }
 
@@ -285,11 +290,16 @@ export async function getUserReviews(userId: string) {
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
-    if (error) throw error
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error)
+      console.error('Error fetching user reviews:', errorMessage, error)
+      throw error
+    }
     return data
   } catch (error) {
-    console.error('Error fetching user reviews:', error)
-    return null
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Error fetching user reviews - catch block:', errorMessage)
+    return []
   }
 }
 

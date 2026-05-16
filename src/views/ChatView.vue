@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats } from '../composables/useAppState'
+import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
@@ -219,7 +219,10 @@ const handleEndSession = async () => {
   }
 }
 
-const handleReviewSuccess = () => {
+const handleReviewSuccess = async () => {
+  if (chat.value) {
+    await refreshCompanionData(chat.value.companion_id)
+  }
   setTimeout(() => {
     router.push('/profile')
   }, 1000)

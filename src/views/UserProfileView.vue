@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
@@ -19,6 +19,7 @@ const isLoading = ref(true)
 const showNotification = ref('')
 const hasRequestSent = ref(false)
 const companionSessions = ref(0)
+const reviewsListRef = ref<any>(null)
 
 const isCurrentUserCompanion = computed(() => {
   return currentUser.value && companion.value && 
@@ -92,6 +93,13 @@ const goBack = () => {
 const navigateToChat = () => {
   router.push('/profile?tab=chats')
 }
+
+watch(companion, async () => {
+  if (companion.value && reviewsListRef.value) {
+    await nextTick()
+    reviewsListRef.value.loadReviews()
+  }
+})
 </script>
 
 <template>
@@ -229,7 +237,7 @@ const navigateToChat = () => {
               </div>
             </div>
 
-            <ReviewsList v-if="companion" :companion-id="companion.id" />
+            <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" />
 
             <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
