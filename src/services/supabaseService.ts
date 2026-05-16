@@ -284,8 +284,7 @@ export async function getUserReviews(userId: string) {
       .from('reviews')
       .select(`
         *,
-        companions (name, image, id),
-        chats (created_at)
+        companions (name, image, id)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
