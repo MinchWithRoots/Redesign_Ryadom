@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics, getCompanionById, getCurrentCompanionId } from '../composables/useAppState'
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
+import ReviewModal from '../components/ReviewModal.vue'
+import { getUserReviews, deleteReview } from '../services/supabaseService'
 import { getAgeForm } from '../utils/ageForm'
 import { supabase } from '@/utils/supabase'
 import '@/assets/profile.css'
@@ -21,6 +23,12 @@ const imageLoadErrors = ref<Set<string>>(new Set())
 const sessionHistory = ref<any[]>([])
 const companionData = ref<any>(null)
 const companionId = ref<string | null>(null)
+
+// Reviews
+const userReviews = ref<any[]>([])
+const isLoadingReviews = ref(false)
+const showReviewModal = ref(false)
+const selectedSessionForReview = ref<any>(null)
 
 // Initialize with current user data
 const userProfile = computed(() => currentUser.value)
@@ -231,7 +239,9 @@ const loadSessionHistory = async () => {
     // Transform the data for display
     sessionHistory.value = (completedChats || []).map((chat: any) => ({
       id: chat.id,
+      companionId: chat.companion_id,
       companionName: chat.companions?.name || 'Unknown',
+      companionImage: chat.companions?.image,
       topic: '', // We don't have topic info in the chat yet
       date: new Date(chat.updated_at).toLocaleDateString('ru-RU'),
       duration: '—', // Calculate duration if needed
@@ -244,11 +254,58 @@ const loadSessionHistory = async () => {
   }
 }
 
+// Load user's reviews
+const loadUserReviews = async () => {
+  if (!currentUser.value) return
+
+  isLoadingReviews.value = true
+  try {
+    const reviews = await getUserReviews(currentUser.value.id)
+    userReviews.value = reviews || []
+  } catch (err) {
+    console.error('Error loading reviews:', err)
+  } finally {
+    isLoadingReviews.value = false
+  }
+}
+
+// Open review modal for session
+const openReviewModal = (session: any) => {
+  selectedSessionForReview.value = session
+  showReviewModal.value = true
+}
+
+// Handle review deletion
+const handleDeleteReview = async (reviewId: string) => {
+  if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) return
+
+  try {
+    const success = await deleteReview(reviewId)
+    if (success) {
+      userReviews.value = userReviews.value.filter(r => r.id !== reviewId)
+      successMessage.value = 'Отзыв удалён'
+      setTimeout(() => {
+        successMessage.value = ''
+      }, 3000)
+    }
+  } catch (err) {
+    console.error('Error deleting review:', err)
+    errorMessage.value = 'Ошибка при удалении отзыва'
+  }
+}
+
+// Handle review success
+const handleReviewSuccess = async () => {
+  showReviewModal.value = false
+  await loadUserReviews()
+}
+
 // Load chats and topics on mount
 onMounted(async () => {
   await loadChats()
   await loadTopics()
   await loadSessionHistory()
+  await loadUserReviews()
 
   // If user is a companion, load companion ID for chat requests
   if (currentUser.value?.role === 'companion') {
@@ -390,6 +447,18 @@ watch(
               >
                 <img src="../images/shield-tick.svg" alt="History" class="profile-menu__icon" />
                 История сессий
+              </button>
+              <button
+                @click="activeTab = 'reviews'"
+                :class="[
+                  'profile-menu__item',
+                  activeTab === 'reviews' && 'profile-menu__item--active'
+                ]"
+              >
+                <svg class="profile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                Мои отзывы
               </button>
               <button
                 @click="activeTab = 'settings'"
@@ -705,25 +774,103 @@ watch(
                 </div>
               </div>
 
-              <!-- Rating -->
-              <div class="profile-history-item__rating">
-                <span class="profile-history-item__rating-label">Ваша оценка:</span>
-                <div class="profile-history-item__stars">
-                  <img
-                    v-for="starIndex in 5"
-                    :key="starIndex"
-                    src="@/images/star.svg"
-                    :alt="`Star ${starIndex}`"
-                    class="profile-history-item__star"
-                    :style="{ opacity: starIndex <= session.feedback ? 1 : 0.2 }"
-                  />
+              <!-- Rating and Actions -->
+              <div class="profile-history-item__footer">
+                <div class="profile-history-item__rating">
+                  <span class="profile-history-item__rating-label">Ваша оценка:</span>
+                  <div class="profile-history-item__stars">
+                    <img
+                      v-for="starIndex in 5"
+                      :key="starIndex"
+                      src="@/images/star.svg"
+                      :alt="`Star ${starIndex}`"
+                      class="profile-history-item__star"
+                      :style="{ opacity: starIndex <= session.feedback ? 1 : 0.2 }"
+                    />
+                  </div>
                 </div>
+                <button
+                  @click="openReviewModal(session)"
+                  class="profile-history-item__review-btn"
+                >
+                  Оставить отзыв
+                </button>
               </div>
             </div>
           </div>
 
           <div v-else class="profile-empty-history">
             <p>У вас пока нет завершённых сессий</p>
+          </div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div v-if="activeTab === 'reviews'" class="profile-main-content">
+          <div class="profile-section">
+            <h2 class="profile-section__title">Мои отзывы</h2>
+
+            <!-- Loading State -->
+            <div v-if="isLoadingReviews" class="reviews-loading">
+              <div class="reviews-loading__spinner"></div>
+              <p>Загрузка отзывов...</p>
+            </div>
+
+            <!-- Reviews List -->
+            <div v-else-if="userReviews.length > 0" class="profile-reviews-list">
+              <div v-for="review in userReviews" :key="review.id" class="profile-review-item">
+                <div class="profile-review-item__header">
+                  <div class="profile-review-item__companion-info">
+                    <img
+                      v-if="review.companions?.image"
+                      :src="review.companions.image"
+                      :alt="review.companions.name"
+                      class="profile-review-item__companion-image"
+                    />
+                    <div class="profile-review-item__companion-details">
+                      <h3 class="profile-review-item__companion-name">{{ review.companions?.name || 'Неизвестный спутник' }}</h3>
+                      <p class="profile-review-item__date">{{ new Date(review.created_at).toLocaleDateString('ru-RU') }}</p>
+                      <p v-if="review.is_anonymous" class="profile-review-item__anonymous">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px; vertical-align: middle;">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                        </svg>
+                        Анонимный отзыв
+                      </p>
+                    </div>
+                  </div>
+                  <div class="profile-review-item__rating">
+                    <span v-for="i in 5" :key="i" class="profile-review-item__star" :class="{ 'profile-review-item__star--filled': i <= review.rating, 'profile-review-item__star--empty': i > review.rating }">★</span>
+                  </div>
+                </div>
+
+                <!-- Title -->
+                <p v-if="review.title" class="profile-review-item__title">{{ review.title }}</p>
+
+                <!-- Comment -->
+                <p class="profile-review-item__comment">{{ review.comment }}</p>
+
+                <!-- Actions -->
+                <div class="profile-review-item__actions">
+                  <button
+                    @click="handleDeleteReview(review.id)"
+                    class="profile-review-item__delete-btn"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                    Удалить
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="profile-empty-reviews">
+              <p>У вас пока нет отзывов</p>
+              <p class="profile-empty-reviews__hint">После завершения сессии с спутником вы сможете оставить отзыв</p>
+            </div>
           </div>
         </div>
 
@@ -828,6 +975,18 @@ watch(
           </div>
         </div>
       </main>
+
+      <!-- Review Modal -->
+      <ReviewModal
+        v-if="selectedSessionForReview"
+        :is-open="showReviewModal"
+        :companion-id="selectedSessionForReview.companionId"
+        :companion-name="selectedSessionForReview.companionName"
+        :user-id="currentUser?.id || ''"
+        :chat-id="selectedSessionForReview.id"
+        @success="handleReviewSuccess"
+        @close="showReviewModal = false"
+      />
     </div>
   </div>
 </template>
@@ -1479,5 +1638,185 @@ watch(
   width: 24px;
   height: 24px;
   opacity: 0.6;
+}
+
+/* Reviews Section Styles */
+.profile-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-review-item {
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  transition: box-shadow 0.2s;
+}
+
+.profile-review-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.profile-review-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.profile-review-item__companion-info {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+}
+
+.profile-review-item__companion-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-review-item__companion-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-review-item__companion-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.profile-review-item__date {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.profile-review-item__anonymous {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.profile-review-item__rating {
+  display: flex;
+  gap: 2px;
+}
+
+.profile-review-item__star {
+  font-size: 16px;
+  color: #ffc107;
+  display: inline-block;
+}
+
+.profile-review-item__star--empty {
+  color: #e0e0e0;
+}
+
+.profile-review-item__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 8px 0;
+}
+
+.profile-review-item__comment {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.profile-review-item__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-review-item__delete-btn {
+  padding: 6px 12px;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  color: #c33;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.profile-review-item__delete-btn:hover {
+  background: #fdd;
+  border-color: #fbb;
+}
+
+.profile-empty-reviews {
+  padding: 32px 16px;
+  text-align: center;
+  color: #999;
+}
+
+.profile-empty-reviews__hint {
+  font-size: 13px;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+.reviews-loading {
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #999;
+}
+
+.reviews-loading__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f0f0f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.profile-history-item__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.profile-history-item__review-btn {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.profile-history-item__review-btn:hover {
+  background: #2563eb;
 }
 </style>

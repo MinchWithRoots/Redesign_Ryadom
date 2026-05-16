@@ -5,6 +5,7 @@ import { currentUser, messages, getChatById, endSession, loadChats, chats as glo
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
+import ReviewModal from '../components/ReviewModal.vue'
 import '@/assets/chat.css'
 import infoIcon from '../images/info-triangle.svg'
 import blockIcon from '../images/block.svg'
@@ -27,6 +28,7 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const showActionMenu = ref(false)
 const isBlockingUser = ref(false)
 const blockSuccess = ref('')
+const showReviewModal = ref(false)
 
 const chatId = computed(() => (route.query.id as string) || null)
 
@@ -209,14 +211,25 @@ const handleEndSession = async () => {
     }
 
     sessionEnded.value = true
-    setTimeout(() => {
-      router.push('/profile')
-    }, 2000)
+    showReviewModal.value = true
   } catch (err) {
     console.error('Error ending session:', err)
   } finally {
     isEndingSession.value = false
   }
+}
+
+const handleReviewSuccess = () => {
+  setTimeout(() => {
+    router.push('/profile')
+  }, 1000)
+}
+
+const handleReviewClose = () => {
+  showReviewModal.value = false
+  setTimeout(() => {
+    router.push('/profile')
+  }, 500)
 }
 
 const handleReportUser = async () => {
@@ -700,6 +713,18 @@ onMounted(async () => {
       </div>
       </template>
     </div>
+
+    <!-- Review Modal -->
+    <ReviewModal
+      v-if="chat"
+      :is-open="showReviewModal"
+      :companion-id="chat.companion_id"
+      :companion-name="chat.name"
+      :user-id="currentUser?.id || ''"
+      :chat-id="chatId"
+      @success="handleReviewSuccess"
+      @close="handleReviewClose"
+    />
   </div>
 </template>
 

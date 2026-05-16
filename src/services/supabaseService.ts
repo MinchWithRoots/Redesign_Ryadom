@@ -226,7 +226,9 @@ export async function addReview(
   userId: string,
   rating: number,
   title: string,
-  comment: string
+  comment: string,
+  chatId?: string,
+  isAnonymous?: boolean
 ) {
   try {
     const { data, error } = await supabase
@@ -239,6 +241,8 @@ export async function addReview(
           title,
           comment,
           published: true,
+          chat_id: chatId || null,
+          is_anonymous: isAnonymous || false,
         }
       ])
       .select()
@@ -266,6 +270,41 @@ export async function getCompanionReviews(companionId: string) {
   } catch (error) {
     console.error('Error fetching reviews:', error)
     return null
+  }
+}
+
+export async function getUserReviews(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        companions (name, image, id),
+        chats (created_at)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching user reviews:', error)
+    return null
+  }
+}
+
+export async function deleteReview(reviewId: string) {
+  try {
+    const { error } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('id', reviewId)
+
+    if (error) throw error
+    return true
+  } catch (error) {
+    console.error('Error deleting review:', error)
+    return false
   }
 }
 
