@@ -30,7 +30,7 @@ const isBlockingUser = ref(false)
 const blockSuccess = ref('')
 const showReviewModal = ref(false)
 
-const chatId = computed(() => (route.query.id as string) || null)
+const chatId = computed(() => (route.query.id as string) || undefined)
 
 const chat = computed(() => {
   if (!chatId.value) return null

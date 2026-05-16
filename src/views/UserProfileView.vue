@@ -148,8 +148,10 @@ const navigateToChat = () => {
               <div class="profile-stats">
                 <div class="profile-stat">
                   <div class="profile-stat__flex">
-                    <img :src="supportIcon" alt="отзывы" class="profile-stat__icon" />
-                    <p class="profile-stat__value">{{ companion.reviews_count }}</p>
+                    <span v-if="(companion.reviews_count ?? 0) > 0" class="profile-stat__rating">
+                      <span v-for="i in 5" :key="i" class="profile-stat__star" :class="{ 'profile-stat__star--filled': i <= Math.round(companion.average_rating ?? 0) }">★</span>
+                    </span>
+                    <p class="profile-stat__value">{{ companion.reviews_count ?? 0 }}</p>
                   </div>
                   <p class="profile-stat__label">отзывов</p>
                 </div>

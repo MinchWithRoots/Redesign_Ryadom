@@ -100,7 +100,7 @@ interface Emits {
   (e: 'success'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const hoverRating = ref(0)

@@ -124,6 +124,16 @@ const navigateToProfile = (companionId: string | number) => {
   // Clear cached companion data to force fresh load on profile page
   router.push(`/user/${companionId}`)
 }
+
+const getRussianPlural = (count: number, word: string) => {
+  if (count === 0) return 'отзывов'
+  const remainder = count % 100
+  if (remainder >= 11 && remainder <= 19) return 'отзывов'
+  const lastDigit = count % 10
+  if (lastDigit === 1) return 'отзыв'
+  if (lastDigit >= 2 && lastDigit <= 4) return 'отзыва'
+  return 'отзывов'
+}
 </script>
 
 <template>
@@ -325,8 +335,12 @@ const navigateToProfile = (companionId: string | number) => {
 
                 <!-- Testimonials -->
                 <div class="companion-reviews">
-                  <img src="../images/support.svg" alt="Thanks" />
-                  <p>{{ companion.reviews_count }} отзывов</p>
+                  <div v-if="(companion.reviews_count ?? 0) > 0" class="companion-rating">
+                    <span class="rating-stars">
+                      <span v-for="i in 5" :key="i" class="star" :class="{ 'star--filled': i <= Math.round(companion.average_rating ?? 0) }">★</span>
+                    </span>
+                    <span class="reviews-count">{{ companion.reviews_count }} {{ getRussianPlural(companion.reviews_count ?? 0, 'отзыв') }}</span>
+                  </div>
                 </div>
 
                 <!-- Button -->
@@ -374,6 +388,12 @@ const navigateToProfile = (companionId: string | number) => {
             />
             <h2 class="modal-title">{{ selectedCompanion.name }}</h2>
             <p class="modal-subtitle">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
+            <div v-if="(selectedCompanion.reviews_count ?? 0) > 0" class="modal-rating">
+              <span class="modal-rating-stars">
+                <span v-for="i in 5" :key="i" class="modal-star" :class="{ 'modal-star--filled': i <= Math.round(selectedCompanion.average_rating ?? 0) }">★</span>
+              </span>
+              <span class="modal-reviews-count">{{ selectedCompanion.reviews_count }} {{ getRussianPlural(selectedCompanion.reviews_count ?? 0, 'отзыв') }}</span>
+            </div>
           </div>
 
           <div class="modal-buttons">
