@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import { isLoggedIn, isAdmin } from '../composables/useAppState'
+import { isLoggedIn, isAdmin, loadCurrentUser } from '../composables/useAppState'
 
 const routes = [
   {
@@ -70,10 +70,20 @@ const router = createRouter({
   routes,
 })
 
+// Flag to track if we've already loaded user on app startup
+let userLoadedOnStartup = false
+
 // Navigation guard to check authentication and authorization
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+
+  // Load user on first navigation if not already loaded
+  if (!userLoadedOnStartup && requiresAuth) {
+    await loadCurrentUser()
+    userLoadedOnStartup = true
+  }
+
   const userIsLoggedIn = isLoggedIn()
   const userIsAdmin = isAdmin()
 
