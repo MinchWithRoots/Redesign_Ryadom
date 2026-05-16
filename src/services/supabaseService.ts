@@ -233,7 +233,7 @@ export async function addReview(
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .upsert([
+      .insert([
         {
           companion_id: companionId,
           user_id: userId,
