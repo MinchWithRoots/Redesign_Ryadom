@@ -123,6 +123,13 @@ const handleImageUpload = async (event: Event) => {
   const file = target.files?.[0]
   if (!file) return
 
+  // Show preview immediately for UX
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+
   try {
     isUploadingImage.value = true
     errorMessage.value = ''
@@ -134,15 +141,32 @@ const handleImageUpload = async (event: Event) => {
       return
     }
 
-    // Create a local preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreview.value = e.target?.result as string
-      form.value.image = imagePreview.value
+    // Upload to Supabase Storage (same as profile setup)
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+    const filePath = `profile-images/${Date.now()}-${fileName}`
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file)
+
+    if (uploadError) {
+      console.error('Upload error details:', uploadError)
+      throw uploadError
     }
-    reader.readAsDataURL(file)
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath)
+
+    form.value.image = publicUrlData.publicUrl
+    console.log('Image uploaded successfully:', form.value.image)
   } catch (error) {
-    errorMessage.value = `Ошибка при загрузке изображения: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`
+    errorMessage.value = `Ошибка: ${error instanceof Error ? error.message : 'неизвестная ошибка'}. Убедитесь, что бакет 'avatars' создан в Supabase Storage.`
+    console.error('Image upload error:', error)
+    imagePreview.value = ''
+    form.value.image = ''
   } finally {
     isUploadingImage.value = false
   }

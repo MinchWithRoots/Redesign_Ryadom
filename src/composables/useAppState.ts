@@ -321,6 +321,11 @@ export const updateUserProfile = async (updates: {
 // Sync companion photo when user updates their profile photo
 const syncCompanionPhoto = async (userId: string, imageUrl: string) => {
   try {
+    if (!imageUrl) {
+      console.log('No image URL provided, skipping sync')
+      return
+    }
+
     console.log('Syncing companion photo for user:', userId)
 
     // Find companion record by user_id
@@ -340,10 +345,20 @@ const syncCompanionPhoto = async (userId: string, imageUrl: string) => {
       return
     }
 
-    // Update companion's image
+    // Update companion's image - ensure it's a valid URL (not base64)
+    const imageToSync = imageUrl.startsWith('data:') ? undefined : imageUrl
+
+    if (!imageToSync) {
+      console.warn('Image is base64 data, skipping sync to avoid corrupting companion record')
+      return
+    }
+
     const { error: updateError } = await supabase
       .from('companions')
-      .update({ image: imageUrl, updated_at: new Date().toISOString() })
+      .update({
+        image: imageToSync,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', companion.id)
 
     if (updateError) {
@@ -352,7 +367,7 @@ const syncCompanionPhoto = async (userId: string, imageUrl: string) => {
       return
     }
 
-    console.log('Companion photo synced successfully')
+    console.log('Companion photo synced successfully:', imageToSync.substring(0, 50))
   } catch (err) {
     console.error('Error in syncCompanionPhoto:', err)
     // Don't throw - this is a secondary operation
@@ -389,6 +404,32 @@ export const getCompanionById = async (id: string) => {
         companionId,
       })
       throw companionFetchError
+    }
+
+    // Sync image from user profile if available
+    if (data && data.user_id) {
+      try {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('image')
+          .eq('id', data.user_id)
+          .maybeSingle()
+
+        if (!userError && userData?.image && userData.image !== data.image) {
+          data.image = userData.image
+          // Update companion record if image differs
+          const { error: updateError } = await supabase
+            .from('companions')
+            .update({ image: userData.image, updated_at: new Date().toISOString() })
+            .eq('id', companionId)
+
+          if (updateError) {
+            console.warn('Could not sync image for companion:', updateError)
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch user image:', err)
+      }
     }
 
     // Load companion_topics reference table and convert topic IDs to names
@@ -526,20 +567,55 @@ export const loadCompanions = async () => {
 
     console.log('Topic ID->Name map created:', { mapSize: topicIdToName.size })
 
-    // Process companions - convert topic IDs to names
-    const companionsWithData = (result || []).map((companion: any) => {
-      // companions.topics is JSONB array of topic IDs
-      const topicIds = companion.topics || []
-      const topicNames = topicIds
-        .map((id: number) => topicIdToName.get(id))
-        .filter((name: string | undefined) => name !== undefined)
+    // Process companions - convert topic IDs to names and sync images from user profiles
+    const companionsWithData = await Promise.all(
+      (result || []).map(async (companion: any) => {
+        // companions.topics is JSONB array of topic IDs
+        const topicIds = companion.topics || []
+        const topicNames = topicIds
+          .map((id: number) => topicIdToName.get(id))
+          .filter((name: string | undefined) => name !== undefined)
 
-      return {
-        ...companion,
-        topics: topicNames,
-        specializations: companion.specializations || []
-      }
-    })
+        // Try to sync image from user profile if companion has user_id
+        let companionImage = companion.image
+        if (companion.user_id) {
+          try {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('image')
+              .eq('id', companion.user_id)
+              .maybeSingle()
+
+            if (!userError && userData?.image) {
+              companionImage = userData.image
+              // Update companion record with fresh image from user profile
+              if (companionImage !== companion.image) {
+                const { error: updateError } = await supabase
+                  .from('companions')
+                  .update({ image: companionImage, updated_at: new Date().toISOString() })
+                  .eq('id', companion.id)
+
+                if (updateError) {
+                  console.warn(`Could not sync image for companion ${companion.name}:`, updateError)
+                } else {
+                  console.log(`Synced image for companion ${companion.name}`)
+                }
+              }
+            }
+          } catch (err) {
+            console.warn(`Could not fetch user image for companion ${companion.id}:`, err)
+            // Use companion's current image if user fetch fails
+          }
+        }
+
+        return {
+          ...companion,
+          image: companionImage,
+          topics: topicNames,
+          specializations: companion.specializations || []
+        }
+      })
+    )
 
     console.log('Companions with data loaded:', { count: companionsWithData.length, sample: companionsWithData[0] })
 
