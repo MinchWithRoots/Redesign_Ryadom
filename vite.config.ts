@@ -6,15 +6,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
-  plugins: [
-    vue(),
-    vueDevTools(),
-    base: '/Redesign_Ryadom',
-  ],
+  base: './Redesign_Ryadom',
+  plugins: [vue(), vueDevTools()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
 })
