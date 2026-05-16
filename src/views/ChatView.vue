@@ -111,6 +111,8 @@ const loadMessages = async () => {
           isMine: msg.sender_id === currentUser.value?.id,
           chat_id: msg.chat_id,
           time: formatTime(msg.created_at),
+          isRead: msg.is_read || false,
+          isSent: true,
         }
       }))
 
@@ -140,6 +142,8 @@ const sendMessage = async () => {
   }
 
   isSending.value = true
+  const messageText = messageInput.value.trim()
+
   try {
     const { data: messageData, error } = await supabase
       .from('messages')
@@ -147,7 +151,7 @@ const sendMessage = async () => {
         {
           chat_id: chatId.value,
           sender_id: currentUser.value.id,
-          text: messageInput.value.trim(),
+          text: messageText,
         },
       ])
       .select()
@@ -155,6 +159,23 @@ const sendMessage = async () => {
 
     if (error) {
       console.error('Error sending message:', error)
+      // Add message to local state with isSent=false
+      const failedMessage = {
+        id: `temp-${Date.now()}`,
+        sender_id: currentUser.value.id,
+        text: messageText,
+        created_at: new Date().toISOString(),
+        author: currentUser.value.name || 'You',
+        isMine: true,
+        chat_id: chatId.value,
+        time: formatTime(new Date().toISOString()),
+        isRead: false,
+        isSent: false,
+      }
+      messages.value.push(failedMessage)
+      messageInput.value = ''
+      await nextTick()
+      scrollToBottom()
       return
     }
 
@@ -182,6 +203,8 @@ const sendMessage = async () => {
       isMine: true,
       chat_id: messageData.chat_id,
       time: formatTime(messageData.created_at),
+      isRead: false,
+      isSent: true,
     }
 
     messages.value.push(newMessage)
@@ -192,6 +215,23 @@ const sendMessage = async () => {
     scrollToBottom()
   } catch (err) {
     console.error('Error in sendMessage:', err)
+    // Add message to local state with isSent=false
+    const failedMessage = {
+      id: `temp-${Date.now()}`,
+      sender_id: currentUser.value.id,
+      text: messageText,
+      created_at: new Date().toISOString(),
+      author: currentUser.value.name || 'You',
+      isMine: true,
+      chat_id: chatId.value,
+      time: formatTime(new Date().toISOString()),
+      isRead: false,
+      isSent: false,
+    }
+    messages.value.push(failedMessage)
+    messageInput.value = ''
+    await nextTick()
+    scrollToBottom()
   } finally {
     isSending.value = false
   }
@@ -379,6 +419,8 @@ const subscribeToMessages = () => {
             isMine: newMsg.sender_id === currentUser.value?.id,
             chat_id: newMsg.chat_id,
             time: formatTime(newMsg.created_at),
+            isRead: newMsg.is_read || false,
+            isSent: true,
           }
           messages.value.push(transformedMsg)
           scrollToBottom()
@@ -428,6 +470,8 @@ const subscribeToMessages = () => {
             isMine: msg.sender_id === currentUser.value?.id,
             chat_id: msg.chat_id,
             time: formatTime(msg.created_at),
+            isRead: msg.is_read || false,
+            isSent: true,
           }
           messages.value.push(transformedMsg)
           scrollToBottom()
@@ -452,14 +496,88 @@ const unsubscribeFromMessages = () => {
   }
 }
 
+// Mark messages as read
+const markMessagesAsRead = async () => {
+  if (!chatId.value) return
+
+  // Update all unread messages from other users
+  const unreadMessages = messages.value.filter(m => !m.isMine && !m.isRead)
+
+  if (unreadMessages.length === 0) return
+
+  try {
+    const messageIds = unreadMessages.map(m => m.id)
+    const { error } = await supabase
+      .from('messages')
+      .update({
+        is_read: true,
+        read_at: new Date().toISOString()
+      })
+      .in('id', messageIds)
+
+    if (error) {
+      console.error('Error marking messages as read:', error)
+      return
+    }
+
+    // Update local state
+    messages.value.forEach(msg => {
+      if (messageIds.includes(msg.id)) {
+        msg.isRead = true
+      }
+    })
+  } catch (err) {
+    console.error('Error in markMessagesAsRead:', err)
+  }
+}
+
+// Subscribe to read status updates
+let readStatusSubscription: any = null
+
+const subscribeToReadStatus = () => {
+  if (!chatId.value) return
+
+  readStatusSubscription = supabase
+    .channel(`messages_read:${chatId.value}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `chat_id=eq.${chatId.value}`,
+      },
+      (payload) => {
+        const updatedMsg = payload.new as any
+        const msgIndex = messages.value.findIndex(m => m.id === updatedMsg.id)
+        if (msgIndex !== -1) {
+          messages.value[msgIndex].isRead = updatedMsg.is_read || false
+        }
+      }
+    )
+    .subscribe()
+
+  return readStatusSubscription
+}
+
+const unsubscribeFromReadStatus = () => {
+  if (readStatusSubscription) {
+    supabase.removeChannel(readStatusSubscription)
+    readStatusSubscription = null
+  }
+}
+
 // Load data on mount and when chatId changes
 watch(chatId, async () => {
   if (chatId.value) {
     unsubscribeFromMessages()
+    unsubscribeFromReadStatus()
     messages.value = []
     await loadChats()
     await loadMessages()
+    await markMessagesAsRead()
     subscribeToMessages()
+    subscribeToReadStatus()
   }
 })
 
@@ -467,12 +585,15 @@ onMounted(async () => {
   await loadChats()
   if (chatId.value) {
     await loadMessages()
+    await markMessagesAsRead()
     subscribeToMessages()
+    subscribeToReadStatus()
   }
 })
 
 onBeforeUnmount(() => {
   unsubscribeFromMessages()
+  unsubscribeFromReadStatus()
 })
 </script>
 
@@ -753,9 +874,17 @@ onBeforeUnmount(() => {
             :class="{ 'chat-message-bubble--sent': message.isMine }"
           >
             <p class="chat-message-text">{{ message.text }}</p>
-            <p class="chat-message-time" :class="{ 'chat-message-time--sent': message.isMine }">
-              {{ formatTime(message.created_at) }}
-            </p>
+            <div class="chat-message-footer">
+              <p class="chat-message-time" :class="{ 'chat-message-time--sent': message.isMine }">
+                {{ formatTime(message.created_at) }}
+              </p>
+              <!-- Status indicator (only for sent messages) -->
+              <div v-if="message.isMine" class="chat-message-status">
+                <span v-if="!message.isSent" class="chat-message-status-icon chat-message-status--warning" title="Не отправлено">⚠</span>
+                <span v-else-if="message.isRead" class="chat-message-status-icon chat-message-status--read" title="Прочитано">✓✓</span>
+                <span v-else class="chat-message-status-icon chat-message-status--sent" title="Отправлено">✓</span>
+              </div>
+            </div>
           </div>
 
           <!-- Avatar (for me) -->
