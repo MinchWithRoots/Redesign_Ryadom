@@ -145,7 +145,7 @@ const submitReview = async () => {
 
   isSubmitting.value = true
   try {
-    await addReview(
+    const result = await addReview(
       props.companionId,
       props.userId,
       formData.value.rating,
@@ -154,6 +154,10 @@ const submitReview = async () => {
       props.chatId,
       formData.value.isAnonymous
     )
+
+    if (!result) {
+      throw new Error('Failed to save review')
+    }
 
     resetForm()
     emit('success')
