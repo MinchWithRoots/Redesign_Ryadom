@@ -73,7 +73,7 @@ const loadMessages = async () => {
     try {
       const { data: messagesData, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
         .eq('chat_id', chatId.value)
         .order('created_at', { ascending: true })
 
@@ -393,7 +393,9 @@ const subscribeToMessages = () => {
       async (payload) => {
         const newMsg = payload.new as any
         // Only add if not already in messages
-        if (!messages.value.find(m => m.id === newMsg.id)) {
+        const existingMsg = messages.value.find(m => m.id === newMsg.id)
+
+        if (!existingMsg) {
           let authorName = 'Unknown'
           if (newMsg.sender_id === currentUser.value?.id) {
             authorName = currentUser.value?.name || 'You'
@@ -419,11 +421,14 @@ const subscribeToMessages = () => {
             isMine: newMsg.sender_id === currentUser.value?.id,
             chat_id: newMsg.chat_id,
             time: formatTime(newMsg.created_at),
-            isRead: newMsg.is_read || false,
+            isRead: newMsg.is_read === true,
             isSent: true,
           }
           messages.value.push(transformedMsg)
           scrollToBottom()
+        } else if (existingMsg && newMsg.is_read && !existingMsg.isRead) {
+          // Update existing message if it was marked as read
+          existingMsg.isRead = true
         }
       }
     )
@@ -436,7 +441,7 @@ const subscribeToMessages = () => {
     try {
       const { data: messagesData, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
         .eq('chat_id', chatId.value)
         .order('created_at', { ascending: true })
 
@@ -470,11 +475,17 @@ const subscribeToMessages = () => {
             isMine: msg.sender_id === currentUser.value?.id,
             chat_id: msg.chat_id,
             time: formatTime(msg.created_at),
-            isRead: msg.is_read || false,
+            isRead: msg.is_read === true,
             isSent: true,
           }
           messages.value.push(transformedMsg)
           scrollToBottom()
+        } else {
+          // Update existing message with new read status
+          const existingMsgIndex = messages.value.findIndex(m => m.id === msg.id)
+          if (existingMsgIndex !== -1 && !messages.value[existingMsgIndex].isRead && msg.is_read === true) {
+            messages.value[existingMsgIndex].isRead = true
+          }
         }
       }
     } catch (err) {
@@ -501,24 +512,29 @@ const markMessagesAsRead = async () => {
   if (!chatId.value) return
 
   // Update all unread messages from other users
-  const unreadMessages = messages.value.filter(m => !m.isMine && !m.isRead)
+  const unreadMessages = messages.value.filter(m => !m.isMine && !m.isRead && m.id && typeof m.id === 'number')
 
   if (unreadMessages.length === 0) return
 
   try {
     const messageIds = unreadMessages.map(m => m.id)
-    const { error } = await supabase
+    console.log('Marking messages as read:', messageIds)
+
+    const { data, error } = await supabase
       .from('messages')
       .update({
         is_read: true,
         read_at: new Date().toISOString()
       })
       .in('id', messageIds)
+      .select()
 
     if (error) {
       console.error('Error marking messages as read:', error)
       return
     }
+
+    console.log('Messages marked as read in DB:', data)
 
     // Update local state
     messages.value.forEach(msg => {
@@ -551,7 +567,11 @@ const subscribeToReadStatus = () => {
         const updatedMsg = payload.new as any
         const msgIndex = messages.value.findIndex(m => m.id === updatedMsg.id)
         if (msgIndex !== -1) {
-          messages.value[msgIndex].isRead = updatedMsg.is_read || false
+          const wasRead = messages.value[msgIndex].isRead
+          messages.value[msgIndex].isRead = updatedMsg.is_read === true
+          if (!wasRead && updatedMsg.is_read) {
+            console.log('Message marked as read:', updatedMsg.id)
+          }
         }
       }
     )
