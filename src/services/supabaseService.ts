@@ -231,28 +231,35 @@ export async function addReview(
   isAnonymous?: boolean
 ) {
   try {
+    const reviewData: any = {
+      companion_id: companionId,
+      user_id: userId,
+      rating,
+      title,
+      comment,
+      published: true,
+    }
+
     const { data, error } = await supabase
       .from('reviews')
-      .upsert([
-        {
-          companion_id: companionId,
-          user_id: userId,
-          rating,
-          title,
-          comment,
-          published: true,
-          chat_id: chatId || null,
-          is_anonymous: isAnonymous || false,
-        }
-      ])
+      .insert([reviewData])
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', {
+        message: error.message,
+        code: error.code,
+        hint: (error as any).hint,
+        details: (error as any).details,
+      })
+      throw error
+    }
     return data
   } catch (error) {
-    console.error('Error adding review:', error)
-    return null
+    const message = error instanceof Error ? error.message : JSON.stringify(error)
+    console.error('Error adding review:', message, { companionId, userId, rating })
+    throw new Error(`Failed to add review: ${message}`)
   }
 }
 
@@ -260,7 +267,7 @@ export async function getCompanionReviews(companionId: string) {
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .select('*, users (name, image)')
+      .select('*, users:user_id (name, image)')
       .eq('companion_id', companionId)
       .eq('published', true)
       .order('created_at', { ascending: false })
@@ -268,7 +275,8 @@ export async function getCompanionReviews(companionId: string) {
     if (error) throw error
     return data
   } catch (error) {
-    console.error('Error fetching reviews:', error)
+    const message = error instanceof Error ? error.message : JSON.stringify(error)
+    console.error('Error fetching reviews:', message, { companionId })
     return null
   }
 }
@@ -279,8 +287,7 @@ export async function getUserReviews(userId: string) {
       .from('reviews')
       .select(`
         *,
-        companions (name, image, id),
-        chats (created_at)
+        companions:companion_id (name, image, id)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -288,7 +295,8 @@ export async function getUserReviews(userId: string) {
     if (error) throw error
     return data
   } catch (error) {
-    console.error('Error fetching user reviews:', error)
+    const message = error instanceof Error ? error.message : JSON.stringify(error)
+    console.error('Error fetching user reviews:', message, { userId })
     return null
   }
 }

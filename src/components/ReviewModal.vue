@@ -58,14 +58,6 @@
           <div class="form-hint">{{ formData.comment.length }}/500</div>
         </div>
 
-        <!-- Anonymous -->
-        <div class="form-group checkbox-group">
-          <label class="checkbox-label">
-            <input v-model="formData.isAnonymous" type="checkbox" class="checkbox-input" />
-            <span class="checkbox-text">Опубликовать анонимно</span>
-          </label>
-        </div>
-
         <!-- Error Message -->
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
@@ -92,7 +84,7 @@ interface Props {
   companionId: string
   companionName: string
   userId: string
-  chatId?: string
+  chatId?: string | null
 }
 
 interface Emits {
@@ -100,7 +92,7 @@ interface Emits {
   (e: 'success'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const hoverRating = ref(0)
@@ -111,7 +103,6 @@ const formData = ref({
   rating: 0,
   title: '',
   comment: '',
-  isAnonymous: false,
 })
 
 const closeModal = () => {
@@ -124,7 +115,6 @@ const resetForm = () => {
     rating: 0,
     title: '',
     comment: '',
-    isAnonymous: false,
   }
   errorMessage.value = ''
 }
@@ -150,9 +140,7 @@ const submitReview = async () => {
       props.userId,
       formData.value.rating,
       formData.value.title,
-      formData.value.comment,
-      props.chatId,
-      formData.value.isAnonymous
+      formData.value.comment
     )
 
     resetForm()
