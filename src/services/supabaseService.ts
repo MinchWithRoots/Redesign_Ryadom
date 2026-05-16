@@ -238,7 +238,6 @@ export async function addReview(
       title,
       comment,
       published: true,
-      is_anonymous: isAnonymous || false,
     }
 
     const { data, error } = await supabase
