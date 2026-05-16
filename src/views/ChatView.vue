@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
@@ -333,10 +333,14 @@ const handleUnblockUser = async () => {
 }
 
 // Subscribe to real-time messages
+let currentSubscription: any = null
+let pollInterval: NodeJS.Timeout | null = null
+
 const subscribeToMessages = () => {
   if (!chatId.value) return
 
-  const subscription = supabase
+  // Realtime subscription
+  currentSubscription = supabase
     .channel(`messages:${chatId.value}`)
     .on(
       'postgres_changes',
@@ -346,16 +350,32 @@ const subscribeToMessages = () => {
         table: 'messages',
         filter: `chat_id=eq.${chatId.value}`,
       },
-      (payload) => {
+      async (payload) => {
         const newMsg = payload.new as any
         // Only add if not already in messages
         if (!messages.value.find(m => m.id === newMsg.id)) {
+          let authorName = 'Unknown'
+          if (newMsg.sender_id === currentUser.value?.id) {
+            authorName = currentUser.value?.name || 'You'
+          } else {
+            try {
+              const { data: senderData } = await supabase
+                .from('users')
+                .select('name')
+                .eq('id', newMsg.sender_id)
+                .single()
+              authorName = senderData?.name || 'Unknown'
+            } catch (err) {
+              console.error('Error fetching sender name:', err)
+            }
+          }
+
           const transformedMsg = {
             id: newMsg.id,
             sender_id: newMsg.sender_id,
             text: newMsg.text,
             created_at: newMsg.created_at,
-            author: newMsg.sender_id === currentUser.value?.id ? 'You' : 'Companion',
+            author: authorName,
             isMine: newMsg.sender_id === currentUser.value?.id,
             chat_id: newMsg.chat_id,
             time: formatTime(newMsg.created_at),
@@ -367,12 +387,75 @@ const subscribeToMessages = () => {
     )
     .subscribe()
 
-  return subscription
+  // Polling fallback - check for new messages every 2 seconds
+  if (pollInterval) clearInterval(pollInterval)
+  pollInterval = setInterval(async () => {
+    if (!chatId.value) return
+    try {
+      const { data: messagesData, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('chat_id', chatId.value)
+        .order('created_at', { ascending: true })
+
+      if (error || !messagesData) return
+
+      // Check for new messages
+      for (const msg of messagesData) {
+        if (!messages.value.find(m => m.id === msg.id)) {
+          let authorName = 'Unknown'
+          if (msg.sender_id === currentUser.value?.id) {
+            authorName = currentUser.value?.name || 'You'
+          } else {
+            try {
+              const { data: senderData } = await supabase
+                .from('users')
+                .select('name')
+                .eq('id', msg.sender_id)
+                .single()
+              authorName = senderData?.name || 'Unknown'
+            } catch (err) {
+              console.error('Error fetching sender name:', err)
+            }
+          }
+
+          const transformedMsg = {
+            id: msg.id,
+            sender_id: msg.sender_id,
+            text: msg.text,
+            created_at: msg.created_at,
+            author: authorName,
+            isMine: msg.sender_id === currentUser.value?.id,
+            chat_id: msg.chat_id,
+            time: formatTime(msg.created_at),
+          }
+          messages.value.push(transformedMsg)
+          scrollToBottom()
+        }
+      }
+    } catch (err) {
+      console.error('Error polling for messages:', err)
+    }
+  }, 2000)
+
+  return currentSubscription
+}
+
+const unsubscribeFromMessages = () => {
+  if (currentSubscription) {
+    supabase.removeChannel(currentSubscription)
+    currentSubscription = null
+  }
+  if (pollInterval) {
+    clearInterval(pollInterval)
+    pollInterval = null
+  }
 }
 
 // Load data on mount and when chatId changes
 watch(chatId, async () => {
   if (chatId.value) {
+    unsubscribeFromMessages()
     messages.value = []
     await loadChats()
     await loadMessages()
@@ -386,6 +469,10 @@ onMounted(async () => {
     await loadMessages()
     subscribeToMessages()
   }
+})
+
+onBeforeUnmount(() => {
+  unsubscribeFromMessages()
 })
 </script>
 
