@@ -263,7 +263,8 @@ const loadUserReviews = async () => {
     const reviews = await getUserReviews(currentUser.value.id)
     userReviews.value = reviews || []
   } catch (err) {
-    console.error('Error loading reviews:', err)
+    const message = err instanceof Error ? err.message : JSON.stringify(err)
+    console.error('Error loading reviews:', message)
   } finally {
     isLoadingReviews.value = false
   }
