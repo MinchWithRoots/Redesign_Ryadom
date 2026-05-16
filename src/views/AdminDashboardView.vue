@@ -443,12 +443,34 @@ const handleApproveApplication = async (applicationId: string | number) => {
       throw new Error('Missing required fields in application')
     }
 
-    // Handle image field - use provided image or default
-    // Images from profile uploads are now URLs (from Supabase Storage) instead of base64
-    const imageUrl = app.image || 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+    // Fetch user's image from users table (the source of truth for images)
+    let imageUrl = 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg'
+    try {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('image')
+        .eq('id', app.user_id)
+        .single()
+
+      if (userError) {
+        console.warn('Could not fetch user image, will use app image or default:', userError.message)
+      } else if (userData?.image) {
+        imageUrl = userData.image
+        console.log('Using image from user profile:', imageUrl.substring(0, 50))
+      } else if (app.image) {
+        // Fallback to application image if user image not available
+        imageUrl = app.image
+        console.log('User has no image, using application image')
+      }
+    } catch (err) {
+      console.warn('Error fetching user image:', err)
+      // Continue with app image or default
+      if (app.image) {
+        imageUrl = app.image
+      }
+    }
 
     console.log('Using image URL:', {
-      appImage: app.image?.substring(0, 50),
       imageUrl: imageUrl.substring(0, 50),
       length: imageUrl.length
     })
