@@ -231,14 +231,13 @@ export async function addReview(
   isAnonymous?: boolean
 ) {
   try {
-    const reviewData = {
+    const reviewData: any = {
       companion_id: companionId,
       user_id: userId,
       rating,
       title,
       comment,
       published: true,
-      chat_id: chatId || null,
       is_anonymous: isAnonymous || false,
     }
 
