@@ -727,7 +727,8 @@ export const loadCompanions = async () => {
     // Sync profile data from user records in background (non-blocking)
     // This doesn't wait for completion, allowing the search to load quickly
     ;(async () => {
-      for (const companion of result || []) {
+      for (let idx = 0; idx < (result || []).length; idx++) {
+        const companion = result![idx]
         if (!companion.user_id) continue
 
         try {
@@ -761,7 +762,7 @@ export const loadCompanions = async () => {
           console.log(`Background sync: Updating companion ${companion.name}`)
 
           // Convert user's topic names to IDs
-          let userTopicIds = companion.topics || []
+          let userTopicIds: number[] = []
           if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
             const topicNameToId = new Map<string, number>()
             if (allTopicsRef) {
@@ -791,6 +792,25 @@ export const loadCompanions = async () => {
 
           if (updateError) {
             console.warn(`Background sync failed for companion ${companion.name}:`, updateError.message)
+          } else {
+            // Update the in-memory companion data as well
+            const companionIdx = companionsWithData.findIndex(c => c.id === companion.id)
+            if (companionIdx !== -1) {
+              companionsWithData[companionIdx] = {
+                ...companionsWithData[companionIdx],
+                image: userData.image,
+                bio: userData.bio,
+                age: userData.age,
+                gender: userData.gender,
+                name: userData.name,
+                topics: userTopicIds
+                  .map((id: number) => topicIdToName.get(id))
+                  .filter((name: string | undefined) => name !== undefined) as string[]
+              }
+              // Update reactive value
+              companions.value = [...companionsWithData]
+              console.log(`Updated companion in-memory: ${companion.name}`)
+            }
           }
         } catch (err) {
           console.warn(`Background sync error for companion ${companion.id}:`, err instanceof Error ? err.message : String(err))

@@ -54,16 +54,43 @@ const handleImageError = (imageId: string) => {
   imageLoadErrors.value.add(imageId)
 }
 
-const handleImageUpload = (event: Event) => {
+const handleImageUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
+  if (!file) return
+
+  try {
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const imageData = e.target?.result as string
-      userEditForm.value.image = imageData
       previewImage.value = imageData
+
+      // Upload to Supabase Storage
+      if (!currentUser.value) return
+
+      const fileExtension = file.name.split('.').pop()
+      const filePath = `profile-images/${currentUser.value.id}-${Date.now()}.${fileExtension}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError)
+        errorMessage.value = 'Ошибка при загрузке изображения'
+        return
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      userEditForm.value.image = publicUrlData.publicUrl
     }
     reader.readAsDataURL(file)
+  } catch (err) {
+    console.error('Image upload error:', err)
+    errorMessage.value = 'Ошибка при загрузке изображения'
   }
 }
 

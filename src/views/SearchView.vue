@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, companions, chats, sendConnectionRequest, loadCompanions, topics, loadTopics } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
@@ -50,7 +50,7 @@ const filteredCompanions = computed(() => {
 })
 
 
-onMounted(async () => {
+const loadData = async () => {
   try {
     await Promise.all([
       loadCompanions(),
@@ -59,7 +59,11 @@ onMounted(async () => {
   } catch (err) {
     console.error('Failed to load companions or topics:', err)
   }
-})
+}
+
+onMounted(loadData)
+
+onActivated(loadData)
 
 const resetFilters = async () => {
   filters.value = {
@@ -115,6 +119,7 @@ const navigateToChat = (companionId: string | number) => {
 }
 
 const navigateToProfile = (companionId: string | number) => {
+  // Clear cached companion data to force fresh load on profile page
   router.push(`/user/${companionId}`)
 }
 </script>
