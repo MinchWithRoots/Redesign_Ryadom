@@ -1,6 +1,19 @@
 <template>
   <div class="reviews-section">
-    <h2 class="reviews-section__title">Отзывы ({{ reviews.length }})</h2>
+    <div class="reviews-section__header">
+      <h2 class="reviews-section__title">Отзывы ({{ reviews.length }})</h2>
+      <div class="reviews-section__stats">
+        <div class="reviews-stat">
+          <svg class="reviews-stat__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          <div class="reviews-stat__content">
+            <p class="reviews-stat__label">Сессий</p>
+            <p class="reviews-stat__value">{{ sessions }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="reviews-loading">
@@ -56,10 +69,12 @@ import '@/assets/profile.css'
 
 const props = defineProps<{
   companionId: string | number
+  sessions?: number
 }>()
 
 const reviews = ref<Review[]>([])
 const isLoading = ref(true)
+const sessions = ref(props.sessions || 0)
 
 const formatSessionDate = (dateString: string | null | undefined) => {
   if (!dateString) return 'Дата сессии неизвестна'
@@ -77,6 +92,7 @@ const formatSessionDate = (dateString: string | null | undefined) => {
 }
 
 onMounted(async () => {
+  sessions.value = props.sessions || 0
   try {
     const companionIdStr = typeof props.companionId === 'string' ? props.companionId : props.companionId.toString()
     reviews.value = await getCompanionReviews(companionIdStr)

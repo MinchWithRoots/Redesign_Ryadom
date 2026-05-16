@@ -18,6 +18,7 @@ const companion = ref<(typeof companions)['value'][0] | null>(null)
 const isLoading = ref(true)
 const showNotification = ref('')
 const hasRequestSent = ref(false)
+const companionSessions = ref(0)
 
 const isCurrentUserCompanion = computed(() => {
   return currentUser.value && companion.value && 
@@ -39,6 +40,7 @@ onMounted(async () => {
     const comp = await getCompanionById(companionId.value.toString())
     if (comp) {
       companion.value = comp
+      companionSessions.value = comp.sessions || 0
     } else {
       console.error('Companion not found with ID:', companionId.value)
     }
@@ -55,6 +57,7 @@ const handleSendConnectionRequest = async () => {
   try {
     await sendConnectionRequest(companion.value.id)
     hasRequestSent.value = true
+    companionSessions.value += 1
     showNotification.value = `Запрос отправлен ${companion.value.name}!`
     setTimeout(() => {
       showNotification.value = ''
@@ -215,7 +218,7 @@ const navigateToChat = () => {
               </div>
             </div>
 
-            <ReviewsList v-if="companion" :companion-id="companion.id" />
+            <ReviewsList v-if="companion" :companion-id="companion.id" :sessions="companionSessions" />
 
             <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
