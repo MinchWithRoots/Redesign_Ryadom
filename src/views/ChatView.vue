@@ -210,6 +210,9 @@ const sendMessage = async () => {
     messages.value.push(newMessage)
     messageInput.value = ''
 
+    // Mark any unread messages as read after sending a reply
+    await markMessagesAsRead()
+
     // Scroll to bottom after new message
     await nextTick()
     scrollToBottom()
@@ -374,7 +377,7 @@ const handleUnblockUser = async () => {
 
 // Subscribe to real-time messages
 let currentSubscription: any = null
-let pollInterval: NodeJS.Timeout | null = null
+let pollInterval: number | null = null
 
 const subscribeToMessages = () => {
   if (!chatId.value) return

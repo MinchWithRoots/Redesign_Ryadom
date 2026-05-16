@@ -24,6 +24,10 @@ const sessionHistory = ref<any[]>([])
 const companionData = ref<any>(null)
 const companionId = ref<string | null>(null)
 
+// Loading states
+const isLoadingChats = ref(false)
+const isLoadingHistory = ref(false)
+
 // Reviews
 const userReviews = ref<any[]>([])
 const isLoadingReviews = ref(false)
@@ -175,7 +179,12 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
     }, 3000)
 
     // Reload chats to update the list
-    await loadChats()
+    isLoadingChats.value = true
+    try {
+      await loadChats()
+    } finally {
+      isLoadingChats.value = false
+    }
   } catch (err) {
     console.error('Error in handleUnblockChat:', err)
     alert('Ошибка при разблокировке')
@@ -302,7 +311,13 @@ const handleReviewSuccess = async () => {
 
 // Load chats and topics on mount
 onMounted(async () => {
-  await loadChats()
+  isLoadingChats.value = true
+  try {
+    await loadChats()
+  } finally {
+    isLoadingChats.value = false
+  }
+
   await loadTopics()
   await loadSessionHistory()
   await loadUserReviews()
@@ -636,8 +651,14 @@ watch(
         <div v-if="activeTab === 'chats'" class="profile-main-content">
           <h2 class="profile-section__title">Мои чаты</h2>
 
+          <!-- Loading State -->
+          <div v-if="isLoadingChats" class="profile-loading-container">
+            <img src="/src/images/loading.svg" alt="Загрузка" class="profile-loading-icon" />
+            <p class="profile-loading-text">Загрузка чатов...</p>
+          </div>
+
           <!-- Empty State -->
-          <div v-if="chats.length === 0" class="profile-empty-state">
+          <div v-else-if="chats.length === 0" class="profile-empty-state">
             <svg class="profile-empty-state__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -810,9 +831,9 @@ watch(
             <h2 class="profile-section__title">Мои отзывы</h2>
 
             <!-- Loading State -->
-            <div v-if="isLoadingReviews" class="reviews-loading">
-              <div class="reviews-loading__spinner"></div>
-              <p>Загрузка отзывов...</p>
+            <div v-if="isLoadingReviews" class="profile-loading-container">
+              <img src="/src/images/loading.svg" alt="Загрузка" class="profile-loading-icon" />
+              <p class="profile-loading-text">Загрузка отзывов...</p>
             </div>
 
             <!-- Reviews List -->
@@ -1557,6 +1578,37 @@ watch(
   font-family: 'Inter', sans-serif;
   font-size: var(--font-size-xs);
   color: var(--color-secondary-50);
+  margin: 0;
+}
+
+.profile-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 1.5rem;
+}
+
+.profile-loading-icon {
+  width: 64px;
+  height: 64px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.profile-loading-text {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary-60);
   margin: 0;
 }
 

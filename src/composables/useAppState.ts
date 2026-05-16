@@ -68,7 +68,7 @@ export interface ChatRequest {
 }
 
 export interface Message {
-  id: string
+  id: string | number
   sender_id: string
   text: string
   created_at: string
@@ -76,6 +76,9 @@ export interface Message {
   image?: string
   isMine: boolean
   chat_id: string
+  time?: string
+  isRead?: boolean
+  isSent?: boolean
 }
 
 export interface Review {
