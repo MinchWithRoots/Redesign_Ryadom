@@ -13,6 +13,8 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const topics = ref<any[]>([])
 const existingApplication = ref<any>(null)
+const isUploadingImage = ref(false)
+const imagePreview = ref<string>('')
 
 const form = ref({
   name: '',
@@ -94,6 +96,7 @@ onMounted(async () => {
       form.value.gender = user.gender || ''
       form.value.bio = user.bio || ''
       form.value.image = user.image || ''
+      imagePreview.value = user.image || ''
 
       // Convert topic names (strings) to topic IDs (numbers)
       if (user.topics && user.topics.length > 0 && topicsData && topicsData.length > 0) {
@@ -114,6 +117,36 @@ onMounted(async () => {
     isLoading.value = false
   }
 })
+
+const handleImageUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  try {
+    isUploadingImage.value = true
+    errorMessage.value = ''
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      errorMessage.value = 'Размер файла не должен превышать 5MB'
+      return
+    }
+
+    // Create a local preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target?.result as string
+      form.value.image = imagePreview.value
+    }
+    reader.readAsDataURL(file)
+  } catch (error) {
+    errorMessage.value = `Ошибка при загрузке изображения: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`
+  } finally {
+    isUploadingImage.value = false
+  }
+}
 
 const toggleTopic = (topicId: number) => {
   const index = form.value.topics.indexOf(topicId)
@@ -319,6 +352,37 @@ const submitApplication = async () => {
           <!-- Personal Information Section -->
           <div class="become-companion-form-section">
             <h2 class="become-companion-form-section-title">Персональная информация</h2>
+
+            <!-- Profile Photo -->
+            <div class="become-companion-form-group">
+              <label for="image" class="become-companion-label">
+                Ваша фотография
+              </label>
+              <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex-shrink: 0;">
+                  <div v-if="imagePreview" style="width: 120px; height: 120px; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+                    <img :src="imagePreview" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" />
+                  </div>
+                  <div v-else style="width: 120px; height: 120px; border-radius: 8px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                    Нет фото
+                  </div>
+                </div>
+                <div style="flex: 1;">
+                  <label for="image-input" style="display: block; padding: 1rem; border: 2px dashed #ddd; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                    <span style="display: block; font-size: 0.9rem; color: #666;">Нажмите для загрузки фото или перетащите файл сюда</span>
+                  </label>
+                  <input
+                    id="image-input"
+                    type="file"
+                    accept="image/*"
+                    @change="handleImageUpload"
+                    :disabled="isUploadingImage"
+                    style="display: none;"
+                  />
+                  <p style="font-size: 0.85rem; color: #999; margin-top: 0.5rem;">Рекомендуемый размер: 500×500px, максимум 5MB</p>
+                </div>
+              </div>
+            </div>
 
             <!-- Name -->
             <div class="become-companion-form-group">

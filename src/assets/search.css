@@ -321,10 +321,9 @@
   opacity: 0.6;
 }
 
+/* Overlay removed - was causing dark gradient on card images */
 .companion-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+  display: none;
 }
 
 .companion-card-content {
