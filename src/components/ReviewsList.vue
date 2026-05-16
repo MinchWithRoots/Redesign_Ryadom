@@ -23,13 +23,15 @@
           <div class="review-item__user-info">
             <!-- Avatar -->
             <img
+              v-if="!review.is_anonymous"
               :src="review.user_image || 'https://via.placeholder.com/40'"
               :alt="review.user_name || 'User'"
               class="review-item__avatar"
             />
+            <div v-else class="review-item__avatar review-item__avatar--anonymous">?</div>
             <!-- User Info -->
             <div class="review-item__user-details">
-              <p class="review-item__user-name">{{ review.user_name }}</p>
+              <p class="review-item__user-name">{{ review.is_anonymous ? 'Анонимный пользователь' : review.user_name }}</p>
               <p class="review-item__date">{{ formatSessionDate(review.chat_created_at) }}</p>
             </div>
           </div>

@@ -28,6 +28,7 @@ export interface Companion {
   gender?: 'female' | 'male'
   experience?: 'beginner' | 'experienced' | 'expert'
   reviews_count?: number
+  average_rating?: number
   image: string
   bio: string
   is_available?: boolean
@@ -91,6 +92,7 @@ export interface Review {
   user_image?: string
   chat_id?: string
   chat_created_at?: string
+  is_anonymous?: boolean
 }
 
 // Global state
@@ -813,10 +815,31 @@ export const loadCompanions = async () => {
       }
     }
 
-    console.log('Companions with data loaded:', { count: companionsWithData.length, sample: companionsWithData[0] })
+    // Load review stats for each companion
+    const companionsWithReviews = await Promise.all(
+      companionsWithData.map(async (companion: any) => {
+        try {
+          const { averageRating, reviewCount } = await getCompanionRatingStats(companion.id.toString())
+          return {
+            ...companion,
+            average_rating: averageRating,
+            reviews_count: reviewCount
+          }
+        } catch (err) {
+          console.warn(`Error loading review stats for companion ${companion.id}:`, err)
+          return {
+            ...companion,
+            average_rating: 0,
+            reviews_count: 0
+          }
+        }
+      })
+    )
 
-    companions.value = companionsWithData
-    return companionsWithData
+    console.log('Companions with data loaded:', { count: companionsWithReviews.length, sample: companionsWithReviews[0] })
+
+    companions.value = companionsWithReviews
+    return companionsWithReviews
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load companions'
     error.value = errorMessage
@@ -1636,6 +1659,33 @@ export const getCompanionReviews = async (companionId: string): Promise<Review[]
     const errorMessage = err instanceof Error ? err.message : 'Failed to load reviews'
     console.error('Error loading reviews:', errorMessage)
     return []
+  }
+}
+
+export const getCompanionRatingStats = async (companionId: string): Promise<{ averageRating: number; reviewCount: number }> => {
+  try {
+    const { data: reviews, error } = await supabase
+      .from('reviews')
+      .select('rating')
+      .eq('companion_id', companionId)
+      .eq('published', true)
+
+    if (error) throw error
+
+    const reviewList = reviews || []
+    const reviewCount = reviewList.length
+
+    if (reviewCount === 0) {
+      return { averageRating: 0, reviewCount: 0 }
+    }
+
+    const totalRating = reviewList.reduce((sum, review) => sum + (review.rating || 0), 0)
+    const averageRating = Math.round((totalRating / reviewCount) * 10) / 10
+
+    return { averageRating, reviewCount }
+  } catch (err) {
+    console.error('Error fetching companion rating stats:', err)
+    return { averageRating: 0, reviewCount: 0 }
   }
 }
 
