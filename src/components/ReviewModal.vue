@@ -92,7 +92,7 @@ interface Props {
   companionId: string
   companionName: string
   userId: string
-  chatId?: string
+  chatId?: string | null
 }
 
 interface Emits {
@@ -100,7 +100,7 @@ interface Emits {
   (e: 'success'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const hoverRating = ref(0)
@@ -151,7 +151,7 @@ const submitReview = async () => {
       formData.value.rating,
       formData.value.title,
       formData.value.comment,
-      props.chatId,
+      props.chatId ?? undefined,
       formData.value.isAnonymous
     )
 
