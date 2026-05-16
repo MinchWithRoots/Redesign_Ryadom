@@ -18,6 +18,7 @@ const companion = ref<(typeof companions)['value'][0] | null>(null)
 const isLoading = ref(true)
 const showNotification = ref('')
 const hasRequestSent = ref(false)
+const companionSessions = ref(0)
 
 const isCurrentUserCompanion = computed(() => {
   return currentUser.value && companion.value && 
@@ -39,6 +40,7 @@ onMounted(async () => {
     const comp = await getCompanionById(companionId.value.toString())
     if (comp) {
       companion.value = comp
+      companionSessions.value = comp.sessions || 0
     } else {
       console.error('Companion not found with ID:', companionId.value)
     }
@@ -55,6 +57,7 @@ const handleSendConnectionRequest = async () => {
   try {
     await sendConnectionRequest(companion.value.id)
     hasRequestSent.value = true
+    companionSessions.value += 1
     showNotification.value = `Запрос отправлен ${companion.value.name}!`
     setTimeout(() => {
       showNotification.value = ''
@@ -149,6 +152,15 @@ const navigateToChat = () => {
                     <p class="profile-stat__value">{{ companion.reviews_count }}</p>
                   </div>
                   <p class="profile-stat__label">отзывов</p>
+                </div>
+                <div class="profile-stat">
+                  <div class="profile-stat__flex">
+                    <svg class="profile-stat__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    <p class="profile-stat__value">{{ companionSessions }}</p>
+                  </div>
+                  <p class="profile-stat__label">сессий</p>
                 </div>
               </div>
 

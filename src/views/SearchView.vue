@@ -100,10 +100,12 @@ const handleConnectionRequest = async (companionId: string | number) => {
       }
     }
 
-    console.error('Failed to send connection request:', {
-      error: err,
-      message: errorMessage
-    })
+    console.error('Failed to send connection request:', errorMessage)
+    if (err instanceof Error) {
+      console.error('Error details:', err.message)
+    } else {
+      console.error('Error object:', JSON.stringify(err, null, 2))
+    }
     showNotification.value = errorMessage
     setTimeout(() => {
       showNotification.value = ''

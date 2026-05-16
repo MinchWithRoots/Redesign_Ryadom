@@ -665,13 +665,6 @@
   margin-bottom: 1.5rem;
 }
 
-.reviews-section__title {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.5rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-secondary);
-  margin-bottom: 1.5rem;
-}
 
 .reviews-list {
   display: flex;

@@ -724,99 +724,94 @@ export const loadCompanions = async () => {
       }
     })
 
-    // Sync profile data from user records in background (non-blocking)
-    // This doesn't wait for completion, allowing the search to load quickly
-    ;(async () => {
-      for (let idx = 0; idx < (result || []).length; idx++) {
-        const companion = result![idx]
-        if (!companion.user_id) continue
+    // Sync profile data from user records (blocking - wait for completion)
+    for (let idx = 0; idx < (result || []).length; idx++) {
+      const companion = result![idx]
+      if (!companion.user_id) continue
 
-        try {
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('image, bio, age, gender, name, topics')
-            .eq('id', companion.user_id)
-            .maybeSingle()
+      try {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('image, bio, age, gender, name, topics')
+          .eq('id', companion.user_id)
+          .maybeSingle()
 
-          if (userError) {
-            console.warn(`Could not fetch user ${companion.user_id}:`, userError.message)
-            continue
-          }
-
-          if (!userData) {
-            continue
-          }
-
-          // Check if any data differs
-          const needsSync =
-            userData.image !== companion.image ||
-            userData.bio !== companion.bio ||
-            userData.age !== companion.age ||
-            userData.gender !== companion.gender ||
-            userData.name !== companion.name
-
-          if (!needsSync) {
-            continue
-          }
-
-          console.log(`Background sync: Updating companion ${companion.name}`)
-
-          // Convert user's topic names to IDs
-          let userTopicIds: number[] = []
-          if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
-            const topicNameToId = new Map<string, number>()
-            if (allTopicsRef) {
-              allTopicsRef.forEach((topic: any) => {
-                topicNameToId.set(topic.name, topic.id)
-              })
-            }
-
-            userTopicIds = userData.topics
-              .map((name: string) => topicNameToId.get(name))
-              .filter((id: number | undefined) => id !== undefined) as number[]
-          }
-
-          // Update in background
-          const { error: updateError } = await supabase
-            .from('companions')
-            .update({
-              image: userData.image,
-              bio: userData.bio,
-              age: userData.age,
-              gender: userData.gender,
-              name: userData.name,
-              topics: userTopicIds,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', companion.id)
-
-          if (updateError) {
-            console.warn(`Background sync failed for companion ${companion.name}:`, updateError.message)
-          } else {
-            // Update the in-memory companion data as well
-            const companionIdx = companionsWithData.findIndex(c => c.id === companion.id)
-            if (companionIdx !== -1) {
-              companionsWithData[companionIdx] = {
-                ...companionsWithData[companionIdx],
-                image: userData.image,
-                bio: userData.bio,
-                age: userData.age,
-                gender: userData.gender,
-                name: userData.name,
-                topics: userTopicIds
-                  .map((id: number) => topicIdToName.get(id))
-                  .filter((name: string | undefined) => name !== undefined) as string[]
-              }
-              // Update reactive value
-              companions.value = [...companionsWithData]
-              console.log(`Updated companion in-memory: ${companion.name}`)
-            }
-          }
-        } catch (err) {
-          console.warn(`Background sync error for companion ${companion.id}:`, err instanceof Error ? err.message : String(err))
+        if (userError) {
+          console.warn(`Could not fetch user ${companion.user_id}:`, userError.message)
+          continue
         }
+
+        if (!userData) {
+          continue
+        }
+
+        // Check if any data differs
+        const needsSync =
+          userData.image !== companion.image ||
+          userData.bio !== companion.bio ||
+          userData.age !== companion.age ||
+          userData.gender !== companion.gender ||
+          userData.name !== companion.name
+
+        if (!needsSync) {
+          continue
+        }
+
+        console.log(`Syncing: Updating companion ${companion.name}`)
+
+        // Convert user's topic names to IDs
+        let userTopicIds: number[] = []
+        if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
+          const topicNameToId = new Map<string, number>()
+          if (allTopicsRef) {
+            allTopicsRef.forEach((topic: any) => {
+              topicNameToId.set(topic.name, topic.id)
+            })
+          }
+
+          userTopicIds = userData.topics
+            .map((name: string) => topicNameToId.get(name))
+            .filter((id: number | undefined) => id !== undefined) as number[]
+        }
+
+        // Update the in-memory companion data first
+        const companionIdx = companionsWithData.findIndex(c => c.id === companion.id)
+        if (companionIdx !== -1) {
+          companionsWithData[companionIdx] = {
+            ...companionsWithData[companionIdx],
+            image: userData.image,
+            bio: userData.bio,
+            age: userData.age,
+            gender: userData.gender,
+            name: userData.name,
+            topics: userTopicIds
+              .map((id: number) => topicIdToName.get(id))
+              .filter((name: string | undefined) => name !== undefined) as string[]
+          }
+          console.log(`Updated companion in-memory: ${companion.name}`)
+        }
+
+        // Update in database
+        const { error: updateError } = await supabase
+          .from('companions')
+          .update({
+            image: userData.image,
+            bio: userData.bio,
+            age: userData.age,
+            gender: userData.gender,
+            name: userData.name,
+            topics: userTopicIds,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', companion.id)
+
+        if (updateError) {
+          console.warn(`Sync failed for companion ${companion.name}:`, updateError.message)
+        }
+      } catch (err) {
+        console.warn(`Sync error for companion ${companion.id}:`, err instanceof Error ? err.message : String(err))
       }
-    })()
+    }
 
     console.log('Companions with data loaded:', { count: companionsWithData.length, sample: companionsWithData[0] })
 
@@ -862,12 +857,15 @@ export const sendConnectionRequest = async (companionId: string | number) => {
 
     if (createRequestError) {
       const errorMsg = (createRequestError as any)?.message || JSON.stringify(createRequestError)
-      console.error('Supabase error details:', {
+      const errorDetails = {
         message: errorMsg,
         code: (createRequestError as any)?.code,
         hint: (createRequestError as any)?.hint,
         details: (createRequestError as any)?.details,
-      })
+        status: (createRequestError as any)?.status,
+      }
+      console.error('Supabase error details:', errorDetails)
+      console.error('Full error object:', createRequestError)
       throw new Error(errorMsg)
     }
 
@@ -884,9 +882,14 @@ export const sendConnectionRequest = async (companionId: string | number) => {
     error.value = errorMessage
     console.error('Connection request error details:', {
       errorMessage,
-      fullError: err,
+      errorType: typeof err,
       stack: err instanceof Error ? err.stack : undefined
     })
+    if (err instanceof Error) {
+      console.error('Error trace:', err)
+    } else {
+      console.error('Error object:', JSON.stringify(err, null, 2))
+    }
     throw new Error(errorMessage)
   } finally {
     isLoading.value = false
