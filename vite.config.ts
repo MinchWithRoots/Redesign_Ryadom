@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
+    base: '/Redesign_Ryadom',
   ],
   resolve: {
     alias: {
