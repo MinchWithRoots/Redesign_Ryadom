@@ -1256,52 +1256,88 @@ export const loadChatRequests = async (companionId: string | number, statusFilte
     isLoading.value = true
     error.value = ''
 
-    let query = supabase
-      .from('companion_chat_requests')
-      .select('*')
-      .eq('companion_id', parseInt(companionId.toString()))
-
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter)
+    if (!companionId) {
+      throw new Error('Companion ID is required')
     }
 
-    const { data: requests, error: loadError } = await query
-      .order('created_at', { ascending: false })
+    let retries = 2
+    let lastError: any = null
 
-    if (loadError) throw loadError
+    while (retries >= 0) {
+      try {
+        let query = supabase
+          .from('companion_chat_requests')
+          .select('*')
+          .eq('companion_id', parseInt(companionId.toString()))
 
-    // Fetch user info for each request
-    const requestsWithUserInfo = await Promise.all(
-      (requests || []).map(async (request: any) => {
-        try {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('name, image')
-            .eq('id', request.user_id)
-            .single()
-
-          return {
-            ...request,
-            user_name: userData?.name || 'Unknown',
-            user_image: userData?.image || '',
-          }
-        } catch (err) {
-          console.error(`Error fetching user info for request ${request.id}:`, err)
-          return {
-            ...request,
-            user_name: 'Unknown',
-            user_image: '',
-          }
+        if (statusFilter !== 'all') {
+          query = query.eq('status', statusFilter)
         }
-      })
-    )
 
-    chatRequests.value = requestsWithUserInfo
-    return requestsWithUserInfo
+        const { data: requests, error: loadError } = await query
+          .order('created_at', { ascending: false })
+
+        if (loadError) {
+          lastError = loadError
+          if (retries > 0) {
+            console.warn(`Load failed, retrying... (${retries} retries left)`, loadError.message)
+            retries--
+            await new Promise(r => setTimeout(r, 1000))
+            continue
+          }
+          throw loadError
+        }
+
+        // Fetch user info for each request
+        const requestsWithUserInfo = await Promise.all(
+          (requests || []).map(async (request: any) => {
+            try {
+              const { data: userData } = await supabase
+                .from('users')
+                .select('name, image')
+                .eq('id', request.user_id)
+                .single()
+
+              return {
+                ...request,
+                user_name: userData?.name || 'Unknown',
+                user_image: userData?.image || '',
+              }
+            } catch (err) {
+              console.error(`Error fetching user info for request ${request.id}:`, err)
+              return {
+                ...request,
+                user_name: 'Unknown',
+                user_image: '',
+              }
+            }
+          })
+        )
+
+        chatRequests.value = requestsWithUserInfo
+        return requestsWithUserInfo
+      } catch (err) {
+        lastError = err
+        if (retries > 0) {
+          console.warn(`Request failed, retrying... (${retries} retries left)`)
+          retries--
+          await new Promise(r => setTimeout(r, 1000))
+        } else {
+          throw err
+        }
+      }
+    }
+
+    throw lastError
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load chat requests'
     error.value = errorMessage
-    console.error('Load chat requests error:', errorMessage)
+    console.error('Load chat requests error:', {
+      message: errorMessage,
+      error: err,
+      companionId,
+      type: (err as any)?.code || 'unknown'
+    })
     chatRequests.value = []
     throw err
   } finally {

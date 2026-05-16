@@ -273,10 +273,20 @@ const handleReject = async (requestId: string) => {
 
 onMounted(async () => {
   try {
+    if (!props.companionId) {
+      notification.value = '⚠️ Companion ID not provided'
+      return
+    }
     // Load all requests (pending, approved, rejected)
     await loadChatRequests(props.companionId, 'all')
   } catch (err) {
-    console.error('Error loading chat requests:', err)
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    console.error('Error loading chat requests:', {
+      error: err,
+      message: errorMsg,
+      companionId: props.companionId
+    })
+    notification.value = `❌ Ошибка загрузки заявок: ${errorMsg}`
   }
 })
 

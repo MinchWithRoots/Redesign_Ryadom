@@ -13,12 +13,30 @@ if (!supabaseUrl || !supabaseKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseKey || '')
+export const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'supabase-js/web'
+    }
+  }
+})
 
 // Debug: Log credentials status
 if (typeof window !== 'undefined') {
+  const urlStatus = supabaseUrl ? (supabaseUrl.startsWith('http') ? '✅ Configured' : '❌ Invalid URL') : '❌ Missing'
+  const keyStatus = supabaseKey ? (supabaseKey.length > 10 ? '✅ Configured' : '❌ Invalid Key') : '❌ Missing'
+
   console.log('🔌 Supabase Configuration:', {
-    url: supabaseUrl ? '✅ Configured' : '❌ Missing',
-    key: supabaseKey ? '✅ Configured' : '❌ Missing',
+    url: urlStatus,
+    key: keyStatus,
+    urlPrefix: supabaseUrl ? supabaseUrl.substring(0, 30) : 'none'
   })
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('⚠️ Supabase will not work with missing credentials. All requests will fail.')
+  }
 }
