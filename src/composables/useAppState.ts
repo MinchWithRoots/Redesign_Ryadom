@@ -352,7 +352,10 @@ const syncCompanionProfile = async (userId: string, updates: Record<string, any>
 
     // Sync each field that was updated
     if (updates.bio !== undefined) {
-      companionUpdates.bio = updates.bio
+      // Truncate bio to avoid index size issues (max ~500 chars to be safe)
+      const bioTruncated = updates.bio.substring(0, 500)
+      companionUpdates.bio = bioTruncated
+      console.log('Bio length:', updates.bio.length, '-> truncated to:', bioTruncated.length)
     }
     if (updates.image !== undefined && !updates.image.startsWith('data:')) {
       // Only sync valid URLs, not base64
@@ -493,17 +496,21 @@ export const getCompanionById = async (id: string) => {
       throw companionFetchError
     }
 
-    // Sync all profile data from user record if available
-    if (data && data.user_id) {
+    if (!data) {
+      return null
+    }
+
+    // Sync profile data from user only if needed (don't block on this)
+    if (data.user_id) {
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('*')
+          .select('image, bio, age, gender, topics')
           .eq('id', data.user_id)
           .maybeSingle()
 
         if (!userError && userData) {
-          // Check if any profile data differs and needs updating
+          // Check if any critical profile data differs
           const needsSync =
             userData.image !== data.image ||
             userData.bio !== data.bio ||
@@ -511,17 +518,16 @@ export const getCompanionById = async (id: string) => {
             userData.gender !== data.gender
 
           if (needsSync) {
-            console.log('Syncing fresh data from user profile for companion:', companionId)
-
+            console.log('Profile data differs, syncing from user record')
             // Use user's current data
             data.image = userData.image || data.image
             data.bio = userData.bio || data.bio
             data.age = userData.age || data.age
             data.gender = userData.gender || data.gender
 
-            // Convert user topics (strings) to topic IDs
-            let userTopicIds = data.topics || []
+            // Sync topics if they differ
             if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
+              // Load topic mapping
               const { data: allTopicsRef } = await supabase
                 .from('companion_topics')
                 .select('id, name')
@@ -533,38 +539,45 @@ export const getCompanionById = async (id: string) => {
                 })
               }
 
-              userTopicIds = userData.topics
+              const userTopicIds = userData.topics
                 .map((name: string) => topicNameToId.get(name))
                 .filter((id: number | undefined) => id !== undefined) as number[]
+
+              if (JSON.stringify(userTopicIds) !== JSON.stringify(data.topics)) {
+                data.topics = userTopicIds
+              }
             }
 
-            // Update companion record with fresh data from user
-            const { error: updateError } = await supabase
+            // Update companion record in background (non-blocking)
+            console.log('Queueing background sync of companion profile data')
+            // Fire and forget - don't block on this update
+            supabase
               .from('companions')
               .update({
                 image: data.image,
                 bio: data.bio,
                 age: data.age,
                 gender: data.gender,
-                topics: userTopicIds,
+                topics: data.topics || [],
                 updated_at: new Date().toISOString()
               })
               .eq('id', companionId)
-
-            if (updateError) {
-              console.warn('Could not sync profile data for companion:', updateError)
-            }
           }
         }
       } catch (err) {
-        console.warn('Could not fetch user profile data:', err)
+        // Non-blocking error - log but don't fail
+        console.warn('Could not sync user profile (non-blocking):', err instanceof Error ? err.message : String(err))
       }
     }
 
     // Load companion_topics reference table and convert topic IDs to names
-    const { data: allTopicsRef } = await supabase
+    const { data: allTopicsRef, error: topicsError } = await supabase
       .from('companion_topics')
       .select('id, name')
+
+    if (topicsError) {
+      console.warn('Could not load topics reference:', topicsError.message)
+    }
 
     const topicIdToName = new Map<number, string>()
     if (allTopicsRef) {
@@ -573,8 +586,8 @@ export const getCompanionById = async (id: string) => {
       })
     }
 
-    if (data) {
-      const topicIds = data.topics || []
+    if (data && data.topics) {
+      const topicIds = Array.isArray(data.topics) ? data.topics : []
       data.topics = topicIds
         .map((id: number) => topicIdToName.get(id))
         .filter((name: string | undefined) => name !== undefined)
@@ -696,98 +709,94 @@ export const loadCompanions = async () => {
 
     console.log('Topic ID->Name map created:', { mapSize: topicIdToName.size })
 
-    // Process companions - convert topic IDs to names and sync all profile data from user records
-    const companionsWithData = await Promise.all(
-      (result || []).map(async (companion: any) => {
-        // companions.topics is JSONB array of topic IDs
-        const topicIds = companion.topics || []
-        const topicNames = topicIds
-          .map((id: number) => topicIdToName.get(id))
-          .filter((name: string | undefined) => name !== undefined)
+    // Process companions - convert topic IDs to names (sync happens in background, non-blocking)
+    const companionsWithData = (result || []).map((companion: any) => {
+      // companions.topics is JSONB array of topic IDs
+      const topicIds = companion.topics || []
+      const topicNames = topicIds
+        .map((id: number) => topicIdToName.get(id))
+        .filter((name: string | undefined) => name !== undefined)
 
-        // Try to sync all profile data from user record if companion has user_id
-        let companionData = {
-          image: companion.image,
-          bio: companion.bio,
-          age: companion.age,
-          gender: companion.gender,
-          name: companion.name
-        }
+      return {
+        ...companion,
+        topics: topicNames,
+        specializations: companion.specializations || []
+      }
+    })
 
-        if (companion.user_id) {
-          try {
-            const { data: userData, error: userError } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', companion.user_id)
-              .maybeSingle()
+    // Sync profile data from user records in background (non-blocking)
+    // This doesn't wait for completion, allowing the search to load quickly
+    ;(async () => {
+      for (const companion of result || []) {
+        if (!companion.user_id) continue
 
-            if (!userError && userData) {
-              // Check if any data differs
-              const needsSync =
-                userData.image !== companion.image ||
-                userData.bio !== companion.bio ||
-                userData.age !== companion.age ||
-                userData.gender !== companion.gender ||
-                userData.name !== companion.name
+        try {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('image, bio, age, gender, name, topics')
+            .eq('id', companion.user_id)
+            .maybeSingle()
 
-              if (needsSync) {
-                console.log(`Syncing profile data for companion ${companion.name}`)
-
-                // Use fresh data from user profile
-                companionData.image = userData.image || companion.image
-                companionData.bio = userData.bio || companion.bio
-                companionData.age = userData.age || companion.age
-                companionData.gender = userData.gender || companion.gender
-                companionData.name = userData.name || companion.name
-
-                // Also convert user's topic names to IDs
-                let userTopicIds = topicIds
-                if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
-                  const topicNameToId = new Map<string, number>()
-                  if (allTopicsRef) {
-                    allTopicsRef.forEach((topic: any) => {
-                      topicNameToId.set(topic.name, topic.id)
-                    })
-                  }
-
-                  userTopicIds = userData.topics
-                    .map((name: string) => topicNameToId.get(name))
-                    .filter((id: number | undefined) => id !== undefined) as number[]
-                }
-
-                // Update companion record with fresh data
-                const { error: updateError } = await supabase
-                  .from('companions')
-                  .update({
-                    image: companionData.image,
-                    bio: companionData.bio,
-                    age: companionData.age,
-                    gender: companionData.gender,
-                    name: companionData.name,
-                    topics: userTopicIds,
-                    updated_at: new Date().toISOString()
-                  })
-                  .eq('id', companion.id)
-
-                if (updateError) {
-                  console.warn(`Could not sync profile data for companion ${companion.name}:`, updateError)
-                }
-              }
-            }
-          } catch (err) {
-            console.warn(`Could not fetch user profile for companion ${companion.id}:`, err)
+          if (userError) {
+            console.warn(`Could not fetch user ${companion.user_id}:`, userError.message)
+            continue
           }
-        }
 
-        return {
-          ...companion,
-          ...companionData,
-          topics: topicNames,
-          specializations: companion.specializations || []
+          if (!userData) {
+            continue
+          }
+
+          // Check if any data differs
+          const needsSync =
+            userData.image !== companion.image ||
+            userData.bio !== companion.bio ||
+            userData.age !== companion.age ||
+            userData.gender !== companion.gender ||
+            userData.name !== companion.name
+
+          if (!needsSync) {
+            continue
+          }
+
+          console.log(`Background sync: Updating companion ${companion.name}`)
+
+          // Convert user's topic names to IDs
+          let userTopicIds = companion.topics || []
+          if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
+            const topicNameToId = new Map<string, number>()
+            if (allTopicsRef) {
+              allTopicsRef.forEach((topic: any) => {
+                topicNameToId.set(topic.name, topic.id)
+              })
+            }
+
+            userTopicIds = userData.topics
+              .map((name: string) => topicNameToId.get(name))
+              .filter((id: number | undefined) => id !== undefined) as number[]
+          }
+
+          // Update in background
+          const { error: updateError } = await supabase
+            .from('companions')
+            .update({
+              image: userData.image,
+              bio: userData.bio,
+              age: userData.age,
+              gender: userData.gender,
+              name: userData.name,
+              topics: userTopicIds,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', companion.id)
+
+          if (updateError) {
+            console.warn(`Background sync failed for companion ${companion.name}:`, updateError.message)
+          }
+        } catch (err) {
+          console.warn(`Background sync error for companion ${companion.id}:`, err instanceof Error ? err.message : String(err))
         }
-      })
-    )
+      }
+    })()
 
     console.log('Companions with data loaded:', { count: companionsWithData.length, sample: companionsWithData[0] })
 
