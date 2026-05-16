@@ -857,12 +857,15 @@ export const sendConnectionRequest = async (companionId: string | number) => {
 
     if (createRequestError) {
       const errorMsg = (createRequestError as any)?.message || JSON.stringify(createRequestError)
-      console.error('Supabase error details:', {
+      const errorDetails = {
         message: errorMsg,
         code: (createRequestError as any)?.code,
         hint: (createRequestError as any)?.hint,
         details: (createRequestError as any)?.details,
-      })
+        status: (createRequestError as any)?.status,
+      }
+      console.error('Supabase error details:', errorDetails)
+      console.error('Full error object:', createRequestError)
       throw new Error(errorMsg)
     }
 
@@ -879,9 +882,14 @@ export const sendConnectionRequest = async (companionId: string | number) => {
     error.value = errorMessage
     console.error('Connection request error details:', {
       errorMessage,
-      fullError: err,
+      errorType: typeof err,
       stack: err instanceof Error ? err.stack : undefined
     })
+    if (err instanceof Error) {
+      console.error('Error trace:', err)
+    } else {
+      console.error('Error object:', JSON.stringify(err, null, 2))
+    }
     throw new Error(errorMessage)
   } finally {
     isLoading.value = false
