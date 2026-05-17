@@ -14,12 +14,10 @@ const navigate = (path: string) => {
   window.scrollTo(0, 0)
 }
 
-// Fetch reviews from Supabase or use defaults
 const fetchReviews = async () => {
   try {
     isLoadingReviews.value = true
 
-    // Check if Supabase is configured
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
@@ -42,8 +40,6 @@ const fetchReviews = async () => {
         return
       }
     }
-
-    // Fallback to default reviews
     loadDefaultReviews()
   } catch (err) {
     console.warn('Failed to fetch reviews, using defaults:', err instanceof Error ? err.message : err)
@@ -53,7 +49,6 @@ const fetchReviews = async () => {
   }
 }
 
-// Generate placeholder avatars with initials
 const getPlaceholderAvatar = (name: string) => {
   const initials = name
     .split(' ')
@@ -69,7 +64,7 @@ const getPlaceholderAvatar = (name: string) => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bgColor}&color=fff&size=200&bold=true`
 }
 
-// Load default reviews
+
 const loadDefaultReviews = () => {
   reviews.value = [
     {
@@ -126,7 +121,6 @@ onMounted(() => {
   <div class="layout-landing">
     <!-- Hero Section -->
     <section class="hero-section">
-      <!-- Background image -->
       <img
         src="/src/images/hero.png"
         alt=""
@@ -143,9 +137,7 @@ onMounted(() => {
       <!-- Content -->
       <div class="hero-content">
         <div class="hero-grid">
-          <!-- Left: text + buttons -->
           <div class="hero-text-group">
-            <!-- Heading -->
             <h1 class="hero-heading">
               <div class="hero-heading-left">
                 <span class="hero-heading-line1">Найди свою</span>
@@ -154,12 +146,9 @@ onMounted(() => {
               <span class="hero-heading-accent">Рядом</span>
             </h1>
 
-            <!-- Subtitle -->
             <p class="hero-subtitle">
               Безопасное пространство для общения с людьми, которые поймут и поддержат тебя
             </p>
-
-            <!-- Buttons -->
             <div class="hero-buttons">
               <button
                 @click="navigate('/search')"
@@ -178,8 +167,6 @@ onMounted(() => {
               </button>
             </div>
           </div>
-
-          <!-- Right: Planet illustration -->
           <div class="hero-planet">
             <img
               src="/src/images/Planet-with-stars.png"
@@ -194,7 +181,6 @@ onMounted(() => {
     <section id="about">
       <div class="container-wide">
         <div class="about-grid">
-          <!-- Illustration -->
           <div class="about-image-section">
             <img
               src="/src/images/amico.svg"
@@ -203,7 +189,6 @@ onMounted(() => {
             />
           </div>
 
-          <!-- Content -->
           <div class="about-content">
             <div class="about-header">
               <p class="about-label">О нас</p>
@@ -256,14 +241,11 @@ onMounted(() => {
 
     <!-- Reviews Section -->
     <section id="reviews">
-      <!-- Background wave image -->
       <img src="../images/left-wave.png" class="reviews-left-wave" alt="" aria-hidden="true" />
       <img src="../images/right-wave.png" class="reviews-right-wave" alt="" aria-hidden="true" />
 
-      <!-- Left decorative group -->
       <div class="reviews-deco-left">
         <div class="reviews-deco-blur"></div>
-        <!-- Small sparkles -->
         <svg class="reviews-sparkle reviews-sparkle-lt" width="17" height="19" viewBox="0 0 17 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M10.3102 11.8078L6.02942 18.1763L5.19705 10.4026L0 8.58953L4.75639 6.08141L4.23179 2.28147L7.55427 4.30609L10.4431 0L11.863 5.6508L16.2627 5.27307L13.5487 8.71041L16.2766 13.8097L10.3102 11.8078Z" fill="#FF725E"/>
         </svg>
@@ -281,11 +263,9 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Right decorative group -->
       <div class="reviews-deco-right">
         <div class="reviews-deco-blur"></div>
         <img src="../images/planet.png" class="reviews-planet" alt="" aria-hidden="true" />
-        <!-- Small sparkles -->
         <svg class="reviews-sparkle reviews-sparkle-rt" width="17" height="12" viewBox="0 0 17 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M10.3102 7.79341L6.02942 11.9968L5.19705 6.86597L0 5.66929L4.75639 4.01387L4.23179 1.50582L7.55427 2.84212L10.4431 0L11.863 3.72966L16.2627 3.48035L13.5487 5.74907L16.2766 9.11475L10.3102 7.79341Z" fill="#FF725E"/>
         </svg>
@@ -295,7 +275,7 @@ onMounted(() => {
         <svg class="reviews-sparkle reviews-sparkle-rt3" width="17" height="12" viewBox="0 0 17 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M10.3102 7.79341L6.02942 11.9968L5.19705 6.86597L0 5.66929L4.75639 4.01387L4.23179 1.50582L7.55427 2.84212L10.4431 0L11.863 3.72966L16.2627 3.48035L13.5487 5.74907L16.2766 9.11475L10.3102 7.79341Z" fill="#FF725E"/>
         </svg>
-        <!-- Rotated star -->
+  
         <div class="reviews-star-right">
           <svg width="63" height="63" viewBox="0 0 63 63" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M33.8113 14.5386C35.1297 13.4124 37.1947 14.0214 37.6911 15.6828L40.2341 24.1939C40.4048 24.7655 40.7861 25.2544 41.3021 25.564L48.9864 30.1728C50.4863 31.0724 50.553 33.198 49.1118 34.1666L41.728 39.1284C41.232 39.4617 40.8821 39.9677 40.7475 40.5466L38.7421 49.1643C38.3508 50.8464 36.3271 51.5511 34.94 50.4885L27.8336 45.0439C27.3563 44.6781 26.7588 44.5019 26.1595 44.5502L17.2359 45.2675C15.4941 45.4074 14.1767 43.7174 14.7606 42.092L17.7524 33.7653C17.9533 33.2059 17.934 32.591 17.6983 32.0419L14.1885 23.8676C13.5034 22.2719 14.7128 20.5227 16.4609 20.5809L25.4163 20.8792C26.0178 20.8992 26.6033 20.6953 27.0569 20.3079L33.8113 14.5386Z" fill="#FF725E"/>
@@ -326,13 +306,10 @@ onMounted(() => {
 
     <!-- CTA Section -->
     <section class="cta-section">
-      <!-- Background image -->
       <img src="../images/last-section.png" class="cta-bg-image" alt="" aria-hidden="true" />
 
-      <!-- Gradient overlay -->
       <div class="cta-bg-gradient"></div>
 
-      <!-- Decorative blobs -->
       <div class="cta-decorative-1"></div>
       <div class="cta-decorative-2"></div>
       <div class="cta-decorative-3"></div>
@@ -362,7 +339,6 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- Trust badges -->
         <div class="cta-badges">
           <div class="cta-badge">
             <img src="../images/shield-tick.svg" alt="Verified" />
