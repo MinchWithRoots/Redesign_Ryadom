@@ -107,8 +107,9 @@ const handleReviewsLoaded = async (reviews: any[]) => {
   }
 }
 
-watch(companion, async () => {
-  if (companion.value && reviewsListRef.value) {
+watch(companion, async (newVal, oldVal) => {
+  // Only load reviews if the companion ID changed, not just the reviews_count
+  if (newVal && reviewsListRef.value && (!oldVal || oldVal.id !== newVal.id)) {
     await nextTick()
     reviewsListRef.value.loadReviews()
   }
