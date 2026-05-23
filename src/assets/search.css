@@ -416,13 +416,14 @@
 }
 
 .star {
-  color: #ddd;
-  font-size: 1.1em;
-  line-height: 1;
+  width: 16px;
+  height: 16px;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
 }
 
 .star--filled {
-  color: #ffc107;
+  opacity: 1;
 }
 
 /* ===== BUTTONS ===== */
@@ -571,13 +572,14 @@
 }
 
 .modal-star {
-  color: #ddd;
-  font-size: 1.1em;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
 }
 
 .modal-star--filled {
-  color: #ffc107;
+  opacity: 1;
 }
 
 .modal-reviews-count {

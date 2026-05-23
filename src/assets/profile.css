@@ -228,13 +228,14 @@
 }
 
 .profile-stat__star {
-  color: #ddd;
-  font-size: 1.1em;
-  line-height: 1;
+  width: 16px;
+  height: 16px;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
 }
 
 .profile-stat__star--filled {
-  color: #ffc107;
+  opacity: 1;
 }
 
 /* ===== DIVIDER ===== */
@@ -759,16 +760,18 @@
 }
 
 .review-item__star {
-  font-size: 1.125rem;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
 }
 
 .review-item__star--filled {
-  color: #fbbf24;
+  opacity: 1;
 }
 
 .review-item__star--empty {
-  color: var(--color-secondary-30);
+  opacity: 0.3;
 }
 
 .review-item__title {

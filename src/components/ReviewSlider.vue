@@ -5,6 +5,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Review {
   id: number | string
@@ -12,11 +13,15 @@ interface Review {
   title: string
   text: string
   avatar: string
+  companionId?: string
+  companionName?: string
 }
 
 defineProps<{
   reviews: Review[]
 }>()
+
+const router = useRouter()
 
 const modules = [Navigation, Pagination, Autoplay, Virtual]
 const swiperInstance = ref<any>(null)
@@ -28,6 +33,12 @@ const handleSwiperInit = (swiper: any) => {
 
 const handleImageError = (reviewId: number | string) => {
   imageLoadErrors.value.add(reviewId)
+}
+
+const navigateToCompanion = (companionId?: string) => {
+  if (companionId) {
+    router.push(`/user/${companionId}`)
+  }
 }
 </script>
 
@@ -128,14 +139,21 @@ const handleImageError = (reviewId: number | string) => {
               <div class="emotions-slider-item__text">
                 {{ review.text }}
               </div>
+              <div v-if="review.companionName" class="emotions-slider-item__companion">
+                <span class="emotions-slider-item__companion-label">Отзыв о спутнике:</span>
+                <span class="emotions-slider-item__companion-name">{{ review.companionName }}</span>
+              </div>
             </div>
 
             <!-- Footer with Button -->
             <div class="emotions-slider-item__footer">
-              <a class="emotions-slider-item__btn" href="/" @click.prevent>
+              <button
+                class="emotions-slider-item__btn"
+                @click="navigateToCompanion(review.companionId)"
+              >
                 <span class="emotions-slider-item__btn-text">Прочитать</span>
                 <span class="emotions-slider-item__btn-icon"></span>
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -449,6 +467,26 @@ const handleImageError = (reviewId: number | string) => {
   color: var(--color-secondary);
 }
 
+.emotions-slider-item__companion {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.emotions-slider-item__companion-label {
+  color: var(--color-secondary);
+  opacity: 0.7;
+}
+
+.emotions-slider-item__companion-name {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 .emotions-slider-item__btn {
   display: flex;
   align-items: center;
@@ -459,6 +497,10 @@ const handleImageError = (reviewId: number | string) => {
   text-decoration: none;
   transition: all 0.3s ease;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
 }
 
 .emotions-slider-item__btn-icon {

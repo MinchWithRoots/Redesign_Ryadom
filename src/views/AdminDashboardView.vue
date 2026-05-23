@@ -924,7 +924,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                   <div class="rating-stars">
-                    <span v-for="starIndex in 5" :key="starIndex" class="rating-star" :class="starIndex <= review.rating ? 'rating-star--filled' : 'rating-star--empty'">★</span>
+                    <img v-for="starIndex in 5" :key="starIndex" src="/src/images/star.svg" alt="Star" class="rating-star" :class="starIndex <= review.rating ? 'rating-star--filled' : 'rating-star--empty'" />
                   </div>
                   <span style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-secondary);">{{ review.title }}</span>
                 </div>

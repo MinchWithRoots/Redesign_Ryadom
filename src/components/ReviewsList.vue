@@ -37,7 +37,7 @@
           </div>
           <!-- Rating -->
           <div class="review-item__rating">
-            <span v-for="i in 5" :key="i" class="review-item__star" :class="{ 'review-item__star--filled': i <= review.rating, 'review-item__star--empty': i > review.rating }">★</span>
+            <img v-for="i in 5" :key="i" src="../images/star.svg" alt="Star" class="review-item__star" :class="{ 'review-item__star--filled': i <= review.rating, 'review-item__star--empty': i > review.rating }" />
           </div>
         </div>
 

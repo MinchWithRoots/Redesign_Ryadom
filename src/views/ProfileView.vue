@@ -879,7 +879,7 @@ watch(
                     </div>
                   </div>
                   <div class="profile-review-item__rating">
-                    <span v-for="i in 5" :key="i" class="profile-review-item__star" :class="{ 'profile-review-item__star--filled': i <= review.rating, 'profile-review-item__star--empty': i > review.rating }">★</span>
+                    <img v-for="i in 5" :key="i" src="../images/star.svg" alt="Star" class="profile-review-item__star" :class="{ 'profile-review-item__star--filled': i <= review.rating, 'profile-review-item__star--empty': i > review.rating }" />
                   </div>
                 </div>
 
@@ -1784,13 +1784,14 @@ watch(
 }
 
 .profile-review-item__star {
-  font-size: 16px;
-  color: #ffc107;
+  width: 18px;
+  height: 18px;
+  opacity: 1;
   display: inline-block;
 }
 
 .profile-review-item__star--empty {
-  color: #e0e0e0;
+  opacity: 0.3;
 }
 
 .profile-review-item__title {

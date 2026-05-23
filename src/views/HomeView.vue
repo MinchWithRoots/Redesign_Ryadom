@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
+import { getPublishedReviewsForHome } from '@/services/supabaseService'
 import ReviewSlider from '@/components/ReviewSlider.vue'
 import { cacheManager, CACHE_KEYS } from '@/utils/cacheManager'
 import '@/assets/home.css'
@@ -31,31 +32,34 @@ const fetchReviews = async () => {
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
     if (supabaseUrl && supabaseKey) {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('id, title, comment, created_at, users (name, image)')
-        .eq('published', true)
-        .order('created_at', { ascending: false })
-        .limit(6)
+      const data = await getPublishedReviewsForHome(6)
 
-      if (!error && data && data.length > 0) {
+      if (data && data.length > 0) {
         const mappedReviews = data.map((review: any) => ({
           id: review.id,
           name: review.users?.name || 'Анонимно',
           title: review.title || 'Пользователь платформы',
           text: review.comment,
           avatar: review.users?.image || getPlaceholderAvatar(review.users?.name || 'User'),
+          companionId: review.companion_id,
+          companionName: review.companions?.name || 'Спутник',
         }))
 
         // Cache the reviews
         cacheManager.set('reviews_home', mappedReviews, 24 * 60 * 60 * 1000)
         reviews.value = mappedReviews
+        console.log('Loaded reviews from Supabase:', mappedReviews)
         return
+      } else {
+        console.log('No reviews found in database, using defaults')
+        loadDefaultReviews()
       }
+    } else {
+      console.warn('Supabase credentials not configured')
+      loadDefaultReviews()
     }
-    loadDefaultReviews()
   } catch (err) {
-    console.warn('Failed to fetch reviews, using defaults:', err instanceof Error ? err.message : err)
+    console.error('Failed to fetch reviews:', err)
     loadDefaultReviews()
   } finally {
     isLoadingReviews.value = false
@@ -86,6 +90,8 @@ const loadDefaultReviews = () => {
       title: 'В процессе терапии',
       text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
       avatar: '/src/images/users/id1-image.jpg',
+      companionId: '1',
+      companionName: 'Анна Смирнова',
     },
     {
       id: 2,
@@ -93,6 +99,8 @@ const loadDefaultReviews = () => {
       title: 'Прошел курс терапии',
       text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
       avatar: '/src/images/users/id2-image.jpg',
+      companionId: '2',
+      companionName: 'Дмитрий Соколов',
     },
     {
       id: 3,
@@ -100,6 +108,8 @@ const loadDefaultReviews = () => {
       title: 'Путь выздоровления',
       text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
       avatar: '/src/images/users/id3-image.jpg',
+      companionId: '3',
+      companionName: 'Екатерина Волова',
     },
     {
       id: 4,
@@ -107,6 +117,8 @@ const loadDefaultReviews = () => {
       title: 'Активный участник',
       text: 'Сервис действительно поддерживает. Нашел здесь не только понимание, но и новых друзей. Рекомендую всем, кто ищет настоящую поддержку.',
       avatar: '/src/images/users/id4-image.jpg',
+      companionId: '4',
+      companionName: 'Ольга Павлова',
     },
     {
       id: 5,
@@ -114,6 +126,8 @@ const loadDefaultReviews = () => {
       title: 'Консультант',
       text: 'Работаю в сфере психического здоровья и с уверенностью говорю — эта платформа создает действительно безопасное пространство для людей.',
       avatar: '/src/images/users/id5-image.jpg',
+      companionId: '5',
+      companionName: 'Виктор Новиков',
     },
     {
       id: 6,
@@ -121,6 +135,8 @@ const loadDefaultReviews = () => {
       title: 'Пользователь',
       text: 'Благодарен за эту платформу. Здесь я нашел поддержку, которую не мог найти нигде. Каждый день общения здесь помогает мне становиться лучше.',
       avatar: '/src/images/users/id1-image.jpg',
+      companionId: '6',
+      companionName: 'Михаил Иванов',
     },
   ]
 }
