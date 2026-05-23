@@ -245,6 +245,26 @@ const loadSessionHistory = async () => {
       return
     }
 
+    // Load ratings from reviews for each completed chat
+    const { data: reviews, error: reviewsError } = await supabase
+      .from('reviews')
+      .select('chat_id, rating')
+      .eq('user_id', currentUser.value.id)
+
+    if (reviewsError) {
+      console.error('Error loading reviews for ratings:', reviewsError)
+    }
+
+    // Create a map of chat_id -> rating for quick lookup
+    const ratingMap = new Map<string | number, number>()
+    if (reviews) {
+      reviews.forEach((review: any) => {
+        if (review.chat_id) {
+          ratingMap.set(review.chat_id, review.rating)
+        }
+      })
+    }
+
     // Transform the data for display
     sessionHistory.value = (completedChats || []).map((chat: any) => ({
       id: chat.id,
@@ -254,7 +274,7 @@ const loadSessionHistory = async () => {
       topic: '', // We don't have topic info in the chat yet
       date: new Date(chat.updated_at).toLocaleDateString('ru-RU'),
       duration: '—', // Calculate duration if needed
-      feedback: 0,
+      feedback: ratingMap.get(chat.id) || 0,
     }))
 
     console.log('Session history loaded:', sessionHistory.value)
