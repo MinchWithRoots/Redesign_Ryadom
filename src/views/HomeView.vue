@@ -33,7 +33,7 @@ const fetchReviews = async () => {
     if (supabaseUrl && supabaseKey) {
       const { data, error } = await supabase
         .from('reviews')
-        .select('id, title, comment, created_at, users (name, image)')
+        .select('id, title, comment, created_at, companion_id, companions (id, name), users (name, image)')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(6)
@@ -45,6 +45,8 @@ const fetchReviews = async () => {
           title: review.title || 'Пользователь платформы',
           text: review.comment,
           avatar: review.users?.image || getPlaceholderAvatar(review.users?.name || 'User'),
+          companionId: review.companion_id,
+          companionName: review.companions?.name || 'Спутник',
         }))
 
         // Cache the reviews
