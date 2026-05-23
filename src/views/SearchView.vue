@@ -229,7 +229,7 @@ const getRussianPlural = (count: number, word: string) => {
                   <input
                     v-model="filters.experience"
                     type="radio"
-                    value="beginner"
+                    value="до года"
                   />
                   <span>До 1 года</span>
                 </label>
@@ -237,7 +237,7 @@ const getRussianPlural = (count: number, word: string) => {
                   <input
                     v-model="filters.experience"
                     type="radio"
-                    value="intermediate"
+                    value="1-3 года"
                   />
                   <span>1–3 года</span>
                 </label>
@@ -245,7 +245,7 @@ const getRussianPlural = (count: number, word: string) => {
                   <input
                     v-model="filters.experience"
                     type="radio"
-                    value="expert"
+                    value="более 3 лет"
                   />
                   <span>3+ лет</span>
                 </label>
@@ -319,7 +319,6 @@ const getRussianPlural = (count: number, word: string) => {
                   </div>
                 </div>
                 <p class="companion-experience">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-                <p v-if="companion.topics && companion.topics.length > 0" class="companion-topics">Темы: {{ companion.topics.join(', ') }}</p>
                 <p class="companion-bio">{{ companion.bio }}</p>
 
                 <!-- Topics -->

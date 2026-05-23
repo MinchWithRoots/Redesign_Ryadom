@@ -17,9 +17,8 @@ router.get('/', async (req, res) => {
     const params = [ageMin, ageMax]
 
     if (experience && experience !== 'all') {
-      const isExperienced = experience === 'experienced' ? 'Опытный специалист' : 'Начинающий'
       query += ` AND c.experience = $${params.length + 1}`
-      params.push(isExperienced)
+      params.push(experience)
     }
 
     if (topic) {

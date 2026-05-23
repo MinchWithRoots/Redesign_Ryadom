@@ -26,7 +26,7 @@ export interface Companion {
   name: string
   age: number
   gender?: 'female' | 'male'
-  experience?: 'beginner' | 'experienced' | 'expert'
+  experience?: 'до года' | '1-3 года' | 'более 3 лет'
   reviews_count?: number
   average_rating?: number
   image: string
@@ -682,6 +682,7 @@ export const loadCompanions = async () => {
     isLoading.value = true
     error.value = ''
 
+    // Load companions with topics mapping in single query
     const { data: result, error: loadCompanionsError } = await supabase
       .from('companions')
       .select('*')
@@ -697,26 +698,26 @@ export const loadCompanions = async () => {
       throw loadCompanionsError
     }
 
-    // Load companion_topics reference table (id -> name mapping)
-    const { data: allTopicsRef, error: topicsRefError } = await supabase
-      .from('companion_topics')
-      .select('id, name')
+    // Load companion_topics reference table (id -> name mapping) - with caching
+    let allTopicsRef = (await import('@/utils/cacheManager').then(m => m.cacheManager.get('topics_cache', 24 * 60 * 60 * 1000))) as any[]
 
-    console.log('Loaded companion_topics reference:', { allTopicsRef, topicsRefError, count: allTopicsRef?.length || 0 })
+    if (!allTopicsRef) {
+      const { data: topics, error: topicsRefError } = await supabase
+        .from('companion_topics')
+        .select('id, name')
 
-    // Create id -> name map
-    const topicIdToName = new Map<number, string>()
-    if (allTopicsRef && allTopicsRef.length > 0) {
-      allTopicsRef.forEach((topicRecord: any) => {
-        topicIdToName.set(topicRecord.id, topicRecord.name)
-      })
+      if (topicsRefError) throw topicsRefError
+
+      allTopicsRef = topics || []
+      const { cacheManager } = await import('@/utils/cacheManager')
+      cacheManager.set('topics_cache', allTopicsRef, 24 * 60 * 60 * 1000)
     }
 
-    console.log('Topic ID->Name map created:', { mapSize: topicIdToName.size })
+    const topicIdToName = new Map<number, string>()
+    allTopicsRef?.forEach((t: any) => topicIdToName.set(t.id, t.name))
 
-    // Process companions - convert topic IDs to names (sync happens in background, non-blocking)
+    // Process companions - convert topic IDs to names
     const companionsWithData = (result || []).map((companion: any) => {
-      // companions.topics is JSONB array of topic IDs
       const topicIds = companion.topics || []
       const topicNames = topicIds
         .map((id: number) => topicIdToName.get(id))
@@ -729,28 +730,32 @@ export const loadCompanions = async () => {
       }
     })
 
-    // Sync profile data from user records (blocking - wait for completion)
-    for (let idx = 0; idx < (result || []).length; idx++) {
-      const companion = result![idx]
-      if (!companion.user_id) continue
+    // OPTIMIZATION: Fetch all users in one batch query instead of N individual queries
+    const userIds = (result || [])
+      .filter((c: any) => c.user_id)
+      .map((c: any) => c.user_id)
 
-      try {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('image, bio, age, gender, name, topics')
-          .eq('id', companion.user_id)
-          .maybeSingle()
+    let usersData: any[] = []
+    if (userIds.length > 0) {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, image, bio, age, gender, name, topics')
+        .in('id', userIds)
 
-        if (userError) {
-          console.warn(`Could not fetch user ${companion.user_id}:`, userError.message)
-          continue
-        }
+      if (!userError && userData) {
+        usersData = userData
+      }
+    }
 
-        if (!userData) {
-          continue
-        }
+    // Create user lookup map for O(1) access
+    const userMap = new Map(usersData.map(u => [u.id, u]))
 
-        // Check if any data differs
+    // Sync profile data from user records (non-blocking background sync)
+    const syncPromises = (result || [])
+      .filter((c: any) => c.user_id && userMap.has(c.user_id))
+      .map(async (companion: any) => {
+        const userData = userMap.get(companion.user_id)
+
         const needsSync =
           userData.image !== companion.image ||
           userData.bio !== companion.bio ||
@@ -758,46 +763,17 @@ export const loadCompanions = async () => {
           userData.gender !== companion.gender ||
           userData.name !== companion.name
 
-        if (!needsSync) {
-          continue
-        }
+        if (!needsSync) return
 
-        console.log(`Syncing: Updating companion ${companion.name}`)
+        const topicNameToId = new Map<string, number>()
+        allTopicsRef?.forEach((t: any) => topicNameToId.set(t.name, t.id))
 
-        // Convert user's topic names to IDs
-        let userTopicIds: number[] = []
-        if (userData.topics && Array.isArray(userData.topics) && userData.topics.length > 0) {
-          const topicNameToId = new Map<string, number>()
-          if (allTopicsRef) {
-            allTopicsRef.forEach((topic: any) => {
-              topicNameToId.set(topic.name, topic.id)
-            })
-          }
+        const userTopicIds = (userData.topics || [])
+          .map((name: string) => topicNameToId.get(name))
+          .filter((id: number | undefined) => id !== undefined) as number[]
 
-          userTopicIds = userData.topics
-            .map((name: string) => topicNameToId.get(name))
-            .filter((id: number | undefined) => id !== undefined) as number[]
-        }
-
-        // Update the in-memory companion data first
-        const companionIdx = companionsWithData.findIndex(c => c.id === companion.id)
-        if (companionIdx !== -1) {
-          companionsWithData[companionIdx] = {
-            ...companionsWithData[companionIdx],
-            image: userData.image,
-            bio: userData.bio,
-            age: userData.age,
-            gender: userData.gender,
-            name: userData.name,
-            topics: userTopicIds
-              .map((id: number) => topicIdToName.get(id))
-              .filter((name: string | undefined) => name !== undefined) as string[]
-          }
-          console.log(`Updated companion in-memory: ${companion.name}`)
-        }
-
-        // Update in database
-        const { error: updateError } = await supabase
+        // Background sync - don't block UI
+        return supabase
           .from('companions')
           .update({
             image: userData.image,
@@ -809,16 +785,12 @@ export const loadCompanions = async () => {
             updated_at: new Date().toISOString()
           })
           .eq('id', companion.id)
+      })
 
-        if (updateError) {
-          console.warn(`Sync failed for companion ${companion.name}:`, updateError.message)
-        }
-      } catch (err) {
-        console.warn(`Sync error for companion ${companion.id}:`, err instanceof Error ? err.message : String(err))
-      }
-    }
+    // Start background sync but don't wait
+    Promise.allSettled(syncPromises).catch(() => {})
 
-    // Load review stats for each companion
+    // Load review stats in parallel for better performance
     const companionsWithReviews = await Promise.all(
       companionsWithData.map(async (companion: any) => {
         try {
@@ -829,7 +801,6 @@ export const loadCompanions = async () => {
             reviews_count: reviewCount
           }
         } catch (err) {
-          console.warn(`Error loading review stats for companion ${companion.id}:`, err)
           return {
             ...companion,
             average_rating: 0,
@@ -838,8 +809,6 @@ export const loadCompanions = async () => {
         }
       })
     )
-
-    console.log('Companions with data loaded:', { count: companionsWithReviews.length, sample: companionsWithReviews[0] })
 
     companions.value = companionsWithReviews
     return companionsWithReviews

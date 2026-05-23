@@ -49,9 +49,9 @@
           v-model="formData.experience"
           class="w-full px-4 py-2 border border-border rounded-xl text-secondary focus:outline-none focus:border-primary"
         >
-          <option value="beginner">До 1 года</option>
-          <option value="intermediate">1–3 года</option>
-          <option value="expert">3+ лет</option>
+          <option value="до года">До 1 года</option>
+          <option value="1-3 года">1–3 года</option>
+          <option value="более 3 лет">3+ лет</option>
         </select>
       </div>
 
@@ -138,7 +138,7 @@ const formData = ref({
   name: '',
   age: 28,
   gender: 'female',
-  experience: 'intermediate',
+  experience: '1-3 года',
   bio: '',
   image: '',
   is_available: true
@@ -150,7 +150,7 @@ onMounted(async () => {
     formData.value.name = props.companion.name
     formData.value.age = props.companion.age
     formData.value.gender = props.companion.gender || 'female'
-    formData.value.experience = props.companion.experience || 'intermediate'
+    formData.value.experience = props.companion.experience || '1-3 года'
     formData.value.bio = props.companion.bio
     formData.value.image = props.companion.image
     formData.value.is_available = props.companion.is_available !== false

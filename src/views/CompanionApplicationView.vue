@@ -20,7 +20,7 @@ const form = ref({
   name: '',
   age: null as number | null,
   gender: '',
-  experience: 'beginner',
+  experience: 'до года',
   bio: '',
   image: '',
   topics: [] as number[],
@@ -465,9 +465,9 @@ const submitApplication = async () => {
               class="become-companion-select"
               required
             >
-              <option value="beginner">До 1 года (первый раз помогу людям)</option>
-              <option value="intermediate">1–3 года (имею опыт в поддержке)</option>
-              <option value="expert">3+ лет (многолетний опыт в поддержке)</option>
+              <option value="до года">До 1 года (первый раз помогу людям)</option>
+              <option value="1-3 года">1–3 года (имею опыт в поддержке)</option>
+              <option value="более 3 лет">3+ лет (многолетний опыт в поддержке)</option>
             </select>
           </div>
 
