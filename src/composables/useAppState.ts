@@ -26,7 +26,7 @@ export interface Companion {
   name: string
   age: number
   gender?: 'female' | 'male'
-  experience?: 'beginner' | 'experienced' | 'expert'
+  experience?: 'до года' | '1-3 года' | 'более 3 лет'
   reviews_count?: number
   average_rating?: number
   image: string

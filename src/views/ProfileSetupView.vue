@@ -249,19 +249,19 @@ const handleSkip = () => {
               <label class="form-label">Ваш пол *</label>
               <div class="profile-setup__gender-grid">
                 <button
-                  @click="profileSetup.gender = 'Женщина'"
+                  @click="profileSetup.gender = 'female'"
                   :class="[
                     'profile-setup__gender-button',
-                    { 'is-selected': profileSetup.gender === 'Женщина' }
+                    { 'is-selected': profileSetup.gender === 'female' }
                   ]"
                 >
                   Женщина
                 </button>
                 <button
-                  @click="profileSetup.gender = 'Мужчина'"
+                  @click="profileSetup.gender = 'male'"
                   :class="[
                     'profile-setup__gender-button',
-                    { 'is-selected': profileSetup.gender === 'Мужчина' }
+                    { 'is-selected': profileSetup.gender === 'male' }
                   ]"
                 >
                   Мужчина
