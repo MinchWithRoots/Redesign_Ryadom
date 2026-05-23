@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
+import { encryptionService } from '@/services/encryptionService'
 
 // Types
 export interface User {
@@ -1027,6 +1028,13 @@ export const loadChats = async () => {
     )
 
     chats.value = chatsWithInfo
+
+    // Initialize encryption keys for all chats
+    chatsWithInfo.forEach((chat: Chat) => {
+      if (!encryptionService.hasKey(chat.id)) {
+        encryptionService.generateKey(chat.id)
+      }
+    })
 
     return allChats
   } catch (err) {

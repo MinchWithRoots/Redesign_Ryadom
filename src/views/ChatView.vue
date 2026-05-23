@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
+import { encryptionService } from '../services/encryptionService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
 import '@/assets/chat.css'
@@ -71,6 +72,13 @@ const loadMessages = async () => {
   if (chatId.value) {
     isLoadingMessages.value = true
     try {
+      // Ensure encryption key exists for this chat
+      if (chatId.value && !encryptionService.hasKey(chatId.value)) {
+        // Generate new key if it doesn't exist
+        const newKey = encryptionService.generateKey(chatId.value)
+        console.log('Generated new encryption key for chat')
+      }
+
       const { data: messagesData, error } = await supabase
         .from('messages')
         .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
@@ -102,10 +110,21 @@ const loadMessages = async () => {
           }
         }
 
+        // Decrypt message text
+        let decryptedText = msg.text
+        try {
+          if (chatId.value) {
+            decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
+          }
+        } catch (err) {
+          console.warn('Failed to decrypt message:', err)
+          decryptedText = '[Не удалось расшифровать сообщение]'
+        }
+
         return {
           id: msg.id,
           sender_id: msg.sender_id,
-          text: msg.text,
+          text: decryptedText,
           created_at: msg.created_at,
           author: authorName,
           isMine: msg.sender_id === currentUser.value?.id,
@@ -145,13 +164,29 @@ const sendMessage = async () => {
   const messageText = messageInput.value.trim()
 
   try {
+    // Ensure encryption key exists
+    if (!encryptionService.hasKey(chatId.value)) {
+      const newKey = encryptionService.generateKey(chatId.value)
+      console.log('Generated encryption key for new message')
+    }
+
+    // Encrypt message before sending
+    let encryptedText: string
+    try {
+      encryptedText = encryptionService.encryptMessage(messageText, chatId.value)
+    } catch (err) {
+      console.error('Encryption failed:', err)
+      alert('Ошибка при шифровании сообщения')
+      return
+    }
+
     const { data: messageData, error } = await supabase
       .from('messages')
       .insert([
         {
           chat_id: chatId.value,
           sender_id: currentUser.value.id,
-          text: messageText,
+          text: encryptedText,
         },
       ])
       .select()
@@ -193,11 +228,11 @@ const sendMessage = async () => {
       console.error('Error updating chat:', updateErr)
     }
 
-    // Add message to local state
+    // Add message to local state (with decrypted text for display)
     const newMessage = {
       id: messageData.id,
       sender_id: messageData.sender_id,
-      text: messageData.text,
+      text: messageText,
       created_at: messageData.created_at,
       author: currentUser.value.name || 'You',
       isMine: true,
@@ -417,10 +452,21 @@ const subscribeToMessages = () => {
             }
           }
 
+          // Decrypt message text
+          let decryptedText = newMsg.text
+          try {
+            if (chatId.value) {
+              decryptedText = encryptionService.decryptMessage(newMsg.text, chatId.value)
+            }
+          } catch (err) {
+            console.warn('Failed to decrypt message:', err)
+            decryptedText = '[Не удалось расшифровать сообщение]'
+          }
+
           const transformedMsg = {
             id: newMsg.id,
             sender_id: newMsg.sender_id,
-            text: newMsg.text,
+            text: decryptedText,
             created_at: newMsg.created_at,
             author: authorName,
             isMine: newMsg.sender_id === currentUser.value?.id,
@@ -471,10 +517,21 @@ const subscribeToMessages = () => {
             }
           }
 
+          // Decrypt message text
+          let decryptedText = msg.text
+          try {
+            if (chatId.value) {
+              decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
+            }
+          } catch (err) {
+            console.warn('Failed to decrypt message:', err)
+            decryptedText = '[Не удалось расшифровать сообщение]'
+          }
+
           const transformedMsg = {
             id: msg.id,
             sender_id: msg.sender_id,
-            text: msg.text,
+            text: decryptedText,
             created_at: msg.created_at,
             author: authorName,
             isMine: msg.sender_id === currentUser.value?.id,
