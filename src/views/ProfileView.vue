@@ -400,15 +400,12 @@ watch(
               <!-- Stats -->
               <div v-if="userProfile" class="profile-stats">
                 <div class="profile-stat">
-                  <p class="profile-stat__value">{{ userProfile.sessions || 0 }}</p>
-                  <p class="profile-stat__label">сессий</p>
+                  <p class="profile-stat__value">{{ userProfile.reviews_count ?? 0 }}</p>
+                  <p class="profile-stat__label">отзывов</p>
                 </div>
                 <div class="profile-stat">
-                  <div class="profile-stat__flex">
-                    <img src="../images/support.svg" alt="Thanks" class="profile-stat__icon" />
-                    <span class="profile-stat__value">{{ userProfile.reviews_count ?? 0 }}</span>
-                  </div>
-                  <p class="profile-stat__label">отзывов</p>
+                  <p class="profile-stat__value">{{ userProfile.sessions || 0 }}</p>
+                  <p class="profile-stat__label">сессий</p>
                 </div>
               </div>
             </div>

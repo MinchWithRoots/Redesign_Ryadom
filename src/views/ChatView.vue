@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData } from '../composables/useAppState'
+import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
@@ -265,6 +265,8 @@ const handleEndSession = async () => {
 const handleReviewSuccess = async () => {
   if (chat.value) {
     await refreshCompanionData(chat.value.companion_id)
+    // Refresh current user data to update sessions and reviews count
+    await loadCurrentUser()
   }
   setTimeout(() => {
     router.push('/profile')
