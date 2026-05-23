@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import galleryIcon from '@/images/gallery.svg'
 
 interface Props {
   src?: string
@@ -29,7 +30,7 @@ const handleImageError = () => {
     />
     <div v-else :class="props.fallbackClass">
       <img
-        src="/images/gallery.svg"
+        :src="galleryIcon"
         alt="Gallery"
         :class="props.iconClass"
       />
