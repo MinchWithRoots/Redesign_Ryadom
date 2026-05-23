@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
+import { getPublishedReviewsForHome } from '@/services/supabaseService'
 import ReviewSlider from '@/components/ReviewSlider.vue'
 import { cacheManager, CACHE_KEYS } from '@/utils/cacheManager'
 import '@/assets/home.css'
@@ -31,14 +32,9 @@ const fetchReviews = async () => {
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
     if (supabaseUrl && supabaseKey) {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('id, title, comment, created_at, companion_id, companions (id, name), users (name, image)')
-        .eq('published', true)
-        .order('created_at', { ascending: false })
-        .limit(6)
+      const data = await getPublishedReviewsForHome(6)
 
-      if (!error && data && data.length > 0) {
+      if (data && data.length > 0) {
         const mappedReviews = data.map((review: any) => ({
           id: review.id,
           name: review.users?.name || 'Анонимно',
@@ -52,12 +48,18 @@ const fetchReviews = async () => {
         // Cache the reviews
         cacheManager.set('reviews_home', mappedReviews, 24 * 60 * 60 * 1000)
         reviews.value = mappedReviews
+        console.log('Loaded reviews from Supabase:', mappedReviews)
         return
+      } else {
+        console.log('No reviews found in database, using defaults')
+        loadDefaultReviews()
       }
+    } else {
+      console.warn('Supabase credentials not configured')
+      loadDefaultReviews()
     }
-    loadDefaultReviews()
   } catch (err) {
-    console.warn('Failed to fetch reviews, using defaults:', err instanceof Error ? err.message : err)
+    console.error('Failed to fetch reviews:', err)
     loadDefaultReviews()
   } finally {
     isLoadingReviews.value = false

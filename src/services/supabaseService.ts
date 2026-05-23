@@ -325,6 +325,36 @@ export async function getCompanionReviews(companionId: string) {
   }
 }
 
+export async function getPublishedReviewsForHome(limit: number = 6) {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        id,
+        title,
+        comment,
+        created_at,
+        companion_id,
+        companions (id, name),
+        users (name, image)
+      `)
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error)
+      console.error('Error fetching published reviews:', errorMessage, error)
+      throw error
+    }
+    return data || []
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Error fetching published reviews - catch block:', errorMessage)
+    return []
+  }
+}
+
 export async function getUserReviews(userId: string) {
   try {
     const { data, error } = await supabase
