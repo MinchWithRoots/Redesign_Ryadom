@@ -8,6 +8,7 @@ export interface EncryptionKey {
 
 class EncryptionService {
   private keyStore: Map<string, EncryptionKey> = new Map()
+  private readonly STORAGE_PREFIX = 'chat_encryption_key_'
 
   /**
    * Generate a random encryption key for a chat
@@ -19,6 +20,14 @@ class EncryptionService {
       key,
       expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     })
+    // Save to localStorage for persistence
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`${this.STORAGE_PREFIX}${chatId}`, key)
+      }
+    } catch (err) {
+      console.warn('Failed to save encryption key to localStorage:', err)
+    }
     return key
   }
 
@@ -31,18 +40,54 @@ class EncryptionService {
       key,
       expiresAt: Date.now() + 24 * 60 * 60 * 1000,
     })
+    // Save to localStorage for persistence
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`${this.STORAGE_PREFIX}${chatId}`, key)
+      }
+    } catch (err) {
+      console.warn('Failed to save encryption key to localStorage:', err)
+    }
   }
 
   /**
    * Get encryption key for a chat
    */
   getKey(chatId: string): string | null {
-    const keyObj = this.keyStore.get(chatId)
+    // First check memory cache
+    let keyObj = this.keyStore.get(chatId)
+
+    // If not in memory, try to load from localStorage
+    if (!keyObj) {
+      try {
+        if (typeof window !== 'undefined') {
+          const storedKey = localStorage.getItem(`${this.STORAGE_PREFIX}${chatId}`)
+          if (storedKey) {
+            keyObj = {
+              chatId,
+              key: storedKey,
+              expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+            }
+            this.keyStore.set(chatId, keyObj)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load encryption key from localStorage:', err)
+      }
+    }
+
     if (!keyObj) return null
 
     // Check if key expired
     if (keyObj.expiresAt && keyObj.expiresAt < Date.now()) {
       this.keyStore.delete(chatId)
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(`${this.STORAGE_PREFIX}${chatId}`)
+        }
+      } catch (err) {
+        console.warn('Failed to remove encryption key from localStorage:', err)
+      }
       return null
     }
 
@@ -89,17 +134,38 @@ class EncryptionService {
   }
 
   /**
-   * Clear key from memory
+   * Clear key from memory and storage
    */
   clearKey(chatId: string): void {
     this.keyStore.delete(chatId)
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(`${this.STORAGE_PREFIX}${chatId}`)
+      }
+    } catch (err) {
+      console.warn('Failed to remove encryption key from localStorage:', err)
+    }
   }
 
   /**
-   * Clear all keys
+   * Clear all keys from memory and storage
    */
   clearAllKeys(): void {
     this.keyStore.clear()
+    try {
+      if (typeof window !== 'undefined') {
+        const keysToDelete: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith(this.STORAGE_PREFIX)) {
+            keysToDelete.push(key)
+          }
+        }
+        keysToDelete.forEach(key => localStorage.removeItem(key))
+      }
+    } catch (err) {
+      console.warn('Failed to clear encryption keys from localStorage:', err)
+    }
   }
 
   /**

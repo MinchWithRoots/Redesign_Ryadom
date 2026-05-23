@@ -63,13 +63,13 @@ class MessageRetentionService {
         .single()
 
       if (error) {
-        console.error('Error fetching retention policy:', error)
+        console.error('Error fetching retention policy:', error?.message || error)
         return 720 // Default to 30 days
       }
 
       return data?.message_retention_hours || 720
     } catch (err) {
-      console.error('Error in getRetentionPolicy:', err)
+      console.error('Error in getRetentionPolicy:', err instanceof Error ? err.message : err)
       return 720
     }
   }
