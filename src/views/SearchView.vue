@@ -6,12 +6,14 @@ import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
+import { preloadImages } from '../utils/imageCache'
 import '@/assets/search.css'
 
 const router = useRouter()
 const authModal = ref<InstanceType<typeof AuthRequiredModal> | null>(null)
 const selectedCompanion = ref<(typeof companions)['value'][0] | null>(null)
 const showNotification = ref('')
+const isLoading = ref(false)
 
 const filters = ref({
   gender: 'all',
@@ -51,13 +53,23 @@ const filteredCompanions = computed(() => {
 
 
 const loadData = async () => {
+  isLoading.value = true
   try {
     await Promise.all([
       loadCompanions(),
       loadTopics()
     ])
+    // Preload companion images in the background
+    const imageUrls = companions.value
+      .map((c: any) => c.image)
+      .filter((url: string) => url && !url.startsWith('/src/'))
+    if (imageUrls.length > 0) {
+      preloadImages(imageUrls)
+    }
   } catch (err) {
     console.error('Failed to load companions or topics:', err)
+  } finally {
+    isLoading.value = false
   }
 }
 

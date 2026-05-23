@@ -12,7 +12,7 @@ export function useCompanions() {
     try {
       const data = await supabaseService.getCompanions()
       if (data) {
-        companions.value = data
+        companions.value = data as any[]
       }
     } catch (err: any) {
       error.value = err.message
@@ -27,7 +27,7 @@ export function useCompanions() {
     try {
       const data = await supabaseService.searchCompanions(query)
       if (data) {
-        companions.value = data
+        companions.value = data as any[]
       }
     } catch (err: any) {
       error.value = err.message
