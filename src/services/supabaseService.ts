@@ -1,21 +1,44 @@
 import { supabase } from '@/utils/supabase'
+import { cacheManager, CACHE_KEYS, CACHE_DURATION } from '@/utils/cacheManager'
 
 // ============ COMPANIONS (Спутники) ============
 export async function getCompanions() {
+  // Check cache first
+  const cached = cacheManager.get(CACHE_KEYS.COMPANIONS, CACHE_DURATION.COMPANIONS)
+  if (cached) {
+    console.log('Using cached companions data')
+    return cached
+  }
+
   try {
     const { data, error } = await supabase
       .from('companions')
       .select(
         `
-        *,
+        id,
+        name,
+        age,
+        gender,
+        bio,
+        image,
+        experience,
+        is_available,
+        created_at,
         companion_topics (topic),
-        reviews (rating, comment, user_id)
+        reviews_count:reviews(count),
+        average_rating:reviews(rating)
       `
       )
       .eq('is_available', true)
       .order('created_at', { ascending: false })
 
     if (error) throw error
+
+    // Cache the result
+    if (data) {
+      cacheManager.set(CACHE_KEYS.COMPANIONS, data, CACHE_DURATION.COMPANIONS)
+    }
+
     return data
   } catch (error) {
     console.error('Error fetching companions:', error)
@@ -46,13 +69,31 @@ export async function getCompanionById(id: string) {
 }
 
 export async function searchCompanions(query: string) {
+  const cacheKey = `search_${query.toLowerCase()}`
+
+  // Check cache first
+  const cached = cacheManager.get(cacheKey, 10 * 60 * 1000) // 10 min cache
+  if (cached) {
+    console.log(`Using cached search results for "${query}"`)
+    return cached
+  }
+
   try {
     const { data, error } = await supabase
       .from('companions')
       .select(
         `
-        *,
-        companion_topics (topic)
+        id,
+        name,
+        age,
+        gender,
+        bio,
+        image,
+        experience,
+        is_available,
+        companion_topics (topic),
+        reviews_count:reviews(count),
+        average_rating:reviews(rating)
       `
       )
       .or(
@@ -61,6 +102,12 @@ export async function searchCompanions(query: string) {
       .eq('is_available', true)
 
     if (error) throw error
+
+    // Cache search results
+    if (data) {
+      cacheManager.set(cacheKey, data, 10 * 60 * 1000)
+    }
+
     return data
   } catch (error) {
     console.error('Error searching companions:', error)

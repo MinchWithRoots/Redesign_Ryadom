@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 import ReviewSlider from '@/components/ReviewSlider.vue'
+import { cacheManager, CACHE_KEYS } from '@/utils/cacheManager'
 import '@/assets/home.css'
 
 const router = useRouter()
@@ -18,25 +19,37 @@ const fetchReviews = async () => {
   try {
     isLoadingReviews.value = true
 
+    // Check cache first
+    const cachedReviews = cacheManager.get('reviews_home', 24 * 60 * 60 * 1000) // 24 hours
+    if (cachedReviews) {
+      console.log('Using cached reviews')
+      reviews.value = cachedReviews as any[]
+      return
+    }
+
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
     if (supabaseUrl && supabaseKey) {
       const { data, error } = await supabase
         .from('reviews')
-        .select('*, users (name, image)')
+        .select('id, title, comment, created_at, users (name, image)')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(6)
 
       if (!error && data && data.length > 0) {
-        reviews.value = data.map((review: any) => ({
+        const mappedReviews = data.map((review: any) => ({
           id: review.id,
           name: review.users?.name || 'Анонимно',
           title: review.title || 'Пользователь платформы',
           text: review.comment,
           avatar: review.users?.image || getPlaceholderAvatar(review.users?.name || 'User'),
         }))
+
+        // Cache the reviews
+        cacheManager.set('reviews_home', mappedReviews, 24 * 60 * 60 * 1000)
+        reviews.value = mappedReviews
         return
       }
     }
@@ -126,12 +139,14 @@ onMounted(() => {
         alt=""
         class="hero-bg-image hero-bg-image--desktop"
         aria-hidden="true"
+        loading="lazy"
       />
       <img
         src="/src/images/background-mobile.png"
         alt=""
         class="hero-bg-image hero-bg-image--mobile"
         aria-hidden="true"
+        loading="lazy"
       />
 
       <!-- Content -->
@@ -171,6 +186,7 @@ onMounted(() => {
             <img
               src="/src/images/Planet-with-stars.png"
               alt="Planet with stars"
+              loading="lazy"
             />
           </div>
         </div>
@@ -186,6 +202,7 @@ onMounted(() => {
               src="/src/images/amico.svg"
               alt="Поддержка и доверие"
               class="about-illustration"
+              loading="lazy"
             />
           </div>
 
@@ -200,7 +217,7 @@ onMounted(() => {
             <div class="about-features">
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <img src="/src/images/stars.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
+                  <img src="/src/images/stars.svg" alt="" aria-hidden="true" class="about-feature-icon-img" loading="lazy" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Наша миссия</h3>
@@ -212,7 +229,7 @@ onMounted(() => {
 
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <img src="/src/images/home-love.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
+                  <img src="/src/images/home-love.svg" alt="" aria-hidden="true" class="about-feature-icon-img" loading="lazy" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Наши ценности</h3>
@@ -224,7 +241,7 @@ onMounted(() => {
 
               <div class="about-feature">
                 <div class="about-feature-icon">
-                  <img src="/src/images/stars-shiny.svg" alt="" aria-hidden="true" class="about-feature-icon-img" />
+                  <img src="/src/images/stars-shiny.svg" alt="" aria-hidden="true" class="about-feature-icon-img" loading="lazy" />
                 </div>
                 <div class="about-feature-content">
                   <h3>Развитие</h3>
@@ -241,8 +258,8 @@ onMounted(() => {
 
     <!-- Reviews Section -->
     <section id="reviews">
-      <img src="../images/left-wave.png" class="reviews-left-wave" alt="" aria-hidden="true" />
-      <img src="../images/right-wave.png" class="reviews-right-wave" alt="" aria-hidden="true" />
+      <img src="../images/left-wave.png" class="reviews-left-wave" alt="" aria-hidden="true" loading="lazy" />
+      <img src="../images/right-wave.png" class="reviews-right-wave" alt="" aria-hidden="true" loading="lazy" />
 
       <div class="reviews-deco-left">
         <div class="reviews-deco-blur"></div>
