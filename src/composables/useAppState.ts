@@ -13,6 +13,7 @@ export interface User {
   gender?: string
   topics?: string[]
   sessions?: number
+  reviews_count?: number
 }
 
 export interface CompanionTopic {
@@ -188,6 +189,7 @@ export const loadCurrentUser = async () => {
         role: 'user',
         gender: undefined,
         topics: [],
+        reviews_count: 0,
       }
       return currentUser.value
     }
@@ -204,6 +206,7 @@ export const loadCurrentUser = async () => {
         role: 'user',
         gender: undefined,
         topics: [],
+        reviews_count: 0,
       }
       return currentUser.value
     }
@@ -220,6 +223,7 @@ export const loadCurrentUser = async () => {
       gender: profile.gender,
       topics: profile.topics || [],
       sessions: profile.sessions || 0,
+      reviews_count: profile.reviews_count || 0,
     }
 
     return profile

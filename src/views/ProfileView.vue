@@ -406,7 +406,7 @@ watch(
                 <div class="profile-stat">
                   <div class="profile-stat__flex">
                     <img src="../images/support.svg" alt="Thanks" class="profile-stat__icon" />
-                    <span class="profile-stat__value">0</span>
+                    <span class="profile-stat__value">{{ userProfile.reviews_count ?? 0 }}</span>
                   </div>
                   <p class="profile-stat__label">отзывов</p>
                 </div>
