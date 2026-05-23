@@ -5,7 +5,7 @@ A production-ready Vue.js application template with TypeScript, TailwindCSS 3, a
 ## Tech Stack
 
 - **Frontend**: Vue 3.5.17 + TypeScript + TailwindCSS 3.4.11
-- **Styling**: TailwindCSS 3 with PostCSS + Autoprefixer
+- **Styling**: CSS with PostCSS + Autoprefixer
 - **Testing**: Vitest with Vue Test Utils for component testing
 - **Build Tool**: Vite 7 with Vue plugin
 - **Package Manager**: npm
@@ -47,9 +47,9 @@ The application uses Vue 3's modern Composition API with TypeScript:
 
 ### Styling System
 
-- **Primary**: TailwindCSS 3.4.11 utility classes
+CSS
 - **PostCSS**: Autoprefixer for cross-browser compatibility
-- **Configuration**: `tailwind.config.js` for custom theming
+
 
 ```vue
 <!-- Example of TailwindCSS usage in Vue components -->
@@ -177,7 +177,7 @@ npm run test:unit    # Run unit tests
 
 - Vue 3.5.17 with Composition API for modern reactive components
 - TypeScript throughout the application
-- TailwindCSS 3.4.11 for utility-first styling
+- CSS for utility-first styling
 - Vite 7 for fast development and optimized builds
 - Vitest + Vue Test Utils for comprehensive testing
 - ESLint + Prettier for code quality
