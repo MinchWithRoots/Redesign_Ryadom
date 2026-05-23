@@ -39,6 +39,11 @@ class MessageRetentionService {
         .eq('id', chatId)
 
       if (error) {
+        // If column doesn't exist, silently fail and log warning
+        if (error.message?.includes('does not exist')) {
+          console.warn('message_retention_hours column not found, skipping retention policy update')
+          return true // Return true to not show error to user
+        }
         console.error('Error setting retention policy:', error)
         return false
       }
@@ -63,6 +68,11 @@ class MessageRetentionService {
         .single()
 
       if (error) {
+        // If column doesn't exist, just return default value
+        if (error.message?.includes('does not exist')) {
+          console.warn('message_retention_hours column not found in database, using default')
+          return 720
+        }
         console.error('Error fetching retention policy:', error?.message || error)
         return 720 // Default to 30 days
       }

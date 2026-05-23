@@ -76,9 +76,14 @@ const loadMessages = async () => {
   if (chatId.value) {
     isLoadingMessages.value = true
     try {
-      // Ensure encryption key exists for this chat
-      if (chatId.value && !encryptionService.hasKey(chatId.value)) {
-        // Generate new key if it doesn't exist
+      // Try to load encryption key from localStorage first
+      const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+
+      // If we have a stored key, set it in the service
+      if (storedKey) {
+        encryptionService.setKey(chatId.value, storedKey)
+      } else if (!encryptionService.hasKey(chatId.value)) {
+        // Generate new key only if one doesn't exist
         const newKey = encryptionService.generateKey(chatId.value)
         console.log('Generated new encryption key for chat')
       }
