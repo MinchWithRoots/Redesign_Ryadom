@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { currentUser, companions, chats, sendConnectionRequest, loadCompanions, topics, loadTopics } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
-import OptimizedImage from '../components/OptimizedImage.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 import { preloadImages } from '../utils/imageCache'
@@ -311,16 +310,14 @@ const getRussianPlural = (count: number, word: string) => {
               @click="selectedCompanion = companion"
             >
               <!-- Image -->
-              <div class="companion-card-image">
-                <OptimizedImage
-                  :src="companion.image"
-                  :alt="companion.name"
-                  :width="400"
-                  :height="400"
-                  quality="high"
-                  lazyLoad
-                />
-              </div>
+              <ImageWithFallback
+                :src="companion.image"
+                :alt="companion.name"
+                class="companion-card-image"
+                imageClass="companion-card-image__img"
+                fallbackClass="companion-card-image__fallback"
+                iconClass="companion-card-image__icon"
+              />
               <div class="companion-card-overlay"></div>
 
               <!-- Info -->
@@ -392,15 +389,14 @@ const getRussianPlural = (count: number, word: string) => {
           </button>
 
           <div class="modal-center">
-            <div class="modal-avatar-wrapper">
-              <OptimizedImage
-                :src="selectedCompanion.image"
-                :alt="selectedCompanion.name"
-                :width="200"
-                :height="200"
-                quality="high"
-              />
-            </div>
+            <ImageWithFallback
+              :src="selectedCompanion.image"
+              :alt="selectedCompanion.name"
+              class="modal-avatar-wrapper"
+              imageClass="modal-avatar"
+              fallbackClass="modal-avatar-fallback"
+              iconClass="modal-avatar-icon"
+            />
             <h2 class="modal-title">{{ selectedCompanion.name }}</h2>
             <p class="modal-subtitle">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
             <div v-if="(selectedCompanion.reviews_count ?? 0) > 0" class="modal-rating">

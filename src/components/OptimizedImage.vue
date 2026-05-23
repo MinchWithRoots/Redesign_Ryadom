@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 interface Props {
   src?: string
@@ -65,6 +65,13 @@ onMounted(() => {
   canvas.width = 1
   canvas.height = 1
   isWebPSupported.value = canvas.toDataURL('image/webp') !== 'data:image/webp'
+})
+
+// Log when src changes for debugging
+watch(() => props.src, (newSrc) => {
+  if (newSrc) {
+    console.log('OptimizedImage loading:', { src: newSrc, width: props.width, height: props.height })
+  }
 })
 
 const getOptimizedUrl = (url: string, format: 'webp' | 'jpeg'): string => {
@@ -118,6 +125,8 @@ const handleError = () => {
   position: relative;
   overflow: hidden;
   display: block;
+  width: 100%;
+  background: #f0f0f0;
 }
 
 .optimized-image-wrapper.is-loading {
@@ -153,10 +162,16 @@ const handleError = () => {
   animation: shimmer 1.5s infinite;
 }
 
+picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .optimized-image {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
