@@ -37,7 +37,7 @@ const handleImageError = (reviewId: number | string) => {
 
 const navigateToCompanion = (companionId?: string) => {
   if (companionId) {
-    router.push(`/companion/${companionId}`)
+    router.push(`/user/${companionId}`)
   }
 }
 </script>
