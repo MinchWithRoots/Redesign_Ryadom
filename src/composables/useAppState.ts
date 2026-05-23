@@ -491,7 +491,7 @@ export const getCompanionById = async (id: string) => {
 
     const { data, error: companionFetchError } = await supabase
       .from('companions')
-      .select('*')
+      .select('*, reviews_count:reviews(count)')
       .eq('id', companionId)
       .single()
 
