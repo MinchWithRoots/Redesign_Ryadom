@@ -54,7 +54,8 @@ export async function getCompanionById(id: string) {
         `
         *,
         companion_topics (topic),
-        reviews (rating, comment, title, users (name, image))
+        reviews (rating, comment, title, users (name, image)),
+        reviews_count:reviews(count)
       `
       )
       .eq('id', id)
