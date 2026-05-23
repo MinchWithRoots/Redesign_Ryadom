@@ -29,7 +29,7 @@ const handleImageError = () => {
     />
     <div v-else :class="props.fallbackClass">
       <img
-        src="/src/images/gallery.svg"
+        src="/images/gallery.svg"
         alt="Gallery"
         :class="props.iconClass"
       />

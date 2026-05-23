@@ -1,13 +1,6 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
-import { initializeCompanionImages } from './utils/initializeImages'
-
-// Initialize companion images on app load
-onMounted(async () => {
-  await initializeCompanionImages()
-})
 </script>
 
 <template>
