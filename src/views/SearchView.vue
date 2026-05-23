@@ -348,7 +348,7 @@ const getRussianPlural = (count: number, word: string) => {
                 <div class="companion-reviews">
                   <div v-if="(companion.reviews_count ?? 0) > 0" class="companion-rating">
                     <span class="rating-stars">
-                      <span v-for="i in 5" :key="i" class="star" :class="{ 'star--filled': i <= Math.round(companion.average_rating ?? 0) }">★</span>
+                      <img v-for="i in 5" :key="i" src="/src/images/star.svg" alt="Star" class="star" :class="{ 'star--filled': i <= Math.round(companion.average_rating ?? 0) }" />
                     </span>
                     <span class="reviews-count">{{ companion.reviews_count }} {{ getRussianPlural(companion.reviews_count ?? 0, 'отзыв') }}</span>
                   </div>
@@ -401,7 +401,7 @@ const getRussianPlural = (count: number, word: string) => {
             <p class="modal-subtitle">{{ selectedCompanion.age }} {{ getAgeForm(selectedCompanion.age) }}</p>
             <div v-if="(selectedCompanion.reviews_count ?? 0) > 0" class="modal-rating">
               <span class="modal-rating-stars">
-                <span v-for="i in 5" :key="i" class="modal-star" :class="{ 'modal-star--filled': i <= Math.round(selectedCompanion.average_rating ?? 0) }">★</span>
+                <img v-for="i in 5" :key="i" src="/src/images/star.svg" alt="Star" class="modal-star" :class="{ 'modal-star--filled': i <= Math.round(selectedCompanion.average_rating ?? 0) }" />
               </span>
               <span class="modal-reviews-count">{{ selectedCompanion.reviews_count }} {{ getRussianPlural(selectedCompanion.reviews_count ?? 0, 'отзыв') }}</span>
             </div>

@@ -157,7 +157,7 @@ watch(companion, async () => {
                 <div class="profile-stat">
                   <div class="profile-stat__flex">
                     <span v-if="(companion.reviews_count ?? 0) > 0" class="profile-stat__rating">
-                      <span v-for="i in 5" :key="i" class="profile-stat__star" :class="{ 'profile-stat__star--filled': i <= Math.round(companion.average_rating ?? 0) }">★</span>
+                      <img v-for="i in 5" :key="i" src="../images/star.svg" alt="Star" class="profile-stat__star" :class="{ 'profile-stat__star--filled': i <= Math.round(companion.average_rating ?? 0) }" />
                     </span>
                     <p class="profile-stat__value">{{ companion.reviews_count ?? 0 }}</p>
                   </div>
