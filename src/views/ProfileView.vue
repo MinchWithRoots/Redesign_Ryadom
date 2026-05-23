@@ -35,7 +35,13 @@ const showReviewModal = ref(false)
 const selectedSessionForReview = ref<any>(null)
 
 // Initialize with current user data
-const userProfile = computed(() => currentUser.value)
+const userProfile = computed(() => {
+  if (!currentUser.value) return null
+  return {
+    ...currentUser.value,
+    reviews_count: userReviews.value.length
+  }
+})
 
 const userEditForm = ref({
   bio: currentUser.value?.bio || '',
