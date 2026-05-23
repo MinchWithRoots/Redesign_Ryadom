@@ -60,6 +60,10 @@ const props = defineProps<{
   companionId: string | number
 }>()
 
+const emit = defineEmits<{
+  reviewsLoaded: [reviews: Review[]]
+}>()
+
 const reviews = ref<Review[]>([])
 const isLoading = ref(true)
 
@@ -83,6 +87,7 @@ const loadReviews = async () => {
   try {
     const companionIdStr = typeof props.companionId === 'string' ? props.companionId : props.companionId.toString()
     reviews.value = await getCompanionReviews(companionIdStr)
+    emit('reviewsLoaded', reviews.value)
   } catch (err) {
     console.error('Error loading reviews:', err)
   } finally {

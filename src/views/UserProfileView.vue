@@ -94,6 +94,12 @@ const navigateToChat = () => {
   router.push('/profile?tab=chats')
 }
 
+const handleReviewsLoaded = (reviews: any[]) => {
+  if (companion.value) {
+    companion.value.reviews_count = reviews.length
+  }
+}
+
 watch(companion, async () => {
   if (companion.value && reviewsListRef.value) {
     await nextTick()
@@ -237,7 +243,7 @@ watch(companion, async () => {
               </div>
             </div>
 
-            <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" />
+            <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" @reviews-loaded="handleReviewsLoaded" />
 
             <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
