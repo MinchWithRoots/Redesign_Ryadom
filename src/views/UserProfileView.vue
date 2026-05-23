@@ -96,11 +96,15 @@ const navigateToChat = () => {
 
 const handleReviewsLoaded = async (reviews: any[]) => {
   if (companion.value) {
-    // Refresh companion data to get updated sessions and reviews info
+    // Update reviews count from loaded reviews
+    companion.value.reviews_count = reviews.length
+
+    // Refresh companion data to get updated sessions info
     const refreshedCompanion = await getCompanionById(companion.value.id.toString())
     if (refreshedCompanion) {
-      companion.value = refreshedCompanion
       companionSessions.value = refreshedCompanion.sessions || 0
+      // Ensure reviews_count stays synced
+      companion.value.reviews_count = refreshedCompanion.reviews_count ?? reviews.length
     }
   }
 }
