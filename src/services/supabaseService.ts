@@ -62,6 +62,14 @@ export async function getCompanionById(id: string) {
       .single()
 
     if (error) throw error
+
+    // Extract the count value from reviews_count array
+    if (data && Array.isArray(data.reviews_count) && data.reviews_count.length > 0) {
+      data.reviews_count = data.reviews_count[0].count
+    } else if (!data.reviews_count) {
+      data.reviews_count = 0
+    }
+
     return data
   } catch (error) {
     console.error('Error fetching companion:', error)

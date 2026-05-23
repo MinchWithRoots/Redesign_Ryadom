@@ -602,6 +602,13 @@ export const getCompanionById = async (id: string) => {
         .filter((name: string | undefined) => name !== undefined)
     }
 
+    // Extract the count value from reviews_count array
+    if (data && Array.isArray(data.reviews_count) && data.reviews_count.length > 0) {
+      data.reviews_count = data.reviews_count[0].count
+    } else if (!data.reviews_count) {
+      data.reviews_count = 0
+    }
+
     return data
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err)
