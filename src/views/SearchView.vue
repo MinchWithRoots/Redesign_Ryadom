@@ -319,7 +319,6 @@ const getRussianPlural = (count: number, word: string) => {
                   </div>
                 </div>
                 <p class="companion-experience">Опыт в терапии: {{ getExperienceText(companion.experience) }}</p>
-                <p v-if="companion.topics && companion.topics.length > 0" class="companion-topics">Темы: {{ companion.topics.join(', ') }}</p>
                 <p class="companion-bio">{{ companion.bio }}</p>
 
                 <!-- Topics -->
