@@ -491,7 +491,7 @@ export const getCompanionById = async (id: string) => {
 
     const { data, error: companionFetchError } = await supabase
       .from('companions')
-      .select('*')
+      .select('*, reviews_count:reviews(count)')
       .eq('id', companionId)
       .single()
 
@@ -600,6 +600,13 @@ export const getCompanionById = async (id: string) => {
       data.topics = topicIds
         .map((id: number) => topicIdToName.get(id))
         .filter((name: string | undefined) => name !== undefined)
+    }
+
+    // Extract the count value from reviews_count array
+    if (data && Array.isArray(data.reviews_count) && data.reviews_count.length > 0) {
+      data.reviews_count = data.reviews_count[0].count
+    } else if (!data.reviews_count) {
+      data.reviews_count = 0
     }
 
     return data

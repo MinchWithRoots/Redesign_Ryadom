@@ -5,7 +5,7 @@ import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChat
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import ReviewModal from '../components/ReviewModal.vue'
-import { getUserReviews, deleteReview } from '../services/supabaseService'
+import { getUserReviews, deleteReview, getCompanionReviews } from '../services/supabaseService'
 import { getAgeForm } from '../utils/ageForm'
 import { supabase } from '@/utils/supabase'
 import '@/assets/profile.css'
@@ -30,12 +30,24 @@ const isLoadingHistory = ref(false)
 
 // Reviews
 const userReviews = ref<any[]>([])
+const companionReviews = ref<any[]>([])
 const isLoadingReviews = ref(false)
 const showReviewModal = ref(false)
 const selectedSessionForReview = ref<any>(null)
 
 // Initialize with current user data
-const userProfile = computed(() => currentUser.value)
+const userProfile = computed(() => {
+  if (!currentUser.value) return null
+  // If user is a companion, show reviews received (for the companion)
+  // If user is not a companion, show reviews they wrote (by the user)
+  const reviewCount = currentUser.value.role === 'companion'
+    ? companionReviews.value.length
+    : userReviews.value.length
+  return {
+    ...currentUser.value,
+    reviews_count: reviewCount
+  }
+})
 
 const userEditForm = ref({
   bio: currentUser.value?.bio || '',
@@ -298,6 +310,21 @@ const loadUserReviews = async () => {
   }
 }
 
+// Load reviews for companion (if user is a companion)
+const loadCompanionReviews = async () => {
+  if (!companionId.value) return
+
+  isLoadingReviews.value = true
+  try {
+    const reviews = await getCompanionReviews(companionId.value)
+    companionReviews.value = reviews || []
+  } catch (err) {
+    console.error('Error loading companion reviews:', err)
+  } finally {
+    isLoadingReviews.value = false
+  }
+}
+
 // Open review modal for session
 const openReviewModal = (session: any) => {
   selectedSessionForReview.value = session
@@ -342,12 +369,15 @@ onMounted(async () => {
   await loadSessionHistory()
   await loadUserReviews()
 
-  // If user is a companion, load companion ID for chat requests
+  // If user is a companion, load companion ID and reviews for that companion
   if (currentUser.value?.role === 'companion') {
     try {
       const id = await getCurrentCompanionId()
       companionId.value = id
       console.log('Companion ID loaded:', id)
+      if (id) {
+        await loadCompanionReviews()
+      }
     } catch (err) {
       console.error('Error loading companion data:', err)
     }
@@ -363,11 +393,15 @@ watch(
         const id = await getCurrentCompanionId()
         companionId.value = id
         console.log('Companion ID loaded after role change:', id)
+        if (id) {
+          await loadCompanionReviews()
+        }
       } catch (err) {
         console.error('Error loading companion data:', err)
       }
     } else {
       companionId.value = null
+      companionReviews.value = []
     }
   }
 )
