@@ -13,6 +13,7 @@ export interface User {
   gender?: string
   topics?: string[]
   sessions?: number
+  reviews_count?: number
 }
 
 export interface CompanionTopic {
@@ -188,6 +189,7 @@ export const loadCurrentUser = async () => {
         role: 'user',
         gender: undefined,
         topics: [],
+        reviews_count: 0,
       }
       return currentUser.value
     }
@@ -204,6 +206,7 @@ export const loadCurrentUser = async () => {
         role: 'user',
         gender: undefined,
         topics: [],
+        reviews_count: 0,
       }
       return currentUser.value
     }
@@ -220,6 +223,7 @@ export const loadCurrentUser = async () => {
       gender: profile.gender,
       topics: profile.topics || [],
       sessions: profile.sessions || 0,
+      reviews_count: profile.reviews_count || 0,
     }
 
     return profile
@@ -1232,6 +1236,10 @@ export const endSession = async (chatId: string) => {
     if (currentChat) {
       currentChat.status = 'offline'
       currentChat.lastMessage = 'Сессия завершена'
+
+      // Increment session count for both user and companion
+      await incrementUserSessions(currentChat.user_id)
+      await incrementCompanionSessions(currentChat.companion_id)
     }
 
     return true
@@ -1701,6 +1709,52 @@ export const incrementUserSessions = async (userId: string) => {
     console.log(`Sessions incremented for user ${userId}: ${newSessions}`)
   } catch (err) {
     console.error('Error in incrementUserSessions:', err)
+  }
+}
+
+// Increment companion sessions count
+export const incrementCompanionSessions = async (companionId: string | number) => {
+  try {
+    const companionIdStr = companionId.toString()
+
+    // Get current session count
+    const { data: companion, error: fetchError } = await supabase
+      .from('companions')
+      .select('sessions')
+      .eq('id', parseInt(companionIdStr))
+      .maybeSingle()
+
+    if (fetchError) {
+      console.error('Error fetching companion sessions:', fetchError)
+      return
+    }
+
+    const currentSessions = companion?.sessions || 0
+    const newSessions = currentSessions + 1
+
+    // Update session count
+    const { error: updateError } = await supabase
+      .from('companions')
+      .update({ sessions: newSessions })
+      .eq('id', parseInt(companionIdStr))
+
+    if (updateError) {
+      console.error('Error updating companion sessions:', updateError)
+      return
+    }
+
+    // Update local state in companions array
+    const index = companions.value.findIndex(c => c.id.toString() === companionIdStr)
+    if (index !== -1) {
+      companions.value[index] = {
+        ...companions.value[index],
+        sessions: newSessions,
+      }
+    }
+
+    console.log(`Sessions incremented for companion ${companionIdStr}: ${newSessions}`)
+  } catch (err) {
+    console.error('Error in incrementCompanionSessions:', err)
   }
 }
 

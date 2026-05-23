@@ -94,6 +94,19 @@ const navigateToChat = () => {
   router.push('/profile?tab=chats')
 }
 
+const handleReviewsLoaded = async (reviews: any[]) => {
+  if (companion.value) {
+    companion.value.reviews_count = reviews.length
+
+    // Refresh companion data to get updated sessions and reviews info
+    const refreshedCompanion = await getCompanionById(companion.value.id.toString())
+    if (refreshedCompanion) {
+      companion.value = refreshedCompanion
+      companionSessions.value = refreshedCompanion.sessions || 0
+    }
+  }
+}
+
 watch(companion, async () => {
   if (companion.value && reviewsListRef.value) {
     await nextTick()
@@ -155,21 +168,11 @@ watch(companion, async () => {
 
               <div class="profile-stats">
                 <div class="profile-stat">
-                  <div class="profile-stat__flex">
-                    <span v-if="(companion.reviews_count ?? 0) > 0" class="profile-stat__rating">
-                      <img v-for="i in 5" :key="i" src="../images/star.svg" alt="Star" class="profile-stat__star" :class="{ 'profile-stat__star--filled': i <= Math.round(companion.average_rating ?? 0) }" />
-                    </span>
-                    <p class="profile-stat__value">{{ companion.reviews_count ?? 0 }}</p>
-                  </div>
+                  <p class="profile-stat__value">{{ companion.reviews_count ?? 0 }}</p>
                   <p class="profile-stat__label">отзывов</p>
                 </div>
                 <div class="profile-stat">
-                  <div class="profile-stat__flex">
-                    <svg class="profile-stat__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    <p class="profile-stat__value">{{ companionSessions }}</p>
-                  </div>
+                  <p class="profile-stat__value">{{ companionSessions }}</p>
                   <p class="profile-stat__label">сессий</p>
                 </div>
               </div>
@@ -237,7 +240,7 @@ watch(companion, async () => {
               </div>
             </div>
 
-            <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" />
+            <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" @reviews-loaded="handleReviewsLoaded" />
 
             <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
 
