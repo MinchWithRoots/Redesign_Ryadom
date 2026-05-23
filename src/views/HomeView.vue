@@ -88,6 +88,8 @@ const loadDefaultReviews = () => {
       title: 'В процессе терапии',
       text: 'Платформа помогла мне найти людей, которые понимают мой путь. Благодарна за возможность конфиденциального общения с теми, кто прошёл то же самое.',
       avatar: '/src/images/users/id1-image.jpg',
+      companionId: '1',
+      companionName: 'Анна Смирнова',
     },
     {
       id: 2,
@@ -95,6 +97,8 @@ const loadDefaultReviews = () => {
       title: 'Прошел курс терапии',
       text: 'Классный сервис для людей в терапии, которые ищут понимания и поддержки друг у друга. Удобный интерфейс и надежная система защиты.',
       avatar: '/src/images/users/id2-image.jpg',
+      companionId: '2',
+      companionName: 'Дмитрий Соколов',
     },
     {
       id: 3,
@@ -102,6 +106,8 @@ const loadDefaultReviews = () => {
       title: 'Путь выздоровления',
       text: 'Наконец-то нашла людей, с которыми можно открыто говорить о переживаниях. Спасибо за такое безопасное сообщество!',
       avatar: '/src/images/users/id3-image.jpg',
+      companionId: '3',
+      companionName: 'Екатерина Волова',
     },
     {
       id: 4,
@@ -109,6 +115,8 @@ const loadDefaultReviews = () => {
       title: 'Активный участник',
       text: 'Сервис действительно поддерживает. Нашел здесь не только понимание, но и новых друзей. Рекомендую всем, кто ищет настоящую поддержку.',
       avatar: '/src/images/users/id4-image.jpg',
+      companionId: '4',
+      companionName: 'Ольга Павлова',
     },
     {
       id: 5,
@@ -116,6 +124,8 @@ const loadDefaultReviews = () => {
       title: 'Консультант',
       text: 'Работаю в сфере психического здоровья и с уверенностью говорю — эта платформа создает действительно безопасное пространство для людей.',
       avatar: '/src/images/users/id5-image.jpg',
+      companionId: '5',
+      companionName: 'Виктор Новиков',
     },
     {
       id: 6,
@@ -123,6 +133,8 @@ const loadDefaultReviews = () => {
       title: 'Пользователь',
       text: 'Благодарен за эту платформу. Здесь я нашел поддержку, которую не мог найти нигде. Каждый день общения здесь помогает мне становиться лучше.',
       avatar: '/src/images/users/id1-image.jpg',
+      companionId: '6',
+      companionName: 'Михаил Иванов',
     },
   ]
 }
