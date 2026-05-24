@@ -77,11 +77,17 @@ const loadMessages = async () => {
       if (!encryptionService.hasKey(chatId.value)) {
         try {
           const password = getSessionPassword()
-          await encryptionService.loadChatKey(chatId.value, password)
-          console.log('Loaded encryption key for chat from database')
+          if (!password) {
+            console.warn('No session password available. Messages will not be decrypted until user logs in again.')
+            // Don't throw - continue with encrypted messages
+          } else {
+            await encryptionService.loadChatKey(chatId.value, password)
+            console.log('Loaded encryption key for chat from database')
+          }
         } catch (err) {
           console.warn('Could not load encryption key:', err)
           // Continue anyway - messages might be unencrypted or this is a new chat
+          // User will see encrypted messages until they log in again
         }
       }
 
@@ -195,11 +201,16 @@ const sendMessage = async () => {
     if (!encryptionService.hasKey(chatId.value)) {
       try {
         const password = getSessionPassword()
+        if (!password) {
+          console.warn('No session password available. Cannot send encrypted message.')
+          alert('Для отправки сообщения требуется переавторизация. Пожалуйста, обновите страницу.')
+          return
+        }
         await encryptionService.loadChatKey(chatId.value, password)
         console.log('Loaded encryption key before sending message')
       } catch (err) {
         console.warn('Could not load encryption key:', err)
-        alert('Ошибка при инициализации шифрования')
+        alert('Ошибка при инициализации шифрования. Пожалуйста, обновите страницу.')
         return
       }
     }

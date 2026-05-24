@@ -364,6 +364,12 @@ export const getCurrentUser = async () => {
       image: profile.image,
     }
 
+    // Initialize encryption service with salt (even without password)
+    // Password will be required when loading actual chat keys
+    const salt = profile.key_derivation_salt || authUUID
+    encryptionService.initializeWithPasswordAndSalt(profile.id, salt)
+    console.log('Encryption service re-initialized from stored session for user:', profile.id)
+
     return profile
   } catch (err) {
     const message = getErrorMessage(err)

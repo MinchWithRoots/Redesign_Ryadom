@@ -31,6 +31,14 @@ class EncryptionService {
   initializeWithPasswordAndSalt(userId: string, salt: string): void {
     this.currentUserId = userId
     this.userSalt = salt
+    console.log('Encryption service initialized for user:', userId)
+  }
+
+  /**
+   * Check if encryption service is initialized (for debugging/fallback)
+   */
+  isInitialized(): boolean {
+    return !!(this.currentUserId && this.userSalt)
   }
 
   /**
@@ -194,9 +202,9 @@ class EncryptionService {
   /**
    * Retrieve and decrypt chat key for current user
    * Call this when loading a chat
-   * Works on any device as long as user provides the same password
+   * Password parameter: optional for backward compatibility, but required for proper decryption
    */
-  async loadChatKey(chatId: string | number, password: string): Promise<string> {
+  async loadChatKey(chatId: string | number, password?: string): Promise<string> {
     try {
       // Check memory cache first
       const cached = this.keyStore.get(chatId)
@@ -205,10 +213,24 @@ class EncryptionService {
       }
 
       if (!this.currentUserId || !this.userSalt) {
-        throw new Error('User not authenticated. Call initializeWithPasswordAndSalt first.')
+        throw new Error(
+          'User not authenticated. Call initializeWithPasswordAndSalt first. ' +
+          'This usually happens on page refresh - try logging out and logging back in.'
+        )
       }
 
-      // Derive the key from password (must use same password as when encrypted)
+      // Password is required for proper key derivation
+      if (!password) {
+        console.warn(
+          'No password provided to loadChatKey. User will need to re-login to decrypt messages. ' +
+          'This happens on page refresh - password is not persisted for security reasons.'
+        )
+        // Throw error to prompt re-authentication
+        throw new Error(
+          'Session password lost. Please refresh the page or log in again to access encrypted messages.'
+        )
+      }
+
       const derivedKey = this.deriveKeyFromPassword(password)
 
       // Fetch encrypted key from database
