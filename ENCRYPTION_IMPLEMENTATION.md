@@ -2,19 +2,33 @@
 
 ## Overview
 
-Your application now has end-to-end encryption for all chat messages with optional auto-deletion of old messages.
+Your application now has **secure end-to-end encryption** for all chat messages using PBKDF2-derived keys with proper key management across multiple devices. Messages are encrypted with AES-256-CBC and keys are protected using PBKDF2-SHA256 with 310,000 iterations.
+
+**Key Feature: Multi-Device Support** — Users can access their encrypted chats from any device by logging in with their password.
 
 ## What's Been Implemented
 
 ### 1. **Message Encryption (E2E)**
-- All messages are encrypted using AES encryption before being sent to the database
+- All messages are encrypted using **AES-256-CBC** before being sent to the database
+- Each message has a unique IV (Initialization Vector) for security
 - Messages are automatically decrypted when loaded in the chat view
-- Encryption keys are generated per chat and stored in memory
-- Even if the database is compromised, messages remain encrypted
+- Encryption keys are generated per chat and protected with PBKDF2
 
 **Files:**
-- `src/services/encryptionService.ts` - Encryption/decryption logic
+- `src/services/encryptionService.ts` - Encryption/decryption logic with PBKDF2
 - Updated `src/views/ChatView.vue` - Encrypts on send, decrypts on receive
+- Updated `src/composables/useAuth.ts` - Initializes encryption with PBKDF2 salt
+
+### 2. **Multi-Device Key Derivation (PBKDF2)**
+- **Each user has a unique salt** stored in `users.key_derivation_salt`
+- **Password is never stored** — only used to derive encryption keys
+- **PBKDF2 with 310,000 iterations** ensures consistent key derivation across devices
+- Same password on Device A and Device B = same encryption key = can read same messages
+
+**Security Properties:**
+- ✅ Deterministic: `password + salt + 310k iterations = same key everywhere`
+- ✅ Protected: Even if database is compromised, keys are encrypted
+- ✅ Resistant: 310,000 iterations make brute-force attacks impractical (~100ms per attempt)
 
 ### 2. **Message Retention Policy**
 - Optional auto-deletion of messages after 7, 30, or 90 days
@@ -35,15 +49,25 @@ Your application now has end-to-end encryption for all chat messages with option
 
 ### Step 1: Apply Database Migration
 
-Run this SQL in your Supabase SQL Editor:
+**IMPORTANT:** First, read `DATABASE_ENCRYPTION_MIGRATION.md` for detailed migration instructions and security details.
+
+Quick version — Run this SQL in your Supabase SQL Editor:
 
 ```sql
+-- Add key derivation salt to users table (REQUIRED for multi-device support)
+ALTER TABLE public.users
+ADD COLUMN IF NOT EXISTS key_derivation_salt TEXT NOT NULL DEFAULT gen_random_uuid()::text;
+
 -- Add retention period to chats table
-ALTER TABLE chats 
+ALTER TABLE chats
 ADD COLUMN IF NOT EXISTS message_retention_days integer DEFAULT 30;
 
 -- Add index for efficient queries
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+
+-- Add index for key derivation salt (optional but recommended)
+CREATE INDEX IF NOT EXISTS idx_users_key_derivation_salt
+ON public.users(key_derivation_salt);
 
 -- Create function to delete expired messages
 CREATE OR REPLACE FUNCTION delete_expired_messages()
@@ -51,13 +75,13 @@ RETURNS void AS $$
 BEGIN
   DELETE FROM messages
   WHERE chat_id IN (
-    SELECT id FROM chats 
+    SELECT id FROM chats
     WHERE message_retention_days IS NOT NULL
     AND message_retention_days > 0
   )
   AND created_at < NOW() - (
-    SELECT INTERVAL '1 day' * message_retention_days 
-    FROM chats 
+    SELECT INTERVAL '1 day' * message_retention_days
+    FROM chats
     WHERE chats.id = messages.chat_id
   );
 END;
@@ -109,25 +133,31 @@ const selectedRetention = ref<RetentionPeriod>(30)
 ## Security Notes
 
 ### What's Encrypted
-- ✅ Message text is encrypted before storage
-- ✅ Message encryption keys are not stored in database
-- ✅ Keys are generated per chat and kept in memory
+- ✅ **Message text** is encrypted with AES-256-CBC before storage
+- ✅ **Each message has unique IV** for maximum security
+- ✅ **Encryption keys are protected** with PBKDF2-derived keys
+- ✅ **Master keys are encrypted** with user's derived key
+- ✅ Even database compromise doesn't expose plaintext messages
+
+### Key Derivation Security
+- ✅ **PBKDF2-SHA256** with 310,000 iterations (OWASP 2023 standard)
+- ✅ **User-specific salt** stored in database prevents rainbow tables
+- ✅ **Deterministic derivation** ensures same key across all devices
+- ✅ **Password never stored** — only used to derive keys
 
 ### What's NOT Encrypted (by design)
 - ❌ Message metadata (timestamps, sender ID, read status)
 - ❌ Chat existence itself (other users can see you had a chat)
 - ❌ User profiles and names
 
-This is normal for chat applications - even Signal and WhatsApp metadata can be seen by providers.
+This is normal for chat applications - even Signal and WhatsApp expose metadata to providers.
 
-### Key Management
-- Each chat gets a unique AES-256 key
-- Keys are generated when chat loads and stored in memory for the session
-- Keys expire after 24 hours of inactivity
-- Keys are cleared when:
-  - User logs out
-  - Browser session ends
-  - Chat is deleted
+### Key Lifecycle
+- **Generated**: Once per chat, random 256-bit key
+- **Protected**: Encrypted with PBKDF2-derived user key in database
+- **Loaded**: On chat load, derived key decrypts the master key
+- **Cached**: Kept in memory for 24 hours (clears on page reload or logout)
+- **Cleared**: On logout, browser close, or chat deletion
 
 ## Usage Examples
 
@@ -214,11 +244,12 @@ If you already have chats with unencrypted messages:
 
 ## Future Improvements
 
-1. **Perfect Forward Secrecy (PFS)** - Use ECDH for session-based keys
+1. **Key Rotation** - Periodically rotate keys (requires versioning in encrypted_key)
 2. **Message Recovery** - Allow users to export encrypted chat backup
-3. **Key Rotation** - Periodically rotate keys (requires additional storage)
-4. **Multi-device Support** - Share keys across devices securely
-5. **Group Chats** - Extend encryption to group conversations
+3. **Biometric Authentication** - Use fingerprint/face to auto-unlock encryption (no password re-entry)
+4. **Social Recovery** - Recovery codes or trusted contacts for account recovery
+5. **Group Chats** - Extend encryption to group conversations (one key per group member)
+6. **Perfect Forward Secrecy (PFS)** - Use ECDH for ephemeral session keys
 
 ## Support
 

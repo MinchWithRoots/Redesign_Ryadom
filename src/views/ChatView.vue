@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
+import { getSessionPassword } from '../composables/useAuth'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import { encryptionService } from '../services/encryptionService'
@@ -75,11 +76,18 @@ const loadMessages = async () => {
       // Load encryption key from database (shared between both users)
       if (!encryptionService.hasKey(chatId.value)) {
         try {
-          await encryptionService.loadChatKey(chatId.value)
-          console.log('Loaded encryption key for chat from database')
+          const password = getSessionPassword()
+          if (!password) {
+            console.warn('No session password available. Messages will not be decrypted until user logs in again.')
+            // Don't throw - continue with encrypted messages
+          } else {
+            await encryptionService.loadChatKey(chatId.value, password)
+            console.log('Loaded encryption key for chat from database')
+          }
         } catch (err) {
           console.warn('Could not load encryption key:', err)
           // Continue anyway - messages might be unencrypted or this is a new chat
+          // User will see encrypted messages until they log in again
         }
       }
 
@@ -192,11 +200,17 @@ const sendMessage = async () => {
     // Ensure encryption key is available
     if (!encryptionService.hasKey(chatId.value)) {
       try {
-        await encryptionService.loadChatKey(chatId.value)
+        const password = getSessionPassword()
+        if (!password) {
+          console.warn('No session password available. Cannot send encrypted message.')
+          alert('Для отправки сообщения требуется переавторизация. Пожалуйста, обновите страницу.')
+          return
+        }
+        await encryptionService.loadChatKey(chatId.value, password)
         console.log('Loaded encryption key before sending message')
       } catch (err) {
         console.warn('Could not load encryption key:', err)
-        alert('Ошибка при инициализации шифрования')
+        alert('Ошибка при инициализации шифрования. Пожалуйста, обновите страницу.')
         return
       }
     }

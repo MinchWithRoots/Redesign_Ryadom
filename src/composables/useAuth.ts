@@ -22,6 +22,7 @@ const currentUser = ref<UserProfile | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const isLoggedIn = computed(() => !!currentUser.value)
+let sessionPassword: string = '' // Store password for current session (cleared on logout)
 
 // Helper function to extract error message
 const getErrorMessage = (err: any): string => {
@@ -239,20 +240,21 @@ export const login = async (email: string, password: string) => {
       }
 
       currentUser.value = {
-        id: newProfile.id,
-        email: newProfile.email,
-        name: newProfile.name,
-        age: newProfile.age,
-        gender: newProfile.gender,
-        bio: newProfile.bio,
-        image: newProfile.image,
-        topics: newProfile.topics,
-      }
+      id: newProfile.id,
+      email: newProfile.email,
+      name: newProfile.name,
+      age: newProfile.age,
+      gender: newProfile.gender,
+      bio: newProfile.bio,
+      image: newProfile.image,
+      topics: newProfile.topics,
+    }
 
-      // Initialize encryption service with password hash and user ID
-      const passwordHash = crypto.SHA256(password).toString()
-      encryptionService.initializeWithPassword(passwordHash, newProfile.id)
-      console.log('Encryption service initialized for user:', newProfile.id)
+    // Initialize encryption service with user ID and salt for PBKDF2 key derivation
+    const salt = newProfile.key_derivation_salt || authUUID // Use stored salt or generate from UUID
+    encryptionService.initializeWithPasswordAndSalt(newProfile.id, salt)
+    sessionPassword = password // Store password for current session
+    console.log('Encryption service initialized for user:', newProfile.id)
 
       return data.user
     }
@@ -269,9 +271,10 @@ export const login = async (email: string, password: string) => {
       topics: profile.topics,
     }
 
-    // Initialize encryption service with password hash and user ID
-    const passwordHash = crypto.SHA256(password).toString()
-    encryptionService.initializeWithPassword(passwordHash, profile.id)
+    // Initialize encryption service with user ID and salt for PBKDF2 key derivation
+    const salt = profile.key_derivation_salt || authUUID // Use stored salt or generate from UUID
+    encryptionService.initializeWithPasswordAndSalt(profile.id, salt)
+    sessionPassword = password // Store password for current session
     console.log('Encryption service initialized for user:', profile.id)
 
     return data.user
@@ -285,6 +288,11 @@ export const login = async (email: string, password: string) => {
   }
 }
 
+// Get session password (for loading encrypted chat keys)
+export const getSessionPassword = (): string => {
+  return sessionPassword
+}
+
 // Logout
 export const logout = async () => {
   try {
@@ -295,6 +303,7 @@ export const logout = async () => {
     if (signOutError) throw new Error(getErrorMessage(signOutError))
 
     currentUser.value = null
+    sessionPassword = '' // Clear password from memory
     encryptionService.clearAllKeys()
     console.log('Encryption keys cleared on logout')
   } catch (err) {
@@ -354,6 +363,12 @@ export const getCurrentUser = async () => {
       bio: profile.bio,
       image: profile.image,
     }
+
+    // Initialize encryption service with salt (even without password)
+    // Password will be required when loading actual chat keys
+    const salt = profile.key_derivation_salt || authUUID
+    encryptionService.initializeWithPasswordAndSalt(profile.id, salt)
+    console.log('Encryption service re-initialized from stored session for user:', profile.id)
 
     return profile
   } catch (err) {

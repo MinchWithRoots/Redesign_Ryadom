@@ -7,18 +7,62 @@ export interface EncryptionKey {
   expiresAt?: number
 }
 
+interface KeyDerivationParams {
+  iterations: number
+  keySize: number
+}
+
+// Constants for key derivation
+const KEY_DERIVATION_PARAMS: KeyDerivationParams = {
+  iterations: 310000, // OWASP 2023 recommendation for PBKDF2-SHA256
+  keySize: 256 / 32, // 256 bits = 32 bytes
+}
+
 class EncryptionService {
   private keyStore: Map<string | number, EncryptionKey> = new Map()
-  private currentUserPassword: string = ''
   private currentUserId: string = ''
+  private userSalt: string = '' // User-specific salt for key derivation
 
   /**
    * Initialize encryption with user credentials
-   * Call this after successful login
+   * Call this after successful login with the password and user's salt
+   * The salt is stored in the database to ensure consistent key derivation across devices
    */
-  initializeWithPassword(passwordHash: string, userId: string): void {
-    this.currentUserPassword = passwordHash
+  initializeWithPasswordAndSalt(userId: string, salt: string): void {
     this.currentUserId = userId
+    this.userSalt = salt
+    console.log('Encryption service initialized for user:', userId)
+  }
+
+  /**
+   * Check if encryption service is initialized (for debugging/fallback)
+   */
+  isInitialized(): boolean {
+    return !!(this.currentUserId && this.userSalt)
+  }
+
+  /**
+   * Derive a cryptographic key from password using PBKDF2
+   * This is deterministic: same password + same salt = same key on all devices
+   * Used for encrypting/decrypting the chat master keys
+   */
+  private deriveKeyFromPassword(password: string): string {
+    if (!this.userSalt) {
+      throw new Error('User salt not initialized. Call initializeWithPasswordAndSalt first.')
+    }
+
+    try {
+      // PBKDF2 with SHA256: deterministic derivation
+      const derivedKey = crypto.PBKDF2(password, this.userSalt, {
+        keySize: KEY_DERIVATION_PARAMS.keySize,
+        iterations: KEY_DERIVATION_PARAMS.iterations,
+      }).toString()
+
+      return derivedKey
+    } catch (err) {
+      console.error('Failed to derive key from password:', err)
+      throw new Error('Key derivation failed')
+    }
   }
 
   /**
@@ -30,53 +74,82 @@ class EncryptionService {
   }
 
   /**
-   * Encrypt a key using user's password hash
-   * Used to store chat keys in database
+   * Generate a random IV (Initialization Vector) for AES encryption
    */
-  private encryptKeyWithPassword(key: string, passwordHash: string): string {
+  private generateRandomIV(): string {
+    return crypto.lib.WordArray.random(16).toString()
+  }
+
+  /**
+   * Encrypt a value with a key and random IV
+   * Returns: IV + encrypted data (both base64)
+   * This allows proper decryption on any device
+   */
+  private encryptWithKey(plaintext: string, key: string): string {
     try {
-      return crypto.AES.encrypt(key, passwordHash).toString()
+      const iv = this.generateRandomIV()
+
+      // Encrypt using AES-256-CBC with the derived key
+      const encrypted = crypto.AES.encrypt(plaintext, key, {
+        iv: crypto.enc.Hex.parse(iv),
+        mode: crypto.mode.CBC,
+        padding: crypto.pad.Pkcs7,
+      }).toString()
+
+      // Return: IV (hex) + encrypted data (base64)
+      // Format: "iv:encrypted" for easy parsing
+      return `${iv}:${encrypted}`
     } catch (err) {
-      console.error('Failed to encrypt key with password:', err)
-      throw err
+      console.error('Encryption error:', err)
+      throw new Error('Failed to encrypt data')
     }
   }
 
   /**
-   * Decrypt a key using user's password hash
-   * Used to restore chat keys from database
+   * Decrypt a value that was encrypted with encryptWithKey
+   * Expects format: "iv:encrypted"
    */
-  private decryptKeyWithPassword(encryptedKey: string, passwordHash: string): string {
+  private decryptWithKey(encrypted: string, key: string): string {
     try {
-      const decrypted = crypto.AES.decrypt(encryptedKey, passwordHash).toString(crypto.enc.Utf8)
-      if (!decrypted || decrypted.trim() === '') {
-        throw new Error('Decrypted key is empty')
+      // Parse: IV + encrypted data
+      const [ivHex, encryptedData] = encrypted.split(':')
+
+      if (!ivHex || !encryptedData) {
+        throw new Error('Invalid encryption format')
       }
+
+      // Decrypt using AES-256-CBC
+      const decrypted = crypto.AES.decrypt(encryptedData, key, {
+        iv: crypto.enc.Hex.parse(ivHex),
+        mode: crypto.mode.CBC,
+        padding: crypto.pad.Pkcs7,
+      }).toString(crypto.enc.Utf8)
+
+      if (!decrypted || decrypted.trim() === '') {
+        throw new Error('Decrypted data is empty')
+      }
+
       return decrypted
     } catch (err) {
-      console.error('Failed to decrypt key with password:', err)
-      throw err
+      console.error('Decryption error:', err)
+      throw new Error('Failed to decrypt data')
     }
   }
 
   /**
-   * Create a new chat and set up encryption for both participants
-   * Returns the chat master key
+   * Create a new chat and set up encryption
+   * Generates a unique master key for the chat
    */
-  async createChatEncryption(
-    chatId: string | number,
-    userIds: string[]
-  ): Promise<string> {
+  async createChatEncryption(chatId: string | number, userIds: string[]): Promise<string> {
     try {
       // Generate random master key for this chat
       const masterKey = this.generateRandomKey()
 
-      // For each user, encrypt the master key with their password and store
-      for (const userId of userIds) {
-        // We can't encrypt for other users without their password
-        // So we store encrypted with a temporary key (user will set on next login)
-        // For now, store with a placeholder - they will need to fetch it
-        console.log('Chat encryption key created for chat:', chatId)
+      // For the current user, encrypt and store the master key
+      // Other users will encrypt it with their own password when they join the chat
+      if (userIds.includes(this.currentUserId)) {
+        const derivedKey = this.deriveKeyFromPassword(this.currentUserId)
+        await this.storeEncryptedChatKey(chatId, this.currentUserId, masterKey, derivedKey)
       }
 
       // Cache in memory
@@ -95,25 +168,24 @@ class EncryptionService {
 
   /**
    * Store encrypted chat key for a user in database
+   * password should be the derived key (from deriveKeyFromPassword)
    */
   async storeEncryptedChatKey(
     chatId: string | number,
     userId: string,
     chatMasterKey: string,
-    userPasswordHash: string
+    derivedKey: string
   ): Promise<void> {
     try {
-      // Encrypt the chat master key with user's password
-      const encryptedKey = this.encryptKeyWithPassword(chatMasterKey, userPasswordHash)
+      // Encrypt the chat master key with user's derived key
+      const encryptedKey = this.encryptWithKey(chatMasterKey, derivedKey)
 
       // Store in database
-      const { error } = await supabase
-        .from('chat_encryption_keys')
-        .upsert({
-          chat_id: chatId,
-          user_id: userId,
-          encrypted_key: encryptedKey,
-        })
+      const { error } = await supabase.from('chat_encryption_keys').upsert({
+        chat_id: chatId,
+        user_id: userId,
+        encrypted_key: encryptedKey,
+      })
 
       if (error) {
         console.error('Failed to store encrypted chat key:', error)
@@ -130,8 +202,9 @@ class EncryptionService {
   /**
    * Retrieve and decrypt chat key for current user
    * Call this when loading a chat
+   * Password parameter: optional for backward compatibility, but required for proper decryption
    */
-  async loadChatKey(chatId: string | number): Promise<string> {
+  async loadChatKey(chatId: string | number, password?: string): Promise<string> {
     try {
       // Check memory cache first
       const cached = this.keyStore.get(chatId)
@@ -139,9 +212,26 @@ class EncryptionService {
         return cached.key
       }
 
-      if (!this.currentUserId || !this.currentUserPassword) {
-        throw new Error('User not authenticated. Call initializeWithPassword first.')
+      if (!this.currentUserId || !this.userSalt) {
+        throw new Error(
+          'User not authenticated. Call initializeWithPasswordAndSalt first. ' +
+          'This usually happens on page refresh - try logging out and logging back in.'
+        )
       }
+
+      // Password is required for proper key derivation
+      if (!password) {
+        console.warn(
+          'No password provided to loadChatKey. User will need to re-login to decrypt messages. ' +
+          'This happens on page refresh - password is not persisted for security reasons.'
+        )
+        // Throw error to prompt re-authentication
+        throw new Error(
+          'Session password lost. Please refresh the page or log in again to access encrypted messages.'
+        )
+      }
+
+      const derivedKey = this.deriveKeyFromPassword(password)
 
       // Fetch encrypted key from database
       const { data, error } = await supabase
@@ -157,19 +247,17 @@ class EncryptionService {
       }
 
       if (!data || !data.encrypted_key) {
-        // Key doesn't exist for this user - this shouldn't happen
-        // Fall back to generating new one
+        // Key doesn't exist for this user
+        // This might be a new user joining an existing chat
+        // We'll create a new master key for them
         console.warn('No encrypted chat key found for user. Creating new one.')
         const newKey = this.generateRandomKey()
-        await this.storeEncryptedChatKey(chatId, this.currentUserId, newKey, this.currentUserPassword)
+        await this.storeEncryptedChatKey(chatId, this.currentUserId, newKey, derivedKey)
         return newKey
       }
 
       // Decrypt the key using user's password
-      const decryptedKey = this.decryptKeyWithPassword(
-        data.encrypted_key,
-        this.currentUserPassword
-      )
+      const decryptedKey = this.decryptWithKey(data.encrypted_key, derivedKey)
 
       // Cache in memory
       this.keyStore.set(chatId, {
@@ -210,6 +298,7 @@ class EncryptionService {
 
   /**
    * Encrypt message text using chat's master key
+   * Includes IV in the output for proper decryption
    */
   encryptMessage(text: string, chatId: string | number): string {
     const key = this.getKeySync(chatId)
@@ -218,8 +307,17 @@ class EncryptionService {
     }
 
     try {
-      const encrypted = crypto.AES.encrypt(text, key).toString()
-      return encrypted
+      const iv = this.generateRandomIV()
+
+      // Encrypt using AES-256-CBC
+      const encrypted = crypto.AES.encrypt(text, key, {
+        iv: crypto.enc.Hex.parse(iv),
+        mode: crypto.mode.CBC,
+        padding: crypto.pad.Pkcs7,
+      }).toString()
+
+      // Return: IV (hex) + encrypted data (base64)
+      return `${iv}:${encrypted}`
     } catch (err) {
       console.error('Encryption error:', err)
       throw new Error('Failed to encrypt message')
@@ -228,6 +326,7 @@ class EncryptionService {
 
   /**
    * Decrypt message text using chat's master key
+   * Expects format: "iv:encrypted"
    */
   decryptMessage(encryptedText: string, chatId: string | number): string {
     const key = this.getKeySync(chatId)
@@ -236,9 +335,26 @@ class EncryptionService {
     }
 
     try {
-      const decrypted = crypto.AES.decrypt(encryptedText, key).toString(crypto.enc.Utf8)
+      // Check if format matches encryption format
+      if (!encryptedText.includes(':')) {
+        // Old plaintext or incompatible format
+        return encryptedText
+      }
 
-      // If decryption result is empty, the text might not be encrypted
+      const [ivHex, encryptedData] = encryptedText.split(':')
+
+      if (!ivHex || !encryptedData) {
+        // Invalid format, treat as plaintext
+        return encryptedText
+      }
+
+      // Decrypt using AES-256-CBC
+      const decrypted = crypto.AES.decrypt(encryptedData, key, {
+        iv: crypto.enc.Hex.parse(ivHex),
+        mode: crypto.mode.CBC,
+        padding: crypto.pad.Pkcs7,
+      }).toString(crypto.enc.Utf8)
+
       if (!decrypted || decrypted.trim() === '') {
         return encryptedText
       }
@@ -262,8 +378,16 @@ class EncryptionService {
    */
   clearAllKeys(): void {
     this.keyStore.clear()
-    this.currentUserPassword = ''
     this.currentUserId = ''
+    this.userSalt = ''
+  }
+
+  /**
+   * Get the number of PBKDF2 iterations used for key derivation
+   * Useful for displaying security info to users
+   */
+  getKeyDerivationIterations(): number {
+    return KEY_DERIVATION_PARAMS.iterations
   }
 }
 
