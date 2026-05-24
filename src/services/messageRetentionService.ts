@@ -1,40 +1,27 @@
 import { supabase } from '@/utils/supabase'
 
-export type RetentionPeriod = 1 | 24 | 720 | 2160 | null // 1 hour, 1 day, 30 days (720h), 90 days (2160h), null = never delete
+export type RetentionPeriod = 7 | 30 | 90 | null // null = never delete
 
 export interface ChatRetentionSettings {
   chatId: string
-  retentionHours: RetentionPeriod
-}
-
-export interface RetentionOption {
-  label: string
-  hours: RetentionPeriod
+  retentionDays: RetentionPeriod
 }
 
 class MessageRetentionService {
-  readonly retentionOptions: RetentionOption[] = [
-    { label: '1 час', hours: 1 },
-    { label: '1 день', hours: 24 },
-    { label: '1 месяц', hours: 720 },
-    { label: '3 месяца', hours: 2160 },
-    { label: 'Никогда не удалять', hours: null },
-  ]
-
   /**
    * Set message retention policy for a chat
    * @param chatId - The chat ID
-   * @param retentionHours - Number of hours to keep messages (1, 24, 720, 2160, or null for never delete)
+   * @param retentionDays - Number of days to keep messages (7, 30, 90, or null for never delete)
    */
   async setRetentionPolicy(
     chatId: string,
-    retentionHours: RetentionPeriod
+    retentionDays: RetentionPeriod
   ): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('chats')
         .update({
-          message_retention_hours: retentionHours,
+          message_retention_days: retentionDays,
         })
         .eq('id', chatId)
 
@@ -48,7 +35,7 @@ class MessageRetentionService {
         return false
       }
 
-      console.log(`Set retention policy for chat ${chatId}: ${retentionHours} hours`)
+      console.log(`Set retention policy for chat ${chatId}: ${retentionDays} days`)
       return true
     } catch (err) {
       console.error('Error in setRetentionPolicy:', err)
@@ -63,11 +50,12 @@ class MessageRetentionService {
     try {
       const { data, error } = await supabase
         .from('chats')
-        .select('message_retention_hours')
+        .select('message_retention_days')
         .eq('id', chatId)
         .single()
 
       if (error) {
+<<<<<<< HEAD
         // If column doesn't exist, just return default value
         if (error.message?.includes('does not exist')) {
           console.warn('message_retention_hours column not found in database, using default')
@@ -75,12 +63,21 @@ class MessageRetentionService {
         }
         console.error('Error fetching retention policy:', error?.message || error)
         return 720 // Default to 30 days
+=======
+        console.error('Error fetching retention policy:', error)
+        return 30 // Default to 30 days
+>>>>>>> parent of c3985e7 (Add message retention policy options (1h, 1d, 1m, 3m))
       }
 
-      return data?.message_retention_hours || 720
+      return data?.message_retention_days || 30
     } catch (err) {
+<<<<<<< HEAD
       console.error('Error in getRetentionPolicy:', err instanceof Error ? err.message : err)
       return 720
+=======
+      console.error('Error in getRetentionPolicy:', err)
+      return 30
+>>>>>>> parent of c3985e7 (Add message retention policy options (1h, 1d, 1m, 3m))
     }
   }
 
@@ -103,39 +100,35 @@ class MessageRetentionService {
   /**
    * Calculate when messages will be deleted
    */
-  calculateExpiryDate(createdAt: string, retentionHours: RetentionPeriod): Date | null {
-    if (!retentionHours) return null
-
+  calculateExpiryDate(createdAt: string, retentionDays: RetentionPeriod): Date | null {
+    if (!retentionDays) return null
+    
     const date = new Date(createdAt)
-    date.setHours(date.getHours() + retentionHours)
+    date.setDate(date.getDate() + retentionDays)
     return date
   }
 
   /**
    * Check if a message would be expired
    */
-  isMessageExpired(createdAt: string, retentionHours: RetentionPeriod): boolean {
-    if (!retentionHours) return false
-
-    const expiryDate = this.calculateExpiryDate(createdAt, retentionHours)
+  isMessageExpired(createdAt: string, retentionDays: RetentionPeriod): boolean {
+    if (!retentionDays) return false
+    
+    const expiryDate = this.calculateExpiryDate(createdAt, retentionDays)
     if (!expiryDate) return false
-
+    
     return new Date() > expiryDate
   }
 
   /**
    * Format retention period for display
    */
-  formatRetentionPeriod(hours: RetentionPeriod): string {
-    const option = this.retentionOptions.find(opt => opt.hours === hours)
-    return option?.label || 'Никогда не удалять'
-  }
-
-  /**
-   * Get label for retention hours
-   */
-  getRetentionLabel(hours: RetentionPeriod): string {
-    return this.formatRetentionPeriod(hours)
+  formatRetentionPeriod(days: RetentionPeriod): string {
+    if (!days) return 'Никогда не удалять'
+    if (days === 7) return '7 дней'
+    if (days === 30) return '30 дней'
+    if (days === 90) return '90 дней'
+    return `${days} дней`
   }
 }
 

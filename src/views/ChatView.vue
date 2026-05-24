@@ -5,10 +5,8 @@ import { currentUser, messages, getChatById, endSession, loadChats, chats as glo
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import { encryptionService } from '../services/encryptionService'
-import { messageRetentionService } from '../services/messageRetentionService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
-import RetentionPolicyModal from '../components/RetentionPolicyModal.vue'
 import '@/assets/chat.css'
 import infoIcon from '../images/info-triangle.svg'
 import blockIcon from '../images/block.svg'
@@ -32,8 +30,6 @@ const showActionMenu = ref(false)
 const isBlockingUser = ref(false)
 const blockSuccess = ref('')
 const showReviewModal = ref(false)
-const showRetentionModal = ref(false)
-const currentRetention = ref<1 | 24 | 720 | 2160 | null>(720)
 
 const chatId = computed(() => (route.query.id as string) || undefined)
 
@@ -757,9 +753,6 @@ onMounted(async () => {
     await markMessagesAsRead()
     subscribeToMessages()
     subscribeToReadStatus()
-    // Load retention policy
-    const retention = await messageRetentionService.getRetentionPolicy(chatId.value)
-    currentRetention.value = retention
   }
 })
 
@@ -861,17 +854,6 @@ onBeforeUnmount(() => {
                   <img :src="blockIcon" alt="Unblock" class="chat-dropdown-icon" />
                   <span v-if="!isBlockingUser">Разблокировать</span>
                   <span v-else>Разблокировка...</span>
-                </button>
-
-                <!-- Retention Policy option -->
-                <button
-                  @click="showRetentionModal = true; showActionMenu = false"
-                  class="chat-dropdown-item"
-                >
-                  <svg class="chat-dropdown-icon" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
-                  </svg>
-                  <span>Удаление сообщений</span>
                 </button>
 
                 <!-- Divider -->
@@ -1126,15 +1108,6 @@ onBeforeUnmount(() => {
       :chat-id="chatId"
       @success="handleReviewSuccess"
       @close="handleReviewClose"
-    />
-
-    <!-- Retention Policy Modal -->
-    <RetentionPolicyModal
-      :is-open="showRetentionModal"
-      :chat-id="chatId || ''"
-      :initial-retention="currentRetention"
-      @close="showRetentionModal = false"
-      @confirm="(hours) => currentRetention = hours"
     />
   </div>
 </template>

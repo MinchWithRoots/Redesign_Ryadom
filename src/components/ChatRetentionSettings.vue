@@ -39,7 +39,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { messageRetentionService } from '@/services/messageRetentionService'
 import type { RetentionPeriod } from '@/services/messageRetentionService'
 
 interface Props {
@@ -51,7 +50,7 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: 720,
+  modelValue: 30,
 })
 
 const emit = defineEmits<Emits>()
@@ -66,23 +65,18 @@ interface RetentionOption {
 
 const retentionOptions: RetentionOption[] = [
   {
-    value: 1,
-    label: '1 час',
-    hint: 'Для краткосрочной поддержки',
+    value: 7,
+    label: '7 дней',
+    hint: 'Для короткой поддержки',
   },
   {
-    value: 24,
-    label: '1 день',
-    hint: 'Базовая конфиденциальность',
-  },
-  {
-    value: 720,
-    label: '1 месяц (рекомендуется)',
+    value: 30,
+    label: '30 дней (рекомендуется)',
     hint: 'Баланс между приватностью и историей',
   },
   {
-    value: 2160,
-    label: '3 месяца',
+    value: 90,
+    label: '90 дней',
     hint: 'Долгая история чата',
   },
   {
