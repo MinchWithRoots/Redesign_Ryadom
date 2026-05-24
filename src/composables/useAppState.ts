@@ -1032,7 +1032,12 @@ export const loadChats = async () => {
 
     // Initialize encryption keys for all chats
     chatsWithInfo.forEach((chat: Chat) => {
-      if (!encryptionService.hasKey(chat.id)) {
+      // First try to load key from localStorage
+      const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chat.id}`) : null
+      if (storedKey) {
+        encryptionService.setKey(chat.id, storedKey)
+      } else if (!encryptionService.hasKey(chat.id)) {
+        // Only generate new key if one doesn't exist
         encryptionService.generateKey(chat.id)
       }
     })

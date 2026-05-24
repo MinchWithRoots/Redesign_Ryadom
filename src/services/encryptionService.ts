@@ -14,7 +14,27 @@ class EncryptionService {
    * Generate a random encryption key for a chat
    */
   generateKey(chatId: string): string {
-    const key = crypto.lib.WordArray.random(32).toString()
+    // First check if a key already exists in localStorage
+    let key: string
+    try {
+      if (typeof window !== 'undefined') {
+        const storedKey = localStorage.getItem(`${this.STORAGE_PREFIX}${chatId}`)
+        if (storedKey) {
+          // Key exists in localStorage - use it instead of generating a new one
+          this.keyStore.set(chatId, {
+            chatId,
+            key: storedKey,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+          })
+          return storedKey
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load encryption key from localStorage:', err)
+    }
+
+    // No key found - generate a new one
+    key = crypto.lib.WordArray.random(32).toString()
     this.keyStore.set(chatId, {
       chatId,
       key,
