@@ -123,19 +123,23 @@ const loadMessages = async () => {
         let decryptedText = msg.text
         try {
           if (chatId.value && msg.text) {
-            // Try to decrypt - if key doesn't exist, message might be plain text
+            // Ensure key is loaded from localStorage first
+            const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+            if (storedKey && !encryptionService.hasKey(chatId.value)) {
+              encryptionService.setKey(chatId.value, storedKey)
+            }
+
+            // Try to decrypt if key exists
             if (encryptionService.hasKey(chatId.value)) {
               decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
             } else {
               // Key doesn't exist - message is likely plain text
-              // This can happen if messages were created before encryption was enabled
               decryptedText = msg.text
             }
           }
         } catch (err) {
-          // Decryption failed - either message is corrupted or wasn't encrypted
+          // Fallback to plaintext if decryption fails
           console.warn('Failed to decrypt message, treating as plain text:', err)
-          // Try to use as plain text if it looks reasonable
           decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
         }
 
@@ -476,7 +480,7 @@ const subscribeToMessages = () => {
             if (chatId.value && newMsg.text) {
               // Ensure key is loaded from localStorage
               const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
-              if (storedKey) {
+              if (storedKey && !encryptionService.hasKey(chatId.value)) {
                 encryptionService.setKey(chatId.value, storedKey)
               }
 
@@ -488,7 +492,7 @@ const subscribeToMessages = () => {
               }
             }
           } catch (err) {
-            console.warn('Failed to decrypt message, treating as plain text:', err)
+            console.warn('Failed to decrypt realtime message:', err)
             decryptedText = newMsg.text || '[Не удалось расшифровать сообщение]'
           }
 
@@ -552,7 +556,7 @@ const subscribeToMessages = () => {
             if (chatId.value && msg.text) {
               // Ensure key is loaded from localStorage
               const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
-              if (storedKey) {
+              if (storedKey && !encryptionService.hasKey(chatId.value)) {
                 encryptionService.setKey(chatId.value, storedKey)
               }
 
@@ -564,7 +568,7 @@ const subscribeToMessages = () => {
               }
             }
           } catch (err) {
-            console.warn('Failed to decrypt message, treating as plain text:', err)
+            console.warn('Failed to decrypt polled message:', err)
             decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
           }
 

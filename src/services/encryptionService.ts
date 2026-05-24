@@ -122,14 +122,22 @@ class EncryptionService {
     }
 
     try {
+      // Try to decrypt using the key
       const decrypted = crypto.AES.decrypt(encryptedText, key).toString(crypto.enc.Utf8)
-      if (!decrypted) {
-        throw new Error('Failed to decrypt message - empty result')
+
+      // If decryption result is empty, the encrypted text is likely not valid
+      // This could mean the message wasn't encrypted or uses a different key
+      if (!decrypted || decrypted.trim() === '') {
+        // Return the original text if decryption fails - it might be plaintext
+        return encryptedText
       }
+
       return decrypted
     } catch (err) {
-      console.error('Decryption error:', err)
-      throw new Error('Failed to decrypt message')
+      // If decryption fails entirely, treat as plaintext
+      // This handles cases where the message format is incorrect or uses different encryption
+      console.warn('Decryption failed, treating as plaintext:', err)
+      return encryptedText
     }
   }
 
