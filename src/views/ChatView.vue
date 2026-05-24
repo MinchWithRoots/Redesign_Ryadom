@@ -72,13 +72,14 @@ const loadMessages = async () => {
   if (chatId.value) {
     isLoadingMessages.value = true
     try {
-      // Ensure encryption key is available (derived from password)
+      // Load encryption key from database (shared between both users)
       if (!encryptionService.hasKey(chatId.value)) {
         try {
-          encryptionService.generateKey(chatId.value)
-          console.log('Generated encryption key for chat')
+          await encryptionService.loadChatKey(chatId.value)
+          console.log('Loaded encryption key for chat from database')
         } catch (err) {
-          console.warn('Could not generate encryption key - messages may be unencrypted:', err)
+          console.warn('Could not load encryption key:', err)
+          // Continue anyway - messages might be unencrypted or this is a new chat
         }
       }
 
@@ -191,9 +192,10 @@ const sendMessage = async () => {
     // Ensure encryption key is available
     if (!encryptionService.hasKey(chatId.value)) {
       try {
-        encryptionService.generateKey(chatId.value)
+        await encryptionService.loadChatKey(chatId.value)
+        console.log('Loaded encryption key before sending message')
       } catch (err) {
-        console.warn('Could not generate encryption key:', err)
+        console.warn('Could not load encryption key:', err)
         alert('Ошибка при инициализации шифрования')
         return
       }

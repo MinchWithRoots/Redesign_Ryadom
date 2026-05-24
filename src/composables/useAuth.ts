@@ -249,10 +249,10 @@ export const login = async (email: string, password: string) => {
         topics: newProfile.topics,
       }
 
-      // Initialize encryption with password-derived key
+      // Initialize encryption service with password hash and user ID
       const passwordHash = crypto.SHA256(password).toString()
-      encryptionService.initializeWithPassword(passwordHash)
-      console.log('Encryption service initialized for user')
+      encryptionService.initializeWithPassword(passwordHash, newProfile.id)
+      console.log('Encryption service initialized for user:', newProfile.id)
 
       return data.user
     }
@@ -269,10 +269,10 @@ export const login = async (email: string, password: string) => {
       topics: profile.topics,
     }
 
-    // Initialize encryption with password-derived key
+    // Initialize encryption service with password hash and user ID
     const passwordHash = crypto.SHA256(password).toString()
-    encryptionService.initializeWithPassword(passwordHash)
-    console.log('Encryption service initialized for user')
+    encryptionService.initializeWithPassword(passwordHash, profile.id)
+    console.log('Encryption service initialized for user:', profile.id)
 
     return data.user
   } catch (err) {
