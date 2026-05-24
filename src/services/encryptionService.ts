@@ -9,50 +9,66 @@ export interface EncryptionKey {
 class EncryptionService {
   private keyStore: Map<string, EncryptionKey> = new Map()
   private readonly STORAGE_PREFIX = 'chat_encryption_key_'
+  private currentUserPassword: string = ''
 
   /**
-   * Generate a random encryption key for a chat
+   * Initialize encryption with user's password hash (from auth)
+   * This should be called once when user logs in
    */
-  generateKey(chatId: string): string {
-    // First check if a key already exists in localStorage
-    let key: string
-    try {
-      if (typeof window !== 'undefined') {
-        const storedKey = localStorage.getItem(`${this.STORAGE_PREFIX}${chatId}`)
-        if (storedKey) {
-          // Key exists in localStorage - use it instead of generating a new one
-          this.keyStore.set(chatId, {
-            chatId,
-            key: storedKey,
-            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-          })
-          return storedKey
-        }
-      }
-    } catch (err) {
-      console.warn('Failed to load encryption key from localStorage:', err)
-    }
-
-    // No key found - generate a new one
-    key = crypto.lib.WordArray.random(32).toString()
-    this.keyStore.set(chatId, {
-      chatId,
-      key,
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-    })
-    // Save to localStorage for persistence
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${this.STORAGE_PREFIX}${chatId}`, key)
-      }
-    } catch (err) {
-      console.warn('Failed to save encryption key to localStorage:', err)
-    }
-    return key
+  initializeWithPassword(passwordHash: string): void {
+    this.currentUserPassword = passwordHash
   }
 
   /**
-   * Store encryption key for a chat
+   * Derive encryption key from chat ID and password hash
+   * This ensures both users in a chat derive the same key
+   */
+  private deriveKeyFromChat(chatId: string): string {
+    if (!this.currentUserPassword) {
+      throw new Error('Encryption not initialized. Call initializeWithPassword first.')
+    }
+
+    // Combine password hash with chat ID to derive a deterministic key
+    // This ensures both chat participants get the same key
+    const combined = `${this.currentUserPassword}:${chatId}`
+    
+    // Use SHA256 for consistent key derivation
+    const derived = crypto.SHA256(combined).toString()
+    
+    // Take first 32 characters (256 bits) for AES-256
+    return derived.substring(0, 32)
+  }
+
+  /**
+   * Generate or retrieve encryption key for a chat
+   * Uses password-based key derivation for consistency across devices
+   */
+  generateKey(chatId: string): string {
+    try {
+      // Try to get from memory first
+      const cached = this.keyStore.get(chatId)
+      if (cached && (!cached.expiresAt || cached.expiresAt > Date.now())) {
+        return cached.key
+      }
+
+      // Derive key from password and chat ID
+      const key = this.deriveKeyFromChat(chatId)
+      
+      this.keyStore.set(chatId, {
+        chatId,
+        key,
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+      })
+
+      return key
+    } catch (err) {
+      console.error('Failed to generate encryption key:', err)
+      throw err
+    }
+  }
+
+  /**
+   * Store encryption key for a chat (legacy support)
    */
   setKey(chatId: string, key: string): void {
     this.keyStore.set(chatId, {
@@ -60,14 +76,6 @@ class EncryptionService {
       key,
       expiresAt: Date.now() + 24 * 60 * 60 * 1000,
     })
-    // Save to localStorage for persistence
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${this.STORAGE_PREFIX}${chatId}`, key)
-      }
-    } catch (err) {
-      console.warn('Failed to save encryption key to localStorage:', err)
-    }
   }
 
   /**
@@ -77,22 +85,19 @@ class EncryptionService {
     // First check memory cache
     let keyObj = this.keyStore.get(chatId)
 
-    // If not in memory, try to load from localStorage
     if (!keyObj) {
       try {
-        if (typeof window !== 'undefined') {
-          const storedKey = localStorage.getItem(`${this.STORAGE_PREFIX}${chatId}`)
-          if (storedKey) {
-            keyObj = {
-              chatId,
-              key: storedKey,
-              expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-            }
-            this.keyStore.set(chatId, keyObj)
-          }
+        // Try to derive from password if not cached
+        const key = this.deriveKeyFromChat(chatId)
+        keyObj = {
+          chatId,
+          key,
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         }
+        this.keyStore.set(chatId, keyObj)
       } catch (err) {
-        console.warn('Failed to load encryption key from localStorage:', err)
+        console.warn('Failed to derive encryption key:', err)
+        return null
       }
     }
 
@@ -101,13 +106,6 @@ class EncryptionService {
     // Check if key expired
     if (keyObj.expiresAt && keyObj.expiresAt < Date.now()) {
       this.keyStore.delete(chatId)
-      try {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(`${this.STORAGE_PREFIX}${chatId}`)
-        }
-      } catch (err) {
-        console.warn('Failed to remove encryption key from localStorage:', err)
-      }
       return null
     }
 
@@ -142,73 +140,47 @@ class EncryptionService {
     }
 
     try {
-      // Try to decrypt using the key
       const decrypted = crypto.AES.decrypt(encryptedText, key).toString(crypto.enc.Utf8)
 
       // If decryption result is empty, the encrypted text is likely not valid
-      // This could mean the message wasn't encrypted or uses a different key
       if (!decrypted || decrypted.trim() === '') {
-        // Return the original text if decryption fails - it might be plaintext
         return encryptedText
       }
 
       return decrypted
     } catch (err) {
-      // If decryption fails entirely, treat as plaintext
-      // This handles cases where the message format is incorrect or uses different encryption
       console.warn('Decryption failed, treating as plaintext:', err)
       return encryptedText
     }
   }
 
   /**
-   * Clear key from memory and storage
+   * Clear key from memory
    */
   clearKey(chatId: string): void {
     this.keyStore.delete(chatId)
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(`${this.STORAGE_PREFIX}${chatId}`)
-      }
-    } catch (err) {
-      console.warn('Failed to remove encryption key from localStorage:', err)
-    }
   }
 
   /**
-   * Clear all keys from memory and storage
+   * Clear all keys from memory
    */
   clearAllKeys(): void {
     this.keyStore.clear()
-    try {
-      if (typeof window !== 'undefined') {
-        const keysToDelete: string[] = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i)
-          if (key && key.startsWith(this.STORAGE_PREFIX)) {
-            keysToDelete.push(key)
-          }
-        }
-        keysToDelete.forEach(key => localStorage.removeItem(key))
-      }
-    } catch (err) {
-      console.warn('Failed to clear encryption keys from localStorage:', err)
-    }
+    this.currentUserPassword = ''
   }
 
   /**
    * Check if key exists and is valid
    */
   hasKey(chatId: string): boolean {
-    const keyObj = this.keyStore.get(chatId)
-    if (!keyObj) return false
+    if (!this.currentUserPassword) return false
 
-    if (keyObj.expiresAt && keyObj.expiresAt < Date.now()) {
-      this.keyStore.delete(chatId)
+    try {
+      const key = this.getKey(chatId)
+      return key !== null
+    } catch {
       return false
     }
-
-    return true
   }
 }
 

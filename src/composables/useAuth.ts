@@ -1,5 +1,7 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
+import { encryptionService } from '@/services/encryptionService'
+import * as crypto from 'crypto-js'
 
 export interface UserProfile {
   id: string | number
@@ -246,6 +248,12 @@ export const login = async (email: string, password: string) => {
         image: newProfile.image,
         topics: newProfile.topics,
       }
+
+      // Initialize encryption with password-derived key
+      const passwordHash = crypto.SHA256(password).toString()
+      encryptionService.initializeWithPassword(passwordHash)
+      console.log('Encryption service initialized for user')
+
       return data.user
     }
 
@@ -260,6 +268,11 @@ export const login = async (email: string, password: string) => {
       image: profile.image,
       topics: profile.topics,
     }
+
+    // Initialize encryption with password-derived key
+    const passwordHash = crypto.SHA256(password).toString()
+    encryptionService.initializeWithPassword(passwordHash)
+    console.log('Encryption service initialized for user')
 
     return data.user
   } catch (err) {
@@ -282,6 +295,8 @@ export const logout = async () => {
     if (signOutError) throw new Error(getErrorMessage(signOutError))
 
     currentUser.value = null
+    encryptionService.clearAllKeys()
+    console.log('Encryption keys cleared on logout')
   } catch (err) {
     const message = getErrorMessage(err)
     error.value = message
