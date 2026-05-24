@@ -88,11 +88,32 @@ const loadMessages = async () => {
         console.log('Generated new encryption key for chat')
       }
 
-      const { data: messagesData, error } = await supabase
-        .from('messages')
-        .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
-        .eq('chat_id', chatId.value)
-        .order('created_at', { ascending: true })
+      let messagesData
+      let error
+      let retries = 3
+
+      // Retry logic for network errors
+      while (retries > 0) {
+        try {
+          const result = await supabase
+            .from('messages')
+            .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
+            .eq('chat_id', chatId.value)
+            .order('created_at', { ascending: true })
+
+          messagesData = result.data
+          error = result.error
+          break
+        } catch (fetchError) {
+          retries--
+          if (retries === 0) {
+            console.error('Failed to load messages after 3 retries:', fetchError)
+            return
+          }
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
 
       if (error) {
         console.error('Error loading messages:', error)
@@ -202,17 +223,38 @@ const sendMessage = async () => {
       return
     }
 
-    const { data: messageData, error } = await supabase
-      .from('messages')
-      .insert([
-        {
-          chat_id: chatId.value,
-          sender_id: currentUser.value.id,
-          text: encryptedText,
-        },
-      ])
-      .select()
-      .single()
+    let messageData
+    let error
+    let retries = 3
+
+    // Retry logic for network errors
+    while (retries > 0) {
+      try {
+        const result = await supabase
+          .from('messages')
+          .insert([
+            {
+              chat_id: chatId.value,
+              sender_id: currentUser.value.id,
+              text: encryptedText,
+            },
+          ])
+          .select()
+          .single()
+
+        messageData = result.data
+        error = result.error
+        break
+      } catch (fetchError) {
+        retries--
+        if (retries === 0) {
+          console.error('Failed to send message after 3 retries:', fetchError)
+          error = new Error('Network error - failed to send message')
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
+    }
 
     if (error) {
       console.error('Error sending message:', error)
@@ -233,6 +275,7 @@ const sendMessage = async () => {
       messageInput.value = ''
       await nextTick()
       scrollToBottom()
+      // Don't show alert for all errors - they may be temporary network issues
       return
     }
 
