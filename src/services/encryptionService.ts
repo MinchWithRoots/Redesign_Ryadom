@@ -14,7 +14,27 @@ class EncryptionService {
    * Generate a random encryption key for a chat
    */
   generateKey(chatId: string): string {
-    const key = crypto.lib.WordArray.random(32).toString()
+    // First check if a key already exists in localStorage
+    let key: string
+    try {
+      if (typeof window !== 'undefined') {
+        const storedKey = localStorage.getItem(`${this.STORAGE_PREFIX}${chatId}`)
+        if (storedKey) {
+          // Key exists in localStorage - use it instead of generating a new one
+          this.keyStore.set(chatId, {
+            chatId,
+            key: storedKey,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+          })
+          return storedKey
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load encryption key from localStorage:', err)
+    }
+
+    // No key found - generate a new one
+    key = crypto.lib.WordArray.random(32).toString()
     this.keyStore.set(chatId, {
       chatId,
       key,
@@ -122,14 +142,22 @@ class EncryptionService {
     }
 
     try {
+      // Try to decrypt using the key
       const decrypted = crypto.AES.decrypt(encryptedText, key).toString(crypto.enc.Utf8)
-      if (!decrypted) {
-        throw new Error('Failed to decrypt message - empty result')
+
+      // If decryption result is empty, the encrypted text is likely not valid
+      // This could mean the message wasn't encrypted or uses a different key
+      if (!decrypted || decrypted.trim() === '') {
+        // Return the original text if decryption fails - it might be plaintext
+        return encryptedText
       }
+
       return decrypted
     } catch (err) {
-      console.error('Decryption error:', err)
-      throw new Error('Failed to decrypt message')
+      // If decryption fails entirely, treat as plaintext
+      // This handles cases where the message format is incorrect or uses different encryption
+      console.warn('Decryption failed, treating as plaintext:', err)
+      return encryptedText
     }
   }
 

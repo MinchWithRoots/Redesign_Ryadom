@@ -88,11 +88,32 @@ const loadMessages = async () => {
         console.log('Generated new encryption key for chat')
       }
 
-      const { data: messagesData, error } = await supabase
-        .from('messages')
-        .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
-        .eq('chat_id', chatId.value)
-        .order('created_at', { ascending: true })
+      let messagesData
+      let error
+      let retries = 3
+
+      // Retry logic for network errors
+      while (retries > 0) {
+        try {
+          const result = await supabase
+            .from('messages')
+            .select('id, chat_id, sender_id, text, created_at, is_read, read_at')
+            .eq('chat_id', chatId.value)
+            .order('created_at', { ascending: true })
+
+          messagesData = result.data
+          error = result.error
+          break
+        } catch (fetchError) {
+          retries--
+          if (retries === 0) {
+            console.error('Failed to load messages after 3 retries:', fetchError)
+            return
+          }
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
 
       if (error) {
         console.error('Error loading messages:', error)
@@ -123,19 +144,23 @@ const loadMessages = async () => {
         let decryptedText = msg.text
         try {
           if (chatId.value && msg.text) {
-            // Try to decrypt - if key doesn't exist, message might be plain text
+            // Ensure key is loaded from localStorage first
+            const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+            if (storedKey && !encryptionService.hasKey(chatId.value)) {
+              encryptionService.setKey(chatId.value, storedKey)
+            }
+
+            // Try to decrypt if key exists
             if (encryptionService.hasKey(chatId.value)) {
               decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
             } else {
               // Key doesn't exist - message is likely plain text
-              // This can happen if messages were created before encryption was enabled
               decryptedText = msg.text
             }
           }
         } catch (err) {
-          // Decryption failed - either message is corrupted or wasn't encrypted
+          // Fallback to plaintext if decryption fails
           console.warn('Failed to decrypt message, treating as plain text:', err)
-          // Try to use as plain text if it looks reasonable
           decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
         }
 
@@ -198,17 +223,38 @@ const sendMessage = async () => {
       return
     }
 
-    const { data: messageData, error } = await supabase
-      .from('messages')
-      .insert([
-        {
-          chat_id: chatId.value,
-          sender_id: currentUser.value.id,
-          text: encryptedText,
-        },
-      ])
-      .select()
-      .single()
+    let messageData
+    let error
+    let retries = 3
+
+    // Retry logic for network errors
+    while (retries > 0) {
+      try {
+        const result = await supabase
+          .from('messages')
+          .insert([
+            {
+              chat_id: chatId.value,
+              sender_id: currentUser.value.id,
+              text: encryptedText,
+            },
+          ])
+          .select()
+          .single()
+
+        messageData = result.data
+        error = result.error
+        break
+      } catch (fetchError) {
+        retries--
+        if (retries === 0) {
+          console.error('Failed to send message after 3 retries:', fetchError)
+          error = new Error('Network error - failed to send message')
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
+    }
 
     if (error) {
       console.error('Error sending message:', error)
@@ -229,6 +275,7 @@ const sendMessage = async () => {
       messageInput.value = ''
       await nextTick()
       scrollToBottom()
+      // Don't show alert for all errors - they may be temporary network issues
       return
     }
 
@@ -473,12 +520,23 @@ const subscribeToMessages = () => {
           // Decrypt message text
           let decryptedText = newMsg.text
           try {
-            if (chatId.value) {
-              decryptedText = encryptionService.decryptMessage(newMsg.text, chatId.value)
+            if (chatId.value && newMsg.text) {
+              // Ensure key is loaded from localStorage
+              const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+              if (storedKey && !encryptionService.hasKey(chatId.value)) {
+                encryptionService.setKey(chatId.value, storedKey)
+              }
+
+              if (encryptionService.hasKey(chatId.value)) {
+                decryptedText = encryptionService.decryptMessage(newMsg.text, chatId.value)
+              } else {
+                // Key doesn't exist - message is likely plain text
+                decryptedText = newMsg.text
+              }
             }
           } catch (err) {
-            console.warn('Failed to decrypt message:', err)
-            decryptedText = '[Не удалось расшифровать сообщение]'
+            console.warn('Failed to decrypt realtime message:', err)
+            decryptedText = newMsg.text || '[Не удалось расшифровать сообщение]'
           }
 
           const transformedMsg = {
@@ -539,7 +597,12 @@ const subscribeToMessages = () => {
           let decryptedText = msg.text
           try {
             if (chatId.value && msg.text) {
-              // Try to decrypt - if key doesn't exist, message might be plain text
+              // Ensure key is loaded from localStorage
+              const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+              if (storedKey && !encryptionService.hasKey(chatId.value)) {
+                encryptionService.setKey(chatId.value, storedKey)
+              }
+
               if (encryptionService.hasKey(chatId.value)) {
                 decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
               } else {
@@ -548,8 +611,7 @@ const subscribeToMessages = () => {
               }
             }
           } catch (err) {
-            // Decryption failed - either message is corrupted or wasn't encrypted
-            console.warn('Failed to decrypt message, treating as plain text:', err)
+            console.warn('Failed to decrypt polled message:', err)
             decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
           }
 
