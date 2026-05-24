@@ -473,12 +473,23 @@ const subscribeToMessages = () => {
           // Decrypt message text
           let decryptedText = newMsg.text
           try {
-            if (chatId.value) {
-              decryptedText = encryptionService.decryptMessage(newMsg.text, chatId.value)
+            if (chatId.value && newMsg.text) {
+              // Ensure key is loaded from localStorage
+              const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+              if (storedKey) {
+                encryptionService.setKey(chatId.value, storedKey)
+              }
+
+              if (encryptionService.hasKey(chatId.value)) {
+                decryptedText = encryptionService.decryptMessage(newMsg.text, chatId.value)
+              } else {
+                // Key doesn't exist - message is likely plain text
+                decryptedText = newMsg.text
+              }
             }
           } catch (err) {
-            console.warn('Failed to decrypt message:', err)
-            decryptedText = '[Не удалось расшифровать сообщение]'
+            console.warn('Failed to decrypt message, treating as plain text:', err)
+            decryptedText = newMsg.text || '[Не удалось расшифровать сообщение]'
           }
 
           const transformedMsg = {
@@ -539,7 +550,12 @@ const subscribeToMessages = () => {
           let decryptedText = msg.text
           try {
             if (chatId.value && msg.text) {
-              // Try to decrypt - if key doesn't exist, message might be plain text
+              // Ensure key is loaded from localStorage
+              const storedKey = typeof window !== 'undefined' ? localStorage.getItem(`chat_encryption_key_${chatId.value}`) : null
+              if (storedKey) {
+                encryptionService.setKey(chatId.value, storedKey)
+              }
+
               if (encryptionService.hasKey(chatId.value)) {
                 decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
               } else {
@@ -548,7 +564,6 @@ const subscribeToMessages = () => {
               }
             }
           } catch (err) {
-            // Decryption failed - either message is corrupted or wasn't encrypted
             console.warn('Failed to decrypt message, treating as plain text:', err)
             decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
           }
