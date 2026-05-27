@@ -1475,21 +1475,25 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
         const encryptedMasterKey = encryptionService.encryptData(masterKey, derivedKey)
 
         // Store encrypted key in database
-        const { error: encErr } = await supabase
-          .from('chat_encryption_keys')
-          .insert([{
-            chat_id: chat.id,
-            user_id: currentUser.value.id,
-            encrypted_key: encryptedMasterKey,
-          }])
+        try {
+          const { error: encErr } = await supabase
+            .from('chat_encryption_keys')
+            .insert([{
+              chat_id: chat.id,
+              user_id: currentUser.value.id,
+              encrypted_key: encryptedMasterKey,
+            }])
 
-        if (encErr) {
-          console.error('Failed to store encryption key:', encErr)
-        } else {
-          console.log('Chat encryption initialized for chat:', chat.id)
+          if (encErr) {
+            console.error('Failed to store encryption key:', encErr)
+          } else {
+            console.log('Chat encryption initialized for chat:', chat.id)
+          }
+        } catch (storeErr) {
+          console.warn('Could not store encryption key (table may not exist yet):', storeErr)
         }
       } catch (encErr) {
-        console.warn('Failed to initialize chat encryption (non-critical):', encErr)
+        console.warn('Failed to initialize chat encryption:', encErr)
       }
     }
 
