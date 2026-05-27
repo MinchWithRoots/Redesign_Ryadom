@@ -156,15 +156,21 @@ const loadMessages = async () => {
           }
         }
 
-        // Decrypt message if encryption key is available
+        // Decrypt message if encryption key is available and text looks encrypted
         let decryptedText = msg.text
-        if (currentChatMasterKey.value) {
+        const isLikelyEncrypted = msg.text && msg.text.includes(':') && /^[0-9a-f]+:/.test(msg.text)
+
+        if (currentChatMasterKey.value && isLikelyEncrypted) {
           try {
             decryptedText = encryptionService.decryptMessage(msg.text, currentChatMasterKey.value)
             console.log('[Decryption] Message decrypted:', msg.text.substring(0, 30) + '... -> ' + decryptedText)
           } catch (decErr) {
-            console.warn('Failed to decrypt message, using as-is:', decErr, 'encrypted:', msg.text.substring(0, 30))
+            console.warn('Failed to decrypt message:', decErr, 'encrypted:', msg.text.substring(0, 30))
+            // Keep original if decryption fails
+            decryptedText = msg.text
           }
+        } else if (!isLikelyEncrypted) {
+          console.log('[Decryption] Message doesn\'t look encrypted, using as-is')
         } else {
           console.log('[Decryption] No encryption key available, displaying as-is:', msg.text.substring(0, 30))
         }
@@ -542,13 +548,16 @@ const subscribeToMessages = () => {
             }
           }
 
-          // Decrypt message if encryption key is available
+          // Decrypt message if encryption key is available and text looks encrypted
           let decryptedText = newMsg.text
-          if (currentChatMasterKey.value) {
+          const isLikelyEncrypted = newMsg.text && newMsg.text.includes(':') && /^[0-9a-f]+:/.test(newMsg.text)
+
+          if (currentChatMasterKey.value && isLikelyEncrypted) {
             try {
               decryptedText = encryptionService.decryptMessage(newMsg.text, currentChatMasterKey.value)
             } catch (decErr) {
               console.warn('Failed to decrypt realtime message:', decErr)
+              decryptedText = newMsg.text
             }
           }
 
@@ -606,13 +615,16 @@ const subscribeToMessages = () => {
             }
           }
 
-          // Decrypt message if encryption key is available
+          // Decrypt message if encryption key is available and text looks encrypted
           let decryptedText = msg.text
-          if (currentChatMasterKey.value) {
+          const isLikelyEncrypted = msg.text && msg.text.includes(':') && /^[0-9a-f]+:/.test(msg.text)
+
+          if (currentChatMasterKey.value && isLikelyEncrypted) {
             try {
               decryptedText = encryptionService.decryptMessage(msg.text, currentChatMasterKey.value)
             } catch (decErr) {
               console.warn('Failed to decrypt polled message:', decErr)
+              decryptedText = msg.text
             }
           }
 
