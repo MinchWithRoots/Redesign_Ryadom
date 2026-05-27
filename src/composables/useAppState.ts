@@ -1464,22 +1464,31 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
     // Initialize encryption for this chat if password is provided
     if (chat && currentUser.value && encryptionPassword) {
       try {
+        // Get the companion's user_id (current user is the companion approving the request)
+        const { data: companionData, error: companionError } = await supabase
+          .from('companions')
+          .select('user_id')
+          .eq('id', request.companion_id)
+          .single()
+
+        if (companionError || !companionData?.user_id) {
+          console.warn('Could not fetch companion user_id for encryption:', companionError)
+          throw new Error('Companion not found')
+        }
+
+        const companionUserId = companionData.user_id
+
         // Generate a random master key for this chat
         const masterKey = encryptionService.generateMasterKey()
 
-        // Derive current user's key from their password (using userId as salt)
-        const currentUserSalt = currentUser.value.id
-        const currentUserDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, currentUserSalt)
+        // Derive current user's (companion's) key from their password (using userId as salt)
+        const companionDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, companionUserId)
+        const encryptedMasterKeyForCompanion = encryptionService.encryptData(masterKey, companionDerivedKey)
 
-        // Encrypt the master key with the current user's derived key
-        const encryptedMasterKeyForCurrentUser = encryptionService.encryptData(masterKey, currentUserDerivedKey)
-
-        // Also derive the OTHER user's key (the request creator)
-        // If current user is companion, the other user is request.user_id
-        const otherUserId = request.user_id
-        const otherUserSalt = otherUserId
-        const otherUserDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, otherUserSalt)
-        const encryptedMasterKeyForOtherUser = encryptionService.encryptData(masterKey, otherUserDerivedKey)
+        // Derive the request creator's key from the same password
+        const requestCreatorUserId = request.user_id
+        const requestCreatorDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, requestCreatorUserId)
+        const encryptedMasterKeyForRequestCreator = encryptionService.encryptData(masterKey, requestCreatorDerivedKey)
 
         // Store encrypted keys in database for BOTH users
         try {
@@ -1488,13 +1497,13 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
             .insert([
               {
                 chat_id: chat.id,
-                user_id: currentUser.value.id,
-                encrypted_key: encryptedMasterKeyForCurrentUser,
+                user_id: companionUserId,
+                encrypted_key: encryptedMasterKeyForCompanion,
               },
               {
                 chat_id: chat.id,
-                user_id: otherUserId,
-                encrypted_key: encryptedMasterKeyForOtherUser,
+                user_id: requestCreatorUserId,
+                encrypted_key: encryptedMasterKeyForRequestCreator,
               }
             ])
 

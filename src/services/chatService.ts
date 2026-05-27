@@ -55,29 +55,32 @@ export async function initializeChatEncryption(
   userPassword: string
 ): Promise<void> {
   try {
-    // Generate a random 32-byte master key for this chat
-    const masterKey = encryptionService.generateMasterKey()
-
-    // Get companion user data
+    // Get companion user data from companions table (which has user_id field)
     const { data: companionData, error: companionError } = await supabase
-      .from('users')
-      .select('id')
+      .from('companions')
+      .select('user_id')
       .eq('id', companionId)
       .single()
 
-    if (companionError || !companionData) {
-      throw new Error('Could not fetch companion user data')
+    if (companionError || !companionData?.user_id) {
+      throw new Error('Could not fetch companion user data: companion has no associated user')
     }
 
+    const companionUserId = companionData.user_id
+
+    // Generate a random 32-byte master key for this chat
+    const masterKey = encryptionService.generateMasterKey()
+
     // For user: derive key from their password and store encrypted master key
-    const userSalt = userId
-    const userDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, userSalt)
+    const userDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, userId)
     await encryptionService.storeEncryptedChatKey(chatId, userId, masterKey, userDerivedKey)
 
     // For companion: we cannot derive their key without their password
-    // Store encrypted master key using user's encryption (will be re-encrypted on companion's first access)
-    // For now, skip companion's key - they will generate it on first message receipt
-    console.log('Chat encryption initialized for user:', userId)
+    // Store encrypted master key using companion user ID for the same password salt
+    const companionDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, companionUserId)
+    await encryptionService.storeEncryptedChatKey(chatId, companionUserId, masterKey, companionDerivedKey)
+
+    console.log('Chat encryption initialized for both user and companion')
   } catch (err) {
     console.error('Failed to initialize chat encryption:', err)
     throw err
