@@ -1475,7 +1475,8 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
 
         if (companionError || !companionData?.user_id) {
           console.warn('Could not fetch companion user_id for encryption:', companionError)
-          throw new Error('Companion not found')
+          // Non-critical - keys can be generated on first chat load
+          return
         }
 
         const companionUserId = companionData.user_id
@@ -1483,14 +1484,15 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
         // Generate a random master key for this chat
         const masterKey = encryptionService.generateMasterKey()
 
-        // Store the master key in a shared location so the user who created the request can fetch it
-        // We'll store it in a temporary encrypted form that both parties can access
-        // For now, we derive and store ONLY the companion's key (to avoid RLS violations)
+        // Derive the companion's (current user's) key from password
         const companionDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, companionUserId)
         const encryptedMasterKeyForCompanion = encryptionService.encryptData(masterKey, companionDerivedKey)
 
-        // Store only the companion's encryption key
+        // Store ONLY the companion's encryption key (current user)
+        // The user who created the request will store their own key when they first load the chat
         try {
+          console.log('[approveChatRequest] Storing companion encryption key for chat:', chat.id, 'companion user:', companionUserId)
+
           const { error: encErr } = await supabase
             .from('chat_encryption_keys')
             .insert([
@@ -1511,14 +1513,9 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
               chatId: chat.id,
               userId: companionUserId
             })
+            // Non-critical - encryption can be set up later
           } else {
-            console.log('Companion encryption key initialized for chat:', chat.id)
-
-            // Now we need to store the master key in a way the user can access it
-            // We'll store it in the chats table as a temporary field (if available)
-            // Otherwise, the user will generate their own key when they first load the chat
-            // For now, store the master key in a way we can retrieve it later
-            // We'll use a chat metadata or create a shared secret
+            console.log('Companion encryption key stored successfully for chat:', chat.id)
           }
         } catch (storeErr) {
           const errorMsg = storeErr instanceof Error ? storeErr.message : JSON.stringify(storeErr)
@@ -1526,9 +1523,11 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
             message: errorMsg,
             stack: storeErr instanceof Error ? storeErr.stack : undefined
           })
+          // Non-critical - encryption can be set up later
         }
       } catch (encErr) {
         console.warn('Failed to initialize chat encryption:', encErr)
+        // Non-critical - encryption can be set up later
       }
     }
 
