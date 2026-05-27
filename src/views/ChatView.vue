@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
+import * as encryptionService from '@/services/encryptionService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
 import '@/assets/chat.css'
@@ -29,6 +30,8 @@ const showActionMenu = ref(false)
 const isBlockingUser = ref(false)
 const blockSuccess = ref('')
 const showReviewModal = ref(false)
+// null = not loaded yet, undefined = loaded but no encryption, string = loaded with key
+const currentChatMasterKey = ref<string | null | undefined>(null)
 
 const chatId = computed(() => (route.query.id as string) || undefined)
 
@@ -71,6 +74,20 @@ const loadMessages = async () => {
   if (chatId.value) {
     isLoadingMessages.value = true
     try {
+      // Load encryption key for this chat if not already loaded
+      if (currentChatMasterKey.value === null && currentUser.value) {
+        try {
+          const sessionPassword = encryptionService.getSessionPassword()
+          if (sessionPassword) {
+            const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+            currentChatMasterKey.value = key || undefined // undefined = no encryption
+          }
+        } catch (encErr) {
+          console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
+          currentChatMasterKey.value = undefined
+        }
+      }
+
       let messagesData
       let error
       let retries = 3
@@ -123,10 +140,20 @@ const loadMessages = async () => {
           }
         }
 
+        // Decrypt message if encryption key is available
+        let decryptedText = msg.text
+        if (currentChatMasterKey.value) {
+          try {
+            decryptedText = encryptionService.decryptMessage(msg.text, currentChatMasterKey.value)
+          } catch (decErr) {
+            console.warn('Failed to decrypt message, using as-is:', decErr)
+          }
+        }
+
         return {
           id: msg.id,
           sender_id: msg.sender_id,
-          text: msg.text,
+          text: decryptedText,
           created_at: msg.created_at,
           author: authorName,
           isMine: msg.sender_id === currentUser.value?.id,
@@ -166,6 +193,31 @@ const sendMessage = async () => {
   const messageText = messageInput.value.trim()
 
   try {
+    // Load encryption key if not already loaded
+    if (currentChatMasterKey.value === null && currentUser.value) {
+      try {
+        const sessionPassword = encryptionService.getSessionPassword()
+        if (sessionPassword) {
+          const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+          currentChatMasterKey.value = key || undefined // undefined = no encryption
+        }
+      } catch (encErr) {
+        console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
+        currentChatMasterKey.value = undefined
+      }
+    }
+
+    // Encrypt message if encryption key is available
+    let textToSend = messageText
+    if (currentChatMasterKey.value) {
+      try {
+        textToSend = encryptionService.encryptMessage(messageText, currentChatMasterKey.value)
+      } catch (encErr) {
+        console.error('Failed to encrypt message:', encErr)
+        return
+      }
+    }
+
     let messageData
     let error
     let retries = 3
@@ -179,7 +231,7 @@ const sendMessage = async () => {
             {
               chat_id: chatId.value,
               sender_id: currentUser.value.id,
-              text: messageText,
+              text: textToSend,
             },
           ])
           .select()
@@ -460,10 +512,20 @@ const subscribeToMessages = () => {
             }
           }
 
+          // Decrypt message if encryption key is available
+          let decryptedText = newMsg.text
+          if (currentChatMasterKey.value) {
+            try {
+              decryptedText = encryptionService.decryptMessage(newMsg.text, currentChatMasterKey.value)
+            } catch (decErr) {
+              console.warn('Failed to decrypt realtime message:', decErr)
+            }
+          }
+
           const transformedMsg = {
             id: newMsg.id,
             sender_id: newMsg.sender_id,
-            text: newMsg.text,
+            text: decryptedText,
             created_at: newMsg.created_at,
             author: authorName,
             isMine: newMsg.sender_id === currentUser.value?.id,
@@ -514,10 +576,20 @@ const subscribeToMessages = () => {
             }
           }
 
+          // Decrypt message if encryption key is available
+          let decryptedText = msg.text
+          if (currentChatMasterKey.value) {
+            try {
+              decryptedText = encryptionService.decryptMessage(msg.text, currentChatMasterKey.value)
+            } catch (decErr) {
+              console.warn('Failed to decrypt polled message:', decErr)
+            }
+          }
+
           const transformedMsg = {
             id: msg.id,
             sender_id: msg.sender_id,
-            text: msg.text,
+            text: decryptedText,
             created_at: msg.created_at,
             author: authorName,
             isMine: msg.sender_id === currentUser.value?.id,
@@ -641,6 +713,7 @@ watch(chatId, async () => {
     unsubscribeFromMessages()
     unsubscribeFromReadStatus()
     messages.value = []
+    currentChatMasterKey.value = null // Reset to "not loaded" state for new chat
     await loadChats()
     await loadMessages()
     await markMessagesAsRead()

@@ -92,7 +92,12 @@ const resetFilters = async () => {
   }
 }
 
-const handleConnectionRequest = async (companionId: string | number) => {
+const handleConnectionRequest = async (companionId: string | number | null | undefined) => {
+  if (!companionId) {
+    console.warn('No companion selected')
+    return
+  }
+
   try {
     await sendConnectionRequest(companionId.toString())
     showNotification.value = `Запрос отправлен ${selectedCompanion.value?.name}!`
@@ -132,7 +137,11 @@ const navigateToChat = (companionId: string | number) => {
   }
 }
 
-const navigateToProfile = (companionId: string | number) => {
+const navigateToProfile = (companionId: string | number | null | undefined) => {
+  if (!companionId) {
+    console.warn('No companion selected')
+    return
+  }
   // Clear cached companion data to force fresh load on profile page
   router.push(`/user/${companionId}`)
 }
@@ -409,13 +418,13 @@ const getRussianPlural = (count: number, word: string) => {
 
           <div class="modal-buttons">
             <button
-              @click="handleConnectionRequest(selectedCompanion.id)"
+              @click="handleConnectionRequest(selectedCompanion?.id)"
               class="btn-modal-primary"
             >
               Предложить связь
             </button>
             <button
-              @click="navigateToProfile(selectedCompanion.id)"
+              @click="navigateToProfile(selectedCompanion?.id)"
               class="btn-modal-secondary"
             >
               Посмотреть профиль

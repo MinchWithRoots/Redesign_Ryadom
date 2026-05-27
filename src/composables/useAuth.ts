@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
+import * as encryptionService from '@/services/encryptionService'
 
 export interface UserProfile {
   id: string | number
@@ -148,6 +149,10 @@ export const signUp = async (email: string, password: string, name: string) => {
       topics: profile.topics,
     }
 
+    // Initialize encryption service with password and user ID as salt
+    const userSalt = profile.id // Use user UUID as deterministic salt
+    encryptionService.initializeWithPasswordAndSalt(profile.id, password, userSalt)
+
     return data.user
   } catch (err) {
     const message = getErrorMessage(err)
@@ -262,6 +267,10 @@ export const login = async (email: string, password: string) => {
       topics: profile.topics,
     }
 
+    // Initialize encryption service with password and user ID as salt
+    const userSalt = profile.id // Use user UUID as deterministic salt
+    encryptionService.initializeWithPasswordAndSalt(profile.id, password, userSalt)
+
     return data.user
   } catch (err) {
     const message = getErrorMessage(err)
@@ -283,6 +292,8 @@ export const logout = async () => {
     if (signOutError) throw new Error(getErrorMessage(signOutError))
 
     currentUser.value = null
+    // Clear encryption keys on logout
+    encryptionService.clearAllKeys()
   } catch (err) {
     const message = getErrorMessage(err)
     error.value = message

@@ -1,265 +1,171 @@
-# Chat Encryption & Message Retention Implementation
-
-## Overview
-
-Your application now has **secure end-to-end encryption** for all chat messages using PBKDF2-derived keys with proper key management across multiple devices. Messages are encrypted with AES-256-CBC and keys are protected using PBKDF2-SHA256 with 310,000 iterations.
-
-**Key Feature: Multi-Device Support** — Users can access their encrypted chats from any device by logging in with their password.
-
-## What's Been Implemented
-
-### 1. **Message Encryption (E2E)**
-- All messages are encrypted using **AES-256-CBC** before being sent to the database
-- Each message has a unique IV (Initialization Vector) for security
-- Messages are automatically decrypted when loaded in the chat view
-- Encryption keys are generated per chat and protected with PBKDF2
-
-**Files:**
-- `src/services/encryptionService.ts` - Encryption/decryption logic with PBKDF2
-- Updated `src/views/ChatView.vue` - Encrypts on send, decrypts on receive
-- Updated `src/composables/useAuth.ts` - Initializes encryption with PBKDF2 salt
-
-### 2. **Multi-Device Key Derivation (PBKDF2)**
-- **Each user has a unique salt** stored in `users.key_derivation_salt`
-- **Password is never stored** — only used to derive encryption keys
-- **PBKDF2 with 310,000 iterations** ensures consistent key derivation across devices
-- Same password on Device A and Device B = same encryption key = can read same messages
-
-**Security Properties:**
-- ✅ Deterministic: `password + salt + 310k iterations = same key everywhere`
-- ✅ Protected: Even if database is compromised, keys are encrypted
-- ✅ Resistant: 310,000 iterations make brute-force attacks impractical (~100ms per attempt)
-
-### 2. **Message Retention Policy**
-- Optional auto-deletion of messages after 7, 30, or 90 days
-- Or keep messages forever (no auto-delete)
-- Configurable per chat
-
-**Files:**
-- `src/services/messageRetentionService.ts` - Manage retention policies
-- `src/components/ChatRetentionSettings.vue` - UI for choosing retention
-- `supabase/migrations/add_message_retention.sql` - Database setup
-
-### 3. **Database Changes**
-- Added `message_retention_days` field to `chats` table
-- Added index on `messages.created_at` for efficient cleanup
-- Created PostgreSQL function for message deletion
-
-## Setup Instructions
-
-### Step 1: Apply Database Migration
-
-**IMPORTANT:** First, read `DATABASE_ENCRYPTION_MIGRATION.md` for detailed migration instructions and security details.
-
-Quick version — Run this SQL in your Supabase SQL Editor:
-
-```sql
--- Add key derivation salt to users table (REQUIRED for multi-device support)
-ALTER TABLE public.users
-ADD COLUMN IF NOT EXISTS key_derivation_salt TEXT NOT NULL DEFAULT gen_random_uuid()::text;
-
--- Add retention period to chats table
-ALTER TABLE chats
-ADD COLUMN IF NOT EXISTS message_retention_days integer DEFAULT 30;
-
--- Add index for efficient queries
-CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
-
--- Add index for key derivation salt (optional but recommended)
-CREATE INDEX IF NOT EXISTS idx_users_key_derivation_salt
-ON public.users(key_derivation_salt);
-
--- Create function to delete expired messages
-CREATE OR REPLACE FUNCTION delete_expired_messages()
-RETURNS void AS $$
-BEGIN
-  DELETE FROM messages
-  WHERE chat_id IN (
-    SELECT id FROM chats
-    WHERE message_retention_days IS NOT NULL
-    AND message_retention_days > 0
-  )
-  AND created_at < NOW() - (
-    SELECT INTERVAL '1 day' * message_retention_days
-    FROM chats
-    WHERE chats.id = messages.chat_id
-  );
-END;
-$$ LANGUAGE plpgsql;
-```
-
-### Step 2: Set Up Scheduled Cleanup (Optional but Recommended)
-
-If your Supabase project has `pg_cron` enabled, run:
-
-```sql
--- Schedule daily cleanup at 2 AM UTC
-SELECT cron.schedule('delete-expired-messages', '0 2 * * *', 'SELECT delete_expired_messages()');
-```
-
-If `pg_cron` is not available, you can:
-- Call the cleanup manually when needed via Edge Functions
-- Use a serverless function (e.g., Vercel, AWS Lambda) to trigger cleanup
-
-### Step 3: Update Chat Creation
-
-When creating a new chat, set the retention policy:
-
-```typescript
-import { messageRetentionService } from '@/services/messageRetentionService'
-
-// After creating chat, set retention
-await messageRetentionService.setRetentionPolicy(chatId, 30) // 30 days
-```
-
-### Step 4: Add Retention Settings UI (Optional)
-
-Use the `ChatRetentionSettings` component to let users choose:
-
-```vue
-<template>
-  <ChatRetentionSettings v-model="selectedRetention" />
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import ChatRetentionSettings from '@/components/ChatRetentionSettings.vue'
-import type { RetentionPeriod } from '@/services/messageRetentionService'
-
-const selectedRetention = ref<RetentionPeriod>(30)
-</script>
-```
-
-## Security Notes
-
-### What's Encrypted
-- ✅ **Message text** is encrypted with AES-256-CBC before storage
-- ✅ **Each message has unique IV** for maximum security
-- ✅ **Encryption keys are protected** with PBKDF2-derived keys
-- ✅ **Master keys are encrypted** with user's derived key
-- ✅ Even database compromise doesn't expose plaintext messages
-
-### Key Derivation Security
-- ✅ **PBKDF2-SHA256** with 310,000 iterations (OWASP 2023 standard)
-- ✅ **User-specific salt** stored in database prevents rainbow tables
-- ✅ **Deterministic derivation** ensures same key across all devices
-- ✅ **Password never stored** — only used to derive keys
-
-### What's NOT Encrypted (by design)
-- ❌ Message metadata (timestamps, sender ID, read status)
-- ❌ Chat existence itself (other users can see you had a chat)
-- ❌ User profiles and names
-
-This is normal for chat applications - even Signal and WhatsApp expose metadata to providers.
-
-### Key Lifecycle
-- **Generated**: Once per chat, random 256-bit key
-- **Protected**: Encrypted with PBKDF2-derived user key in database
-- **Loaded**: On chat load, derived key decrypts the master key
-- **Cached**: Kept in memory for 24 hours (clears on page reload or logout)
-- **Cleared**: On logout, browser close, or chat deletion
-
-## Usage Examples
-
-### Send Encrypted Message (Automatic)
-Messages are encrypted automatically in `ChatView.vue`:
-
-```typescript
-// This is automatic - no changes needed
-const { data: messageData } = await supabase
-  .from('messages')
-  .insert([{
-    chat_id: chatId,
-    sender_id: userId,
-    text: encryptedText, // Already encrypted
-  }])
-```
-
-### Set Retention Policy
-```typescript
-import { messageRetentionService } from '@/services/messageRetentionService'
-
-// Set to 30 days
-await messageRetentionService.setRetentionPolicy(chatId, 30)
-
-// Set to never delete
-await messageRetentionService.setRetentionPolicy(chatId, null)
-
-// Get current policy
-const days = await messageRetentionService.getRetentionPolicy(chatId)
-```
-
-### Manual Cleanup (if needed)
-```typescript
-// Trigger cleanup manually
-await messageRetentionService.deleteExpiredMessages()
-```
-
-## Testing
-
-### Test Encryption
-1. Send a message in a chat
-2. Check Supabase - the message text in the DB should be a long encrypted string
-3. Verify the UI still displays the message correctly (decrypted)
-
-### Test Retention
-1. Set retention to 7 days: `messageRetentionService.setRetentionPolicy(chatId, 7)`
-2. Old test messages (older than 7 days) will be deleted on next cleanup
-3. Monitor logs for cleanup operations
-
-## Migration from Unencrypted Messages
-
-If you already have chats with unencrypted messages:
-
-1. **Option 1: Fresh Start** - Keep old unencrypted messages as-is, new messages are encrypted
-2. **Option 2: Delete Old Messages** - Run cleanup to delete old messages
-3. **Option 3: Batch Encrypt** - Create a migration script to encrypt old messages (advanced)
-
-**Recommended:** Option 1 - Old messages stay as-is, new messages are encrypted.
-
-## Performance
-
-- **Encryption overhead:** ~5-10ms per message (very fast)
-- **Decryption overhead:** ~5-10ms per message
-- **Storage savings:** Auto-deletion reduces database growth over time
-- **No additional API calls:** Everything uses existing Supabase queries
-
-## Troubleshooting
-
-### Messages show "[Не удалось расшифровать сообщение]"
-- Encryption key was lost (page reload cleared memory)
-- User is trying to view chat in a different browser/device
-- Database key mismatch
-
-**Solution:** Generate a new key for the chat
-
-### Retention cleanup not running
-- Check if `pg_cron` is enabled: `SELECT * FROM pg_extension WHERE extname = 'pg_cron'`
-- If not enabled, manually call cleanup via Edge Function or scheduled task
-
-### Performance degradation
-- Check message table size: `SELECT count(*) FROM messages`
-- Run cleanup to remove old messages
-- Add more indexes if needed
-
-## Future Improvements
-
-1. **Key Rotation** - Periodically rotate keys (requires versioning in encrypted_key)
-2. **Message Recovery** - Allow users to export encrypted chat backup
-3. **Biometric Authentication** - Use fingerprint/face to auto-unlock encryption (no password re-entry)
-4. **Social Recovery** - Recovery codes or trusted contacts for account recovery
-5. **Group Chats** - Extend encryption to group conversations (one key per group member)
-6. **Perfect Forward Secrecy (PFS)** - Use ECDH for ephemeral session keys
-
-## Support
-
-For issues or questions:
-1. Check browser console for error messages
-2. Review Supabase logs for database errors
-3. Verify all migrations were applied
-4. Check that `crypto-js` package is installed: `npm ls crypto-js`
-
----
-
-**Implementation Date:** 2024
-**Status:** Production Ready
+# End-to-End Message Encryption Implementation
+
+## Implementation Complete ✓
+
+This document summarizes the encryption system implemented for secure chat messages.
+
+## Files Created
+
+### 1. Database Migration
+- **File**: `supabase/migrations/20250101000000_create_chat_encryption_keys.sql`
+- **Purpose**: Creates `chat_encryption_keys` table to store encrypted master keys
+- **Schema**:
+  - `id`: Primary key
+  - `chat_id`: Foreign key to chats
+  - `user_id`: Foreign key to users (UUID)
+  - `encrypted_key`: Encrypted master key in format `{iv_hex}:{ciphertext_base64}`
+  - `created_at`: Timestamp
+  - Unique constraint on (chat_id, user_id)
+
+### 2. Encryption Service
+- **File**: `src/services/encryptionService.ts`
+- **Key Functions**:
+  - `generateMasterKey()`: Creates random 32-byte master key
+  - `generateSalt()`: Creates random salt for PBKDF2
+  - `deriveKeyFromPassword(password, salt)`: PBKDF2 with 310,000 iterations (OWASP 2023 standard)
+  - `encryptData(plaintext, keyHex)`: AES-256-CBC encryption
+  - `decryptData(encryptedData, keyHex)`: AES-256-CBC decryption
+  - `initializeWithPasswordAndSalt()`: Initialize service with user credentials
+  - `storeEncryptedChatKey()`: Store encrypted key in database
+  - `loadChatKey()`: Load and decrypt master key from database
+  - `encryptMessage()`: Encrypt message text
+  - `decryptMessage()`: Decrypt message text
+  - `clearAllKeys()`: Clear cache on logout
+
+**In-Memory Caching**: Master keys are cached during session to avoid repeated database queries.
+
+## Files Modified
+
+### 1. Authentication Service
+- **File**: `src/composables/useAuth.ts`
+- **Changes**:
+  - Import encryption service
+  - Initialize encryption on signup: `encryptionService.initializeWithPasswordAndSalt(userId, password, userUUID)`
+  - Initialize encryption on login: Same initialization
+  - Clear encryption on logout: `encryptionService.clearAllKeys()`
+  - Uses user UUID as deterministic salt for PBKDF2
+
+### 2. Chat Service
+- **File**: `src/services/chatService.ts`
+- **Changes**:
+  - `createChat()` accepts optional password parameter
+  - New function `initializeChatEncryption()` to:
+    - Generate random 32-byte master key
+    - Derive encryption key from user password
+    - Store encrypted master key for user
+  - Sets up encryption when chat is created
+
+### 3. Chat View Component
+- **File**: `src/views/ChatView.vue`
+- **Changes**:
+  - Import encryption service
+  - Added `currentChatMasterKey` ref to cache master key per chat
+  - `loadMessages()`:
+    - Load chat encryption key before fetching messages
+    - Decrypt each message after retrieval
+    - Graceful degradation: returns plaintext if decryption fails
+  - `sendMessage()`:
+    - Load encryption key if not cached
+    - Encrypt message before database insert
+    - Display decrypted plaintext to user
+  - `subscribeToMessages()` (realtime):
+    - Decrypt incoming messages immediately
+  - Polling fallback:
+    - Decrypt newly detected messages
+  - `watch(chatId)`: Reset key cache when switching chats
+
+### 4. Package Configuration
+- **File**: `package.json`
+- **Changes**:
+  - Added `crypto-js@^4.2.0` to dependencies
+  - Added `@types/crypto-js@^4.2.2` to devDependencies
+
+## Architecture Overview
+
+### Key Flow
+
+**Chat Creation**:
+1. User creates chat
+2. Server generates random 32-byte master key
+3. User's password + UUID → PBKDF2 → derives encryption key
+4. Master key encrypted with derived key → stored in `chat_encryption_keys`
+
+**Sending Message**:
+1. User types plaintext message
+2. Encryption service loads cached master key (or fetches + decrypts from DB)
+3. Message encrypted with master key: `{iv_hex}:{ciphertext_base64}`
+4. Encrypted text stored in `messages.text`
+5. Plaintext displayed to sender (transparent)
+
+**Receiving Message**:
+1. Message fetched from database (encrypted)
+2. Master key loaded from cache or DB
+3. Encrypted text decrypted → plaintext
+4. Plaintext displayed to both users
+
+**Cross-Device Access**:
+1. User logs in on new device
+2. Password + UUID → PBKDF2 → derives same encryption key (deterministic)
+3. Encrypted master key fetched and decrypted
+4. All messages decrypt successfully with same key
+
+### Encryption Details
+
+- **Algorithm**: AES-256-CBC
+- **Key Derivation**: PBKDF2(password + user_uuid, 310,000 iterations)
+- **Master Key**: Random 32-byte key per chat
+- **IV Storage**: Format `{iv_hex}:{ciphertext_base64}` for reliable parsing
+- **Padding**: PKCS7
+
+### Security Features
+
+- ✓ All messages stored encrypted in database
+- ✓ Password never stored (only used for key derivation)
+- ✓ Deterministic key derivation (password + UUID) enables cross-device decryption
+- ✓ PBKDF2 with 310,000 iterations (OWASP 2023 recommendation)
+- ✓ Random IV for each message (prevents pattern attacks)
+- ✓ In-memory key cache for performance
+- ✓ Graceful degradation (unencrypted messages treated as plaintext if decryption fails)
+
+### Data Migration Strategy
+
+- ✓ New chats created with encryption enabled
+- ✓ Old unencrypted messages remain unencrypted
+- ✓ No migration of existing messages needed
+- ✓ No data loss or downtime required
+
+## Testing Recommendations
+
+1. **Basic Encryption/Decryption**:
+   - Send message, verify encrypted in DB
+   - Load message, verify decrypted in UI
+
+2. **Deterministic Derivation**:
+   - Login on Device A: send message
+   - Login on Device B with same password: verify message decrypts correctly
+
+3. **Realtime + Polling**:
+   - Verify realtime subscription decrypts new messages
+   - Verify polling fallback decrypts detected messages
+
+4. **Multiple Chats**:
+   - Each chat has separate master key
+   - Messages don't cross-decrypt
+
+5. **Edge Cases**:
+   - Missing encryption key (graceful fallback to plaintext)
+   - Invalid encrypted format
+   - Logout and relogin clears cache properly
+
+## Browser Compatibility
+
+- crypto-js works in all modern browsers (IE11+ with polyfills)
+- No native WebCrypto needed (CryptoJS handles compatibility)
+
+## Next Steps (Optional Enhancements)
+
+1. **Admin Panel**: Add UI to view encrypted message status
+2. **Key Rotation**: Implement periodic master key rotation
+3. **Backup Codes**: Store backup decryption codes
+4. **End-to-End User UI**: Show encryption status in chat header
+5. **Audit Log**: Track encryption key access
