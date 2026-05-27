@@ -75,37 +75,19 @@ const loadMessages = async () => {
     isLoadingMessages.value = true
     try {
       // Load encryption key for this chat if not already loaded
-      if (currentChatMasterKey.value === null && currentUser.value) {
+      if (currentChatMasterKey.value === null && currentUser.value && chat.value) {
         try {
-          // Try to load with session password first
-          let sessionPassword = encryptionService.getSessionPassword()
-          let key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+          // Auto-derive password from companion ID (deterministic)
+          const autoPassword = chat.value.companion_id.toString()
 
-          // If no key found but one might exist, prompt for password
-          if (key === null && !sessionPassword) {
-            try {
-              // Try to check if encryption key exists
-              const { data: encKeyExists, error: encErr } = await supabase
-                .from('chat_encryption_keys')
-                .select('id')
-                .eq('chat_id', chatId.value)
-                .eq('user_id', currentUser.value.id)
-                .maybeSingle()
+          // Try to load encryption key with auto-derived password
+          let key = await encryptionService.loadChatKey(chatId.value, autoPassword)
 
-              if (!encErr && encKeyExists) {
-                // Encryption key exists, ask for password
-                const password = prompt('Введите пароль для расшифровки сообщений:')
-                if (password) {
-                  key = await encryptionService.loadChatKey(chatId.value, password)
-                  if (key) {
-                    encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, password, currentUser.value.id)
-                  }
-                }
-              }
-            } catch (checkErr) {
-              // RLS policy might not exist yet, continue without encryption
-              console.debug('Could not check for encryption key (table may not exist or RLS not set):', checkErr)
-            }
+          if (key) {
+            encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, autoPassword, currentUser.value.id)
+            console.log('Chat encryption key loaded successfully')
+          } else {
+            console.debug('No encryption key found for this chat (unencrypted)')
           }
 
           currentChatMasterKey.value = key || undefined
@@ -221,22 +203,14 @@ const sendMessage = async () => {
 
   try {
     // Load encryption key if not already loaded
-    if (currentChatMasterKey.value === null && currentUser.value) {
+    if (currentChatMasterKey.value === null && currentUser.value && chat.value) {
       try {
-        const sessionPassword = encryptionService.getSessionPassword()
-        if (sessionPassword) {
-          try {
-            const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
-            currentChatMasterKey.value = key || undefined
-          } catch (loadErr) {
-            console.warn('Could not load encryption key, proceeding without encryption:', loadErr)
-            currentChatMasterKey.value = undefined
-          }
-        } else {
-          currentChatMasterKey.value = undefined
-        }
+        // Auto-derive password from companion ID
+        const autoPassword = chat.value.companion_id.toString()
+        const key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+        currentChatMasterKey.value = key || undefined
       } catch (encErr) {
-        console.warn('Error in encryption key loading:', encErr)
+        console.warn('Could not load encryption key, proceeding without encryption:', encErr)
         currentChatMasterKey.value = undefined
       }
     }

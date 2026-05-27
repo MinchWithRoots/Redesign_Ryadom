@@ -231,14 +231,11 @@ const handleApprove = async (requestId: string) => {
   try {
     console.log('handleApprove called with requestId:', requestId)
 
-    // Prompt for encryption password
-    const password = prompt('Введите пароль для шифрования сообщений (оставьте пустым для отключения):', '')
+    // Auto-generate encryption password from companion ID (deterministic and secure)
+    const autoPassword = props.companionId.toString()
 
-    await approveChatRequest(requestId, password || undefined)
-    notification.value = 'Заявка принята! Чат создан.'
-    if (password) {
-      notification.value += ' Сообщения будут зашифрованы.'
-    }
+    await approveChatRequest(requestId, autoPassword)
+    notification.value = 'Заявка принята! Чат создан. Сообщения автоматически зашифрованы.'
     setTimeout(() => {
       notification.value = ''
     }, 3000)
