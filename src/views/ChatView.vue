@@ -91,10 +91,30 @@ const loadMessages = async () => {
 
           console.log('[Encryption] Key loaded:', !!key, 'keyLength:', key?.length || 0)
 
+          // If no key exists, generate one and store it for this user
+          if (!key) {
+            console.log('[Encryption] No key found, generating and storing new one for this chat')
+            try {
+              const masterKey = encryptionService.generateMasterKey()
+              const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
+              await encryptionService.storeEncryptedChatKey(
+                chatId.value,
+                currentUser.value.id,
+                masterKey,
+                userDerivedKey
+              )
+              console.log('[Encryption] Successfully stored new encryption key for current user')
+              key = masterKey
+            } catch (storeErr) {
+              console.error('[Encryption] Failed to store new encryption key:', storeErr)
+              // Continue without encryption
+            }
+          }
+
           if (key) {
-            console.log('Chat encryption key loaded successfully')
+            console.log('Chat encryption key loaded/generated successfully')
           } else {
-            console.debug('No encryption key found for this chat (unencrypted)')
+            console.debug('No encryption key found and could not generate one')
           }
 
           currentChatMasterKey.value = key || undefined
@@ -225,7 +245,27 @@ const sendMessage = async () => {
         const autoPassword = chat.value.companion_id.toString()
         // Initialize encryption service FIRST
         encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, autoPassword, currentUser.value.id)
-        const key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+        let key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+
+        // If no key exists, generate one
+        if (!key) {
+          console.log('[Send] No key found, generating and storing new one')
+          try {
+            const masterKey = encryptionService.generateMasterKey()
+            const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
+            await encryptionService.storeEncryptedChatKey(
+              chatId.value,
+              currentUser.value.id,
+              masterKey,
+              userDerivedKey
+            )
+            console.log('[Send] Successfully stored new encryption key')
+            key = masterKey
+          } catch (storeErr) {
+            console.error('[Send] Failed to store encryption key:', storeErr)
+          }
+        }
+
         currentChatMasterKey.value = key || undefined
       } catch (encErr) {
         console.warn('Could not load encryption key, proceeding without encryption:', encErr)
