@@ -230,7 +230,7 @@ export async function createChat(userId: string, companionId: string, userPasswo
     // Initialize encryption if password provided
     if (data && userPassword) {
       try {
-        await initializeChatEncryption(data.id, userId, userPassword)
+        await initializeChatEncryption(data.id, userId, companionId, userPassword)
       } catch (encErr) {
         console.warn('Failed to initialize chat encryption (table may not exist yet):', encErr)
         // Non-critical - chat can work without encryption
@@ -244,34 +244,42 @@ export async function createChat(userId: string, companionId: string, userPasswo
   }
 }
 
-// Initialize encryption for the current user's chat
-async function initializeChatEncryption(chatId: number, userId: string, userPassword: string) {
+// Initialize encryption for BOTH users in the chat
+async function initializeChatEncryption(chatId: number, userId: string, companionId: string, userPassword: string) {
   try {
     // Generate a random master key for this chat
     const masterKey = encryptionService.generateMasterKey()
 
     // Derive user's key from their password (using userId as salt)
-    const userSalt = userId
-    const derivedKey = encryptionService.deriveKeyFromPassword(userPassword, userSalt)
+    const userDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, userId)
+    const encryptedMasterKeyForUser = encryptionService.encryptData(masterKey, userDerivedKey)
 
-    // Encrypt the master key with the derived key
-    const encryptedMasterKey = encryptionService.encryptData(masterKey, derivedKey)
+    // Derive companion's key from the same password (using companionId as salt)
+    const companionDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, companionId.toString())
+    const encryptedMasterKeyForCompanion = encryptionService.encryptData(masterKey, companionDerivedKey)
 
-    // Store encrypted key in database
+    // Store encrypted keys in database for BOTH users
     try {
       const { error } = await supabase
         .from('chat_encryption_keys')
-        .insert([{
-          chat_id: chatId,
-          user_id: userId,
-          encrypted_key: encryptedMasterKey,
-        }])
+        .insert([
+          {
+            chat_id: chatId,
+            user_id: userId,
+            encrypted_key: encryptedMasterKeyForUser,
+          },
+          {
+            chat_id: chatId,
+            user_id: companionId.toString(),
+            encrypted_key: encryptedMasterKeyForCompanion,
+          }
+        ])
 
       if (error) throw error
 
-      console.log('Chat encryption initialized for chat:', chatId)
+      console.log('Chat encryption initialized for both users for chat:', chatId)
     } catch (storeErr) {
-      console.warn('Could not store encryption key (table may not exist):', storeErr)
+      console.warn('Could not store encryption keys (table may not exist):', storeErr)
       throw storeErr
     }
 
