@@ -230,8 +230,15 @@ const handleApprove = async (requestId: string) => {
   isLoading.value = true
   try {
     console.log('handleApprove called with requestId:', requestId)
-    await approveChatRequest(requestId)
+
+    // Prompt for encryption password
+    const password = prompt('Введите пароль для шифрования сообщений (оставьте пустым для отключения):', '')
+
+    await approveChatRequest(requestId, password || undefined)
     notification.value = 'Заявка принята! Чат создан.'
+    if (password) {
+      notification.value += ' Сообщения будут зашифрованы.'
+    }
     setTimeout(() => {
       notification.value = ''
     }, 3000)

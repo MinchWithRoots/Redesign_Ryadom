@@ -77,11 +77,33 @@ const loadMessages = async () => {
       // Load encryption key for this chat if not already loaded
       if (currentChatMasterKey.value === null && currentUser.value) {
         try {
-          const sessionPassword = encryptionService.getSessionPassword()
-          if (sessionPassword) {
-            const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
-            currentChatMasterKey.value = key || undefined // undefined = no encryption
+          // Try to load with session password first
+          let sessionPassword = encryptionService.getSessionPassword()
+          let key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+
+          // If no key found but one might exist, prompt for password
+          if (key === null && !sessionPassword) {
+            // Try to check if encryption key exists
+            const { data: encKeyExists } = await supabase
+              .from('chat_encryption_keys')
+              .select('id')
+              .eq('chat_id', chatId.value)
+              .eq('user_id', currentUser.value.id)
+              .maybeSingle()
+
+            if (encKeyExists) {
+              // Encryption key exists, ask for password
+              const password = prompt('Введите пароль для расшифровки сообщений:')
+              if (password) {
+                key = await encryptionService.loadChatKey(chatId.value, password)
+                if (key) {
+                  encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, password, currentUser.value.id)
+                }
+              }
+            }
           }
+
+          currentChatMasterKey.value = key || undefined
         } catch (encErr) {
           console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
           currentChatMasterKey.value = undefined
@@ -209,12 +231,18 @@ const sendMessage = async () => {
 
     // Encrypt message if encryption key is available
     let textToSend = messageText
+    let encryptedText = null
+    let isEncrypted = false
+
     if (currentChatMasterKey.value) {
       try {
-        textToSend = encryptionService.encryptMessage(messageText, currentChatMasterKey.value)
+        encryptedText = encryptionService.encryptMessage(messageText, currentChatMasterKey.value)
+        textToSend = encryptedText
+        isEncrypted = true
+        console.log('Message encrypted for chat', chatId.value)
       } catch (encErr) {
         console.error('Failed to encrypt message:', encErr)
-        return
+        // Still send unencrypted as fallback
       }
     }
 
@@ -232,6 +260,8 @@ const sendMessage = async () => {
               chat_id: chatId.value,
               sender_id: currentUser.value.id,
               text: textToSend,
+              encrypted_text: encryptedText,
+              is_encrypted: isEncrypted,
             },
           ])
           .select()

@@ -84,6 +84,34 @@ router.post('/create', verifyToken, async (req, res) => {
   }
 })
 
+// Initialize encryption for a chat
+router.post('/:chatId/init-encryption', verifyToken, async (req, res) => {
+  try {
+    const { chatId } = req.params
+    const { user_id, master_key_encrypted } = req.body
+
+    if (!user_id || !master_key_encrypted) {
+      return res.status(400).json({ error: 'Missing user_id or master_key_encrypted' })
+    }
+
+    // Store encrypted master key for this user
+    const result = await pool.query(
+      `INSERT INTO chat_encryption_keys (chat_id, user_id, encrypted_key)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (chat_id, user_id) DO UPDATE
+       SET encrypted_key = $3, updated_at = NOW()
+       RETURNING id, chat_id, user_id`,
+      [chatId, user_id, master_key_encrypted]
+    )
+
+    console.log(`Encryption initialized for chat ${chatId}, user ${user_id}`)
+    res.json({ success: true, encryption_key: result.rows[0] })
+  } catch (error) {
+    console.error('Init encryption error:', error)
+    res.status(500).json({ error: 'Ошибка при инициализации шифрования' })
+  }
+})
+
 // Get chat messages
 router.get('/:chatId/messages', verifyToken, async (req, res) => {
   try {

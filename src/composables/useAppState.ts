@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
+import * as encryptionService from '@/services/encryptionService'
 
 // Types
 export interface User {
@@ -1408,7 +1409,7 @@ export const loadUserChatRequests = async (userId: string) => {
   }
 }
 
-export const approveChatRequest = async (requestId: string) => {
+export const approveChatRequest = async (requestId: string, encryptionPassword?: string) => {
   try {
     isLoading.value = true
     error.value = ''
@@ -1459,6 +1460,38 @@ export const approveChatRequest = async (requestId: string) => {
     }
 
     console.log('Chat created successfully:', chat)
+
+    // Initialize encryption for this chat if password is provided
+    if (chat && currentUser.value && encryptionPassword) {
+      try {
+        // Generate a random master key for this chat
+        const masterKey = encryptionService.generateMasterKey()
+
+        // Derive user's key from their password (using userId as salt)
+        const userSalt = currentUser.value.id
+        const derivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, userSalt)
+
+        // Encrypt the master key with the derived key
+        const encryptedMasterKey = encryptionService.encryptData(masterKey, derivedKey)
+
+        // Store encrypted key in database
+        const { error: encErr } = await supabase
+          .from('chat_encryption_keys')
+          .insert([{
+            chat_id: chat.id,
+            user_id: currentUser.value.id,
+            encrypted_key: encryptedMasterKey,
+          }])
+
+        if (encErr) {
+          console.error('Failed to store encryption key:', encErr)
+        } else {
+          console.log('Chat encryption initialized for chat:', chat.id)
+        }
+      } catch (encErr) {
+        console.warn('Failed to initialize chat encryption (non-critical):', encErr)
+      }
+    }
 
     // Update the request status and link the chat
     const { data: updatedRequest, error: updateError } = await supabase

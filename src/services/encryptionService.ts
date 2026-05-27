@@ -129,7 +129,7 @@ export async function storeEncryptedChatKey(
 
 // Load encrypted chat key from database and decrypt
 // Returns null if no encryption key exists for this chat (unencrypted chat)
-export async function loadChatKey(chatId: string | number, password: string): Promise<string | null> {
+export async function loadChatKey(chatId: string | number, password?: string): Promise<string | null> {
   const chatIdNum = Number(chatId)
 
   if (!state.userId) {
@@ -150,28 +150,36 @@ export async function loadChatKey(chatId: string | number, password: string): Pr
       .select('encrypted_key')
       .eq('chat_id', chatIdNum)
       .eq('user_id', state.userId)
-      .maybeSingle() // Changed from .single() to .maybeSingle() to handle no results
+      .maybeSingle()
 
     if (error) {
       console.error('Error loading chat encryption key:', error)
-      return null // Chat is unencrypted
+      return null
     }
 
     if (!data) {
       console.log('No encryption key found for chat, treating as unencrypted')
-      return null // Chat is unencrypted, no key exists
-    }
-
-    // Derive the user's key from password
-    if (!state.userSalt) {
-      console.warn('User salt not available, cannot decrypt')
       return null
     }
 
-    const derivedKey = deriveKeyFromPassword(password, state.userSalt)
+    // Use provided password or fall back to session password
+    const pwd = password || state.sessionPassword
+    if (!pwd) {
+      console.warn('No password available to decrypt chat key')
+      return null
+    }
+
+    // Derive the user's key from password (use userId as salt)
+    const userSalt = state.userId
+    const derivedKey = deriveKeyFromPassword(pwd, userSalt)
 
     // Decrypt the master key
     const masterKey = decryptData(data.encrypted_key, derivedKey)
+
+    if (!masterKey) {
+      console.error('Failed to decrypt master key')
+      return null
+    }
 
     // Cache the master key
     state.chatKeyCache.set(cacheKey, masterKey)
@@ -179,7 +187,7 @@ export async function loadChatKey(chatId: string | number, password: string): Pr
     return masterKey
   } catch (err) {
     console.error('Failed to load chat key:', err)
-    return null // Return null on any error (graceful degradation)
+    return null
   }
 }
 
