@@ -22,7 +22,8 @@
     "cors": "^2.8.5",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.0",
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "crypto-js": "^4.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
