@@ -1,6 +1,7 @@
 import express from 'express'
 import pool from '../db.js'
 import jwt from 'jsonwebtoken'
+import * as encryptionService from '../services/encryptionService.js'
 
 const router = express.Router()
 
@@ -83,13 +84,42 @@ router.post('/create', verifyToken, async (req, res) => {
   }
 })
 
+// Initialize encryption for a chat
+router.post('/:chatId/init-encryption', verifyToken, async (req, res) => {
+  try {
+    const { chatId } = req.params
+    const { user_id, master_key_encrypted } = req.body
+
+    if (!user_id || !master_key_encrypted) {
+      return res.status(400).json({ error: 'Missing user_id or master_key_encrypted' })
+    }
+
+    // Store encrypted master key for this user
+    const result = await pool.query(
+      `INSERT INTO chat_encryption_keys (chat_id, user_id, encrypted_key)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (chat_id, user_id) DO UPDATE
+       SET encrypted_key = $3, updated_at = NOW()
+       RETURNING id, chat_id, user_id`,
+      [chatId, user_id, master_key_encrypted]
+    )
+
+    console.log(`Encryption initialized for chat ${chatId}, user ${user_id}`)
+    res.json({ success: true, encryption_key: result.rows[0] })
+  } catch (error) {
+    console.error('Init encryption error:', error)
+    res.status(500).json({ error: 'Ошибка при инициализации шифрования' })
+  }
+})
+
 // Get chat messages
 router.get('/:chatId/messages', verifyToken, async (req, res) => {
   try {
     const { chatId } = req.params
+    const { decrypt_key } = req.query // Optional decryption key from frontend
 
     const result = await pool.query(`
-      SELECT m.id, m.sender_id, m.text, m.created_at,
+      SELECT m.id, m.sender_id, m.text, m.encrypted_text, m.is_encrypted, m.created_at,
              u.name as author,
              CASE WHEN m.sender_id = $2 THEN true ELSE false END as isMine
       FROM messages m
@@ -98,13 +128,37 @@ router.get('/:chatId/messages', verifyToken, async (req, res) => {
       ORDER BY m.created_at ASC
     `, [chatId, req.userId])
 
+    // Decrypt messages if needed and key is provided
+    const messages = result.rows.map(msg => {
+      let text = msg.text
+      if (msg.is_encrypted && decrypt_key && msg.encrypted_text) {
+        try {
+          const decrypted = encryptionService.decryptData(msg.encrypted_text, decrypt_key)
+          if (decrypted) {
+            text = decrypted
+          }
+        } catch (err) {
+          console.error('Failed to decrypt message:', err)
+        }
+      }
+
+      return {
+        id: msg.id,
+        sender_id: msg.sender_id,
+        text,
+        created_at: msg.created_at,
+        author: msg.author,
+        isMine: msg.isMine,
+      }
+    })
+
     // Mark as read
     await pool.query(
       'UPDATE chat_read_status SET unread_count = 0, last_read_at = NOW() WHERE chat_id = $1 AND user_id = $2',
       [chatId, req.userId]
     )
 
-    res.json(result.rows)
+    res.json(messages)
   } catch (error) {
     console.error('Get messages error:', error)
     res.status(500).json({ error: 'Ошибка при получении сообщений' })
@@ -115,15 +169,33 @@ router.get('/:chatId/messages', verifyToken, async (req, res) => {
 router.post('/:chatId/messages', verifyToken, async (req, res) => {
   try {
     const { chatId } = req.params
-    const { text } = req.body
+    const { text, encrypted_text, encryption_key } = req.body
 
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'Сообщение не может быть пустым' })
     }
 
+    let isEncrypted = false
+    let encryptedText = null
+
+    // If encryption key is provided, encrypt the message
+    if (encryption_key && encrypted_text) {
+      try {
+        isEncrypted = true
+        encryptedText = encrypted_text
+        console.log(`Message encrypted for chat ${chatId}`)
+      } catch (err) {
+        console.error('Encryption error:', err)
+        // Fall back to plaintext
+        isEncrypted = false
+      }
+    }
+
     const result = await pool.query(
-      'INSERT INTO messages (chat_id, sender_id, text) VALUES ($1, $2, $3) RETURNING *',
-      [chatId, req.userId, text]
+      `INSERT INTO messages (chat_id, sender_id, text, encrypted_text, is_encrypted)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, chat_id, sender_id, text, encrypted_text, is_encrypted, created_at`,
+      [chatId, req.userId, text, encryptedText, isEncrypted]
     )
 
     // Update chat updated_at

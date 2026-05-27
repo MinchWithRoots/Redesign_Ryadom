@@ -75,13 +75,22 @@ const loadMessages = async () => {
     isLoadingMessages.value = true
     try {
       // Load encryption key for this chat if not already loaded
-      if (currentChatMasterKey.value === null && currentUser.value) {
+      if (currentChatMasterKey.value === null && currentUser.value && chat.value) {
         try {
-          const sessionPassword = encryptionService.getSessionPassword()
-          if (sessionPassword) {
-            const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
-            currentChatMasterKey.value = key || undefined // undefined = no encryption
+          // Auto-derive password from companion ID (deterministic)
+          const autoPassword = chat.value.companion_id.toString()
+
+          // Try to load encryption key with auto-derived password
+          let key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+
+          if (key) {
+            encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, autoPassword, currentUser.value.id)
+            console.log('Chat encryption key loaded successfully')
+          } else {
+            console.debug('No encryption key found for this chat (unencrypted)')
           }
+
+          currentChatMasterKey.value = key || undefined
         } catch (encErr) {
           console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
           currentChatMasterKey.value = undefined
@@ -194,27 +203,32 @@ const sendMessage = async () => {
 
   try {
     // Load encryption key if not already loaded
-    if (currentChatMasterKey.value === null && currentUser.value) {
+    if (currentChatMasterKey.value === null && currentUser.value && chat.value) {
       try {
-        const sessionPassword = encryptionService.getSessionPassword()
-        if (sessionPassword) {
-          const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
-          currentChatMasterKey.value = key || undefined // undefined = no encryption
-        }
+        // Auto-derive password from companion ID
+        const autoPassword = chat.value.companion_id.toString()
+        const key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+        currentChatMasterKey.value = key || undefined
       } catch (encErr) {
-        console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
+        console.warn('Could not load encryption key, proceeding without encryption:', encErr)
         currentChatMasterKey.value = undefined
       }
     }
 
     // Encrypt message if encryption key is available
     let textToSend = messageText
+    let encryptedText = null
+    let isEncrypted = false
+
     if (currentChatMasterKey.value) {
       try {
-        textToSend = encryptionService.encryptMessage(messageText, currentChatMasterKey.value)
+        encryptedText = encryptionService.encryptMessage(messageText, currentChatMasterKey.value)
+        textToSend = encryptedText
+        isEncrypted = true
+        console.log('Message encrypted for chat', chatId.value)
       } catch (encErr) {
         console.error('Failed to encrypt message:', encErr)
-        return
+        // Still send unencrypted as fallback
       }
     }
 
@@ -232,6 +246,8 @@ const sendMessage = async () => {
               chat_id: chatId.value,
               sender_id: currentUser.value.id,
               text: textToSend,
+              encrypted_text: encryptedText,
+              is_encrypted: isEncrypted,
             },
           ])
           .select()

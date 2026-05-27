@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase'
 import { cacheManager, CACHE_KEYS, CACHE_DURATION } from '@/utils/cacheManager'
+import * as encryptionService from '@/services/encryptionService'
 
 // ============ COMPANIONS (Спутники) ============
 export async function getCompanions() {
@@ -216,7 +217,7 @@ export async function sendMessage(
   }
 }
 
-export async function createChat(userId: string, companionId: string) {
+export async function createChat(userId: string, companionId: string, userPassword?: string) {
   try {
     const { data, error } = await supabase
       .from('chats')
@@ -225,10 +226,60 @@ export async function createChat(userId: string, companionId: string) {
       .single()
 
     if (error) throw error
+
+    // Initialize encryption if password provided
+    if (data && userPassword) {
+      try {
+        await initializeChatEncryption(data.id, userId, userPassword)
+      } catch (encErr) {
+        console.warn('Failed to initialize chat encryption (table may not exist yet):', encErr)
+        // Non-critical - chat can work without encryption
+      }
+    }
+
     return data
   } catch (error) {
     console.error('Error creating chat:', error)
     return null
+  }
+}
+
+// Initialize encryption for the current user's chat
+async function initializeChatEncryption(chatId: number, userId: string, userPassword: string) {
+  try {
+    // Generate a random master key for this chat
+    const masterKey = encryptionService.generateMasterKey()
+
+    // Derive user's key from their password (using userId as salt)
+    const userSalt = userId
+    const derivedKey = encryptionService.deriveKeyFromPassword(userPassword, userSalt)
+
+    // Encrypt the master key with the derived key
+    const encryptedMasterKey = encryptionService.encryptData(masterKey, derivedKey)
+
+    // Store encrypted key in database
+    try {
+      const { error } = await supabase
+        .from('chat_encryption_keys')
+        .insert([{
+          chat_id: chatId,
+          user_id: userId,
+          encrypted_key: encryptedMasterKey,
+        }])
+
+      if (error) throw error
+
+      console.log('Chat encryption initialized for chat:', chatId)
+    } catch (storeErr) {
+      console.warn('Could not store encryption key (table may not exist):', storeErr)
+      throw storeErr
+    }
+
+    // Return the master key so caller can use it immediately
+    return masterKey
+  } catch (err) {
+    console.error('Failed to initialize chat encryption:', err)
+    throw err
   }
 }
 

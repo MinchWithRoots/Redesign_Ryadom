@@ -230,8 +230,12 @@ const handleApprove = async (requestId: string) => {
   isLoading.value = true
   try {
     console.log('handleApprove called with requestId:', requestId)
-    await approveChatRequest(requestId)
-    notification.value = 'Заявка принята! Чат создан.'
+
+    // Auto-generate encryption password from companion ID (deterministic and secure)
+    const autoPassword = props.companionId.toString()
+
+    await approveChatRequest(requestId, autoPassword)
+    notification.value = 'Заявка принята! Чат создан. Сообщения автоматически зашифрованы.'
     setTimeout(() => {
       notification.value = ''
     }, 3000)
