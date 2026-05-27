@@ -133,13 +133,16 @@ export async function loadChatKey(chatId: string | number, password?: string): P
   const chatIdNum = Number(chatId)
 
   if (!state.userId) {
-    console.warn('Encryption service not initialized, returning null')
+    console.warn('[loadChatKey] Encryption service not initialized, returning null')
     return null
   }
+
+  console.log('[loadChatKey] Looking for key - chatId:', chatIdNum, 'userId:', state.userId, 'password provided:', !!password)
 
   // Check cache first
   const cacheKey = `${chatIdNum}:${state.userId}`
   if (state.chatKeyCache.has(cacheKey)) {
+    console.log('[loadChatKey] Found key in cache')
     return state.chatKeyCache.get(cacheKey) || null
   }
 
@@ -152,22 +155,26 @@ export async function loadChatKey(chatId: string | number, password?: string): P
       .eq('user_id', state.userId)
       .maybeSingle()
 
+    console.log('[loadChatKey] Query result - found data:', !!data, 'error:', error?.message)
+
     if (error) {
-      console.error('Error loading chat encryption key:', error)
+      console.error('[loadChatKey] Error loading chat encryption key:', error)
       return null
     }
 
     if (!data) {
-      console.log('No encryption key found for chat, treating as unencrypted')
+      console.log('[loadChatKey] No encryption key found for chat, treating as unencrypted')
       return null
     }
 
     // Use provided password or fall back to session password
     const pwd = password || state.sessionPassword
     if (!pwd) {
-      console.warn('No password available to decrypt chat key')
+      console.warn('[loadChatKey] No password available to decrypt chat key')
       return null
     }
+
+    console.log('[loadChatKey] Deriving key from password...')
 
     // Derive the user's key from password (use userId as salt)
     const userSalt = state.userId
@@ -177,16 +184,18 @@ export async function loadChatKey(chatId: string | number, password?: string): P
     const masterKey = decryptData(data.encrypted_key, derivedKey)
 
     if (!masterKey) {
-      console.error('Failed to decrypt master key')
+      console.error('[loadChatKey] Failed to decrypt master key')
       return null
     }
+
+    console.log('[loadChatKey] Successfully decrypted master key, length:', masterKey.length)
 
     // Cache the master key
     state.chatKeyCache.set(cacheKey, masterKey)
 
     return masterKey
   } catch (err) {
-    console.error('Failed to load chat key:', err)
+    console.error('[loadChatKey] Failed to load chat key:', err)
     return null
   }
 }

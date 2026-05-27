@@ -1467,30 +1467,44 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
         // Generate a random master key for this chat
         const masterKey = encryptionService.generateMasterKey()
 
-        // Derive user's key from their password (using userId as salt)
-        const userSalt = currentUser.value.id
-        const derivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, userSalt)
+        // Derive current user's key from their password (using userId as salt)
+        const currentUserSalt = currentUser.value.id
+        const currentUserDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, currentUserSalt)
 
-        // Encrypt the master key with the derived key
-        const encryptedMasterKey = encryptionService.encryptData(masterKey, derivedKey)
+        // Encrypt the master key with the current user's derived key
+        const encryptedMasterKeyForCurrentUser = encryptionService.encryptData(masterKey, currentUserDerivedKey)
 
-        // Store encrypted key in database
+        // Also derive the OTHER user's key (the request creator)
+        // If current user is companion, the other user is request.user_id
+        const otherUserId = request.user_id
+        const otherUserSalt = otherUserId
+        const otherUserDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, otherUserSalt)
+        const encryptedMasterKeyForOtherUser = encryptionService.encryptData(masterKey, otherUserDerivedKey)
+
+        // Store encrypted keys in database for BOTH users
         try {
           const { error: encErr } = await supabase
             .from('chat_encryption_keys')
-            .insert([{
-              chat_id: chat.id,
-              user_id: currentUser.value.id,
-              encrypted_key: encryptedMasterKey,
-            }])
+            .insert([
+              {
+                chat_id: chat.id,
+                user_id: currentUser.value.id,
+                encrypted_key: encryptedMasterKeyForCurrentUser,
+              },
+              {
+                chat_id: chat.id,
+                user_id: otherUserId,
+                encrypted_key: encryptedMasterKeyForOtherUser,
+              }
+            ])
 
           if (encErr) {
-            console.error('Failed to store encryption key:', encErr)
+            console.error('Failed to store encryption keys:', encErr)
           } else {
-            console.log('Chat encryption initialized for chat:', chat.id)
+            console.log('Chat encryption initialized for both users for chat:', chat.id)
           }
         } catch (storeErr) {
-          console.warn('Could not store encryption key (table may not exist yet):', storeErr)
+          console.warn('Could not store encryption keys (table may not exist yet):', storeErr)
         }
       } catch (encErr) {
         console.warn('Failed to initialize chat encryption:', encErr)
