@@ -1,7 +1,5 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
-import { encryptionService } from '@/services/encryptionService'
-import * as crypto from 'crypto-js'
 
 export interface UserProfile {
   id: string | number
@@ -22,7 +20,6 @@ const currentUser = ref<UserProfile | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const isLoggedIn = computed(() => !!currentUser.value)
-let sessionPassword: string = '' // Store password for current session (cleared on logout)
 
 // Helper function to extract error message
 const getErrorMessage = (err: any): string => {
@@ -250,12 +247,6 @@ export const login = async (email: string, password: string) => {
       topics: newProfile.topics,
     }
 
-    // Initialize encryption service with user ID and salt for PBKDF2 key derivation
-    const salt = newProfile.key_derivation_salt || authUUID // Use stored salt or generate from UUID
-    encryptionService.initializeWithPasswordAndSalt(newProfile.id, salt)
-    sessionPassword = password // Store password for current session
-    console.log('Encryption service initialized for user:', newProfile.id)
-
       return data.user
     }
 
@@ -271,12 +262,6 @@ export const login = async (email: string, password: string) => {
       topics: profile.topics,
     }
 
-    // Initialize encryption service with user ID and salt for PBKDF2 key derivation
-    const salt = profile.key_derivation_salt || authUUID // Use stored salt or generate from UUID
-    encryptionService.initializeWithPasswordAndSalt(profile.id, salt)
-    sessionPassword = password // Store password for current session
-    console.log('Encryption service initialized for user:', profile.id)
-
     return data.user
   } catch (err) {
     const message = getErrorMessage(err)
@@ -286,11 +271,6 @@ export const login = async (email: string, password: string) => {
   } finally {
     isLoading.value = false
   }
-}
-
-// Get session password (for loading encrypted chat keys)
-export const getSessionPassword = (): string => {
-  return sessionPassword
 }
 
 // Logout
@@ -303,9 +283,6 @@ export const logout = async () => {
     if (signOutError) throw new Error(getErrorMessage(signOutError))
 
     currentUser.value = null
-    sessionPassword = '' // Clear password from memory
-    encryptionService.clearAllKeys()
-    console.log('Encryption keys cleared on logout')
   } catch (err) {
     const message = getErrorMessage(err)
     error.value = message
@@ -363,12 +340,6 @@ export const getCurrentUser = async () => {
       bio: profile.bio,
       image: profile.image,
     }
-
-    // Initialize encryption service with salt (even without password)
-    // Password will be required when loading actual chat keys
-    const salt = profile.key_derivation_salt || authUUID
-    encryptionService.initializeWithPasswordAndSalt(profile.id, salt)
-    console.log('Encryption service re-initialized from stored session for user:', profile.id)
 
     return profile
   } catch (err) {
