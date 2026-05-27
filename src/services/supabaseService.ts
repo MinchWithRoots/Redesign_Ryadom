@@ -291,11 +291,27 @@ async function initializeChatEncryption(chatId: number, userId: string, companio
           }
         ])
 
-      if (error) throw error
+      if (error) {
+        const errorMsg = error?.message || JSON.stringify(error)
+        console.error('Failed to store encryption keys in database:', {
+          message: errorMsg,
+          code: (error as any)?.code,
+          hint: (error as any)?.hint,
+          details: (error as any)?.details,
+          chatId,
+          userIds: [userId, companionUserId]
+        })
+        throw error
+      }
 
       console.log('Chat encryption initialized for both users for chat:', chatId)
     } catch (storeErr) {
-      console.warn('Could not store encryption keys:', storeErr)
+      const errorMsg = storeErr instanceof Error ? storeErr.message : JSON.stringify(storeErr)
+      console.error('Could not store encryption keys:', {
+        message: errorMsg,
+        stack: storeErr instanceof Error ? storeErr.stack : undefined,
+        error: storeErr
+      })
       throw storeErr
     }
 
