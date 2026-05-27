@@ -217,11 +217,13 @@ export async function sendMessage(
   }
 }
 
-export async function createChat(userId: string, companionId: string, userPassword?: string) {
+export async function createChat(userId: string, companionId: string | number, userPassword?: string) {
   try {
+    const companionIdNum = typeof companionId === 'string' ? parseInt(companionId) : companionId
+
     const { data, error } = await supabase
       .from('chats')
-      .insert([{ user_id: userId, companion_id: companionId }])
+      .insert([{ user_id: userId, companion_id: companionIdNum }])
       .select()
       .single()
 
@@ -230,7 +232,7 @@ export async function createChat(userId: string, companionId: string, userPasswo
     // Initialize encryption if password provided
     if (data && userPassword) {
       try {
-        await initializeChatEncryption(data.id, userId, companionId, userPassword)
+        await initializeChatEncryption(data.id, userId, companionIdNum, userPassword)
       } catch (encErr) {
         console.warn('Failed to initialize chat encryption (table may not exist yet):', encErr)
         // Non-critical - chat can work without encryption
@@ -245,8 +247,22 @@ export async function createChat(userId: string, companionId: string, userPasswo
 }
 
 // Initialize encryption for BOTH users in the chat
-async function initializeChatEncryption(chatId: number, userId: string, companionId: string, userPassword: string) {
+async function initializeChatEncryption(chatId: number, userId: string, companionId: number, userPassword: string) {
   try {
+    // Get companion's user_id from the companions table
+    const { data: companionData, error: companionError } = await supabase
+      .from('companions')
+      .select('user_id')
+      .eq('id', companionId)
+      .single()
+
+    if (companionError || !companionData?.user_id) {
+      console.warn('Could not fetch companion user_id, encryption will not be initialized:', companionError)
+      throw new Error('Companion user not found')
+    }
+
+    const companionUserId = companionData.user_id
+
     // Generate a random master key for this chat
     const masterKey = encryptionService.generateMasterKey()
 
@@ -254,8 +270,8 @@ async function initializeChatEncryption(chatId: number, userId: string, companio
     const userDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, userId)
     const encryptedMasterKeyForUser = encryptionService.encryptData(masterKey, userDerivedKey)
 
-    // Derive companion's key from the same password (using companionId as salt)
-    const companionDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, companionId.toString())
+    // Derive companion's key from the same password (using companionUserId as salt)
+    const companionDerivedKey = encryptionService.deriveKeyFromPassword(userPassword, companionUserId)
     const encryptedMasterKeyForCompanion = encryptionService.encryptData(masterKey, companionDerivedKey)
 
     // Store encrypted keys in database for BOTH users
@@ -270,16 +286,32 @@ async function initializeChatEncryption(chatId: number, userId: string, companio
           },
           {
             chat_id: chatId,
-            user_id: companionId.toString(),
+            user_id: companionUserId,
             encrypted_key: encryptedMasterKeyForCompanion,
           }
         ])
 
-      if (error) throw error
+      if (error) {
+        const errorMsg = error?.message || JSON.stringify(error)
+        console.error('Failed to store encryption keys in database:', {
+          message: errorMsg,
+          code: (error as any)?.code,
+          hint: (error as any)?.hint,
+          details: (error as any)?.details,
+          chatId,
+          userIds: [userId, companionUserId]
+        })
+        throw error
+      }
 
       console.log('Chat encryption initialized for both users for chat:', chatId)
     } catch (storeErr) {
-      console.warn('Could not store encryption keys (table may not exist):', storeErr)
+      const errorMsg = storeErr instanceof Error ? storeErr.message : JSON.stringify(storeErr)
+      console.error('Could not store encryption keys:', {
+        message: errorMsg,
+        stack: storeErr instanceof Error ? storeErr.stack : undefined,
+        error: storeErr
+      })
       throw storeErr
     }
 

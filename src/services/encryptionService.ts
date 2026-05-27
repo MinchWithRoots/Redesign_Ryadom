@@ -158,7 +158,9 @@ export async function storeEncryptedChatKey(
   try {
     // Encrypt the master key using the derived key
     const encryptedKey = encryptData(masterKey, derivedKey)
-    
+
+    console.log('[storeEncryptedChatKey] Storing key for chat:', chatId, 'user:', userId)
+
     // Store in database
     const { error } = await supabase
       .from('chat_encryption_keys')
@@ -172,13 +174,29 @@ export async function storeEncryptedChatKey(
           onConflict: 'chat_id,user_id',
         }
       )
-    
+
     if (error) {
-      console.error('Error storing encrypted chat key:', error)
+      const errorMsg = error?.message || JSON.stringify(error)
+      console.error('[storeEncryptedChatKey] Error storing encrypted chat key:', {
+        message: errorMsg,
+        code: (error as any)?.code,
+        hint: (error as any)?.hint,
+        details: (error as any)?.details,
+        chatId: Number(chatId),
+        userId,
+        encryptedKeyLength: encryptedKey?.length
+      })
       throw error
     }
+
+    console.log('[storeEncryptedChatKey] Successfully stored key for chat:', chatId)
   } catch (err) {
-    console.error('Failed to store encrypted chat key:', err)
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err)
+    console.error('[storeEncryptedChatKey] Failed to store encrypted chat key:', {
+      message: errorMsg,
+      stack: err instanceof Error ? err.stack : undefined,
+      error: err
+    })
     throw err
   }
 }
