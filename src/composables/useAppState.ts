@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
-import { encryptionService } from '@/services/encryptionService'
 
 // Types
 export interface User {
@@ -1029,13 +1028,6 @@ export const loadChats = async () => {
     )
 
     chats.value = chatsWithInfo
-
-    // Initialize encryption keys for all chats
-    chatsWithInfo.forEach((chat: Chat) => {
-      // First try to load key from localStorage
-      // Encryption keys are now loaded from database when needed
-      // No need to pre-load them here
-    })
 
     return allChats
   } catch (err) {

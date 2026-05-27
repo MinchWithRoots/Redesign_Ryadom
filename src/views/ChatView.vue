@@ -2,10 +2,8 @@
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
-import { getSessionPassword } from '../composables/useAuth'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
-import { encryptionService } from '../services/encryptionService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
 import '@/assets/chat.css'
@@ -73,24 +71,6 @@ const loadMessages = async () => {
   if (chatId.value) {
     isLoadingMessages.value = true
     try {
-      // Load encryption key from database (shared between both users)
-      if (!encryptionService.hasKey(chatId.value)) {
-        try {
-          const password = getSessionPassword()
-          if (!password) {
-            console.warn('No session password available. Messages will not be decrypted until user logs in again.')
-            // Don't throw - continue with encrypted messages
-          } else {
-            await encryptionService.loadChatKey(chatId.value, password)
-            console.log('Loaded encryption key for chat from database')
-          }
-        } catch (err) {
-          console.warn('Could not load encryption key:', err)
-          // Continue anyway - messages might be unencrypted or this is a new chat
-          // User will see encrypted messages until they log in again
-        }
-      }
-
       let messagesData
       let error
       let retries = 3
@@ -143,21 +123,10 @@ const loadMessages = async () => {
           }
         }
 
-        // Decrypt message text
-        let decryptedText = msg.text
-        try {
-          if (chatId.value && msg.text && encryptionService.hasKey(chatId.value)) {
-            decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
-          }
-        } catch (err) {
-          console.warn('Failed to decrypt message, treating as plain text:', err)
-          decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
-        }
-
         return {
           id: msg.id,
           sender_id: msg.sender_id,
-          text: decryptedText,
+          text: msg.text,
           created_at: msg.created_at,
           author: authorName,
           isMine: msg.sender_id === currentUser.value?.id,
@@ -197,34 +166,6 @@ const sendMessage = async () => {
   const messageText = messageInput.value.trim()
 
   try {
-    // Ensure encryption key is available
-    if (!encryptionService.hasKey(chatId.value)) {
-      try {
-        const password = getSessionPassword()
-        if (!password) {
-          console.warn('No session password available. Cannot send encrypted message.')
-          alert('Для отправки сообщения требуется переавторизация. Пожалуйста, обновите страницу.')
-          return
-        }
-        await encryptionService.loadChatKey(chatId.value, password)
-        console.log('Loaded encryption key before sending message')
-      } catch (err) {
-        console.warn('Could not load encryption key:', err)
-        alert('Ошибка при инициализации шифрования. Пожалуйста, обновите страницу.')
-        return
-      }
-    }
-
-    // Encrypt message before sending
-    let encryptedText: string
-    try {
-      encryptedText = encryptionService.encryptMessage(messageText, chatId.value)
-    } catch (err) {
-      console.error('Encryption failed:', err)
-      alert('Ошибка при шифровании сообщения')
-      return
-    }
-
     let messageData
     let error
     let retries = 3
@@ -238,7 +179,7 @@ const sendMessage = async () => {
             {
               chat_id: chatId.value,
               sender_id: currentUser.value.id,
-              text: encryptedText,
+              text: messageText,
             },
           ])
           .select()
@@ -519,21 +460,10 @@ const subscribeToMessages = () => {
             }
           }
 
-          // Decrypt message text
-          let decryptedText = newMsg.text
-          try {
-            if (chatId.value && newMsg.text && encryptionService.hasKey(chatId.value)) {
-              decryptedText = encryptionService.decryptMessage(newMsg.text, chatId.value)
-            }
-          } catch (err) {
-            console.warn('Failed to decrypt realtime message:', err)
-            decryptedText = newMsg.text || '[Не удалось расшифровать сообщение]'
-          }
-
           const transformedMsg = {
             id: newMsg.id,
             sender_id: newMsg.sender_id,
-            text: decryptedText,
+            text: newMsg.text,
             created_at: newMsg.created_at,
             author: authorName,
             isMine: newMsg.sender_id === currentUser.value?.id,
@@ -584,21 +514,10 @@ const subscribeToMessages = () => {
             }
           }
 
-          // Decrypt message text
-          let decryptedText = msg.text
-          try {
-            if (chatId.value && msg.text && encryptionService.hasKey(chatId.value)) {
-              decryptedText = encryptionService.decryptMessage(msg.text, chatId.value)
-            }
-          } catch (err) {
-            console.warn('Failed to decrypt polled message:', err)
-            decryptedText = msg.text || '[Не удалось расшифровать сообщение]'
-          }
-
           const transformedMsg = {
             id: msg.id,
             sender_id: msg.sender_id,
-            text: decryptedText,
+            text: msg.text,
             created_at: msg.created_at,
             author: authorName,
             isMine: msg.sender_id === currentUser.value?.id,
