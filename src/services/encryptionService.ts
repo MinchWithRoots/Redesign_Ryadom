@@ -128,19 +128,21 @@ export async function storeEncryptedChatKey(
 }
 
 // Load encrypted chat key from database and decrypt
-export async function loadChatKey(chatId: string | number, password: string): Promise<string> {
+// Returns null if no encryption key exists for this chat (unencrypted chat)
+export async function loadChatKey(chatId: string | number, password: string): Promise<string | null> {
   const chatIdNum = Number(chatId)
-  
+
   if (!state.userId) {
-    throw new Error('Encryption service not initialized')
+    console.warn('Encryption service not initialized, returning null')
+    return null
   }
-  
+
   // Check cache first
   const cacheKey = `${chatIdNum}:${state.userId}`
   if (state.chatKeyCache.has(cacheKey)) {
-    return state.chatKeyCache.get(cacheKey)!
+    return state.chatKeyCache.get(cacheKey) || null
   }
-  
+
   try {
     // Fetch encrypted key from database
     const { data, error } = await supabase
@@ -148,30 +150,36 @@ export async function loadChatKey(chatId: string | number, password: string): Pr
       .select('encrypted_key')
       .eq('chat_id', chatIdNum)
       .eq('user_id', state.userId)
-      .single()
-    
-    if (error || !data) {
+      .maybeSingle() // Changed from .single() to .maybeSingle() to handle no results
+
+    if (error) {
       console.error('Error loading chat encryption key:', error)
-      throw new Error('Could not load encryption key for this chat')
+      return null // Chat is unencrypted
     }
-    
+
+    if (!data) {
+      console.log('No encryption key found for chat, treating as unencrypted')
+      return null // Chat is unencrypted, no key exists
+    }
+
     // Derive the user's key from password
     if (!state.userSalt) {
-      throw new Error('User salt not available')
+      console.warn('User salt not available, cannot decrypt')
+      return null
     }
-    
+
     const derivedKey = deriveKeyFromPassword(password, state.userSalt)
-    
+
     // Decrypt the master key
     const masterKey = decryptData(data.encrypted_key, derivedKey)
-    
+
     // Cache the master key
     state.chatKeyCache.set(cacheKey, masterKey)
-    
+
     return masterKey
   } catch (err) {
     console.error('Failed to load chat key:', err)
-    throw err
+    return null // Return null on any error (graceful degradation)
   }
 }
 

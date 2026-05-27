@@ -30,7 +30,8 @@ const showActionMenu = ref(false)
 const isBlockingUser = ref(false)
 const blockSuccess = ref('')
 const showReviewModal = ref(false)
-const currentChatMasterKey = ref<string | null>(null)
+// null = not loaded yet, undefined = loaded but no encryption, string = loaded with key
+const currentChatMasterKey = ref<string | null | undefined>(null)
 
 const chatId = computed(() => (route.query.id as string) || undefined)
 
@@ -74,14 +75,16 @@ const loadMessages = async () => {
     isLoadingMessages.value = true
     try {
       // Load encryption key for this chat if not already loaded
-      if (!currentChatMasterKey.value && currentUser.value) {
+      if (currentChatMasterKey.value === null && currentUser.value) {
         try {
           const sessionPassword = encryptionService.getSessionPassword()
           if (sessionPassword) {
-            currentChatMasterKey.value = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+            const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+            currentChatMasterKey.value = key || undefined // undefined = no encryption
           }
         } catch (encErr) {
           console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
+          currentChatMasterKey.value = undefined
         }
       }
 
@@ -191,14 +194,16 @@ const sendMessage = async () => {
 
   try {
     // Load encryption key if not already loaded
-    if (!currentChatMasterKey.value && currentUser.value) {
+    if (currentChatMasterKey.value === null && currentUser.value) {
       try {
         const sessionPassword = encryptionService.getSessionPassword()
         if (sessionPassword) {
-          currentChatMasterKey.value = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+          const key = await encryptionService.loadChatKey(chatId.value, sessionPassword)
+          currentChatMasterKey.value = key || undefined // undefined = no encryption
         }
       } catch (encErr) {
         console.warn('Could not load encryption key (chat may be unencrypted):', encErr)
+        currentChatMasterKey.value = undefined
       }
     }
 
@@ -708,7 +713,7 @@ watch(chatId, async () => {
     unsubscribeFromMessages()
     unsubscribeFromReadStatus()
     messages.value = []
-    currentChatMasterKey.value = null // Reset encryption key for new chat
+    currentChatMasterKey.value = null // Reset to "not loaded" state for new chat
     await loadChats()
     await loadMessages()
     await markMessagesAsRead()
