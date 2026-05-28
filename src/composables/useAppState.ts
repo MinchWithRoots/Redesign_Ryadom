@@ -1968,6 +1968,91 @@ export const incrementCompanionSessions = async (companionId: string | number) =
   }
 }
 
+// Sync session counts based on actual chats (for existing chats)
+export const syncSessionCounts = async (userId: string) => {
+  try {
+    // Count unique companions the user has chatted with (each chat = 1 session)
+    const { data: userChats, error: userChatsError } = await supabase
+      .from('chats')
+      .select('id')
+      .eq('user_id', userId)
+
+    if (userChatsError) {
+      console.error('Error fetching user chats for sync:', userChatsError)
+      return
+    }
+
+    const userSessionCount = userChats?.length || 0
+
+    // Update user sessions
+    const { error: updateUserError } = await supabase
+      .from('users')
+      .update({ sessions: userSessionCount })
+      .eq('id', userId)
+
+    if (updateUserError) {
+      console.error('Error updating user sessions:', updateUserError)
+      return
+    }
+
+    // Update local state
+    if (currentUser.value && currentUser.value.id === userId) {
+      currentUser.value = {
+        ...currentUser.value,
+        sessions: userSessionCount,
+      }
+    }
+
+    console.log(`Session count synced for user ${userId}: ${userSessionCount}`)
+  } catch (err) {
+    console.error('Error in syncSessionCounts:', err)
+  }
+}
+
+// Sync companion session counts
+export const syncCompanionSessionCounts = async (companionId: string | number) => {
+  try {
+    const companionIdStr = companionId.toString()
+
+    // Count total chats for this companion (each chat = 1 session)
+    const { data: companionChats, error: chatsError } = await supabase
+      .from('chats')
+      .select('id')
+      .eq('companion_id', parseInt(companionIdStr))
+
+    if (chatsError) {
+      console.error('Error fetching companion chats for sync:', chatsError)
+      return
+    }
+
+    const companionSessionCount = companionChats?.length || 0
+
+    // Update companion sessions
+    const { error: updateError } = await supabase
+      .from('companions')
+      .update({ sessions: companionSessionCount })
+      .eq('id', parseInt(companionIdStr))
+
+    if (updateError) {
+      console.error('Error updating companion sessions:', updateError)
+      return
+    }
+
+    // Update local state in companions array
+    const index = companions.value.findIndex(c => c.id.toString() === companionIdStr)
+    if (index !== -1) {
+      companions.value[index] = {
+        ...companions.value[index],
+        sessions: companionSessionCount,
+      }
+    }
+
+    console.log(`Session count synced for companion ${companionIdStr}: ${companionSessionCount}`)
+  } catch (err) {
+    console.error('Error in syncCompanionSessionCounts:', err)
+  }
+}
+
 // Refresh companion data to update review counts and ratings
 export const refreshCompanionData = async (companionId: string | number) => {
   try {
