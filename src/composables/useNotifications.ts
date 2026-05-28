@@ -14,7 +14,8 @@ export interface Notification {
 
 const notifications = ref<Notification[]>([])
 let messageSubscription: any = null
-let isInitialized = false
+let requestSubscription: any = null
+let initPromise: Promise<void> | null = null
 
 export const useNotifications = () => {
   const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
@@ -52,49 +53,40 @@ export const useNotifications = () => {
     notifications.value = []
   }
 
-  // Initialize real-time message listening
   const initializeRealtimeListeners = async () => {
-    if (isInitialized) return
+    // Prevent multiple concurrent initializations
+    if (initPromise) return initPromise
 
-    try {
-      const { data: userData } = await supabase.auth.getUser()
-      if (!userData?.user?.id) return
+    initPromise = (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser()
+        if (!userData?.user?.id) return
 
-      const userId = userData.user.id
+        const userId = userData.user.id
 
-      // Subscribe to new messages across all chats
-      messageSubscription = supabase
-        .channel('new_messages')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-          },
-          async (payload) => {
-            const newMessage = payload.new as any
+        // Subscribe to new messages
+        messageSubscription = supabase
+          .channel('new_messages')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'messages',
+            },
+            async (payload) => {
+              const newMessage = payload.new as any
 
-            // Only show notification for messages not from current user
-            if (newMessage.sender_id !== userId) {
-              try {
-                // Fetch sender and chat info
-                const { data: senderData } = await supabase
-                  .from('users')
-                  .select('name, image')
-                  .eq('id', newMessage.sender_id)
-                  .single()
+              if (newMessage.sender_id !== userId) {
+                try {
+                  const { data: senderData } = await supabase
+                    .from('users')
+                    .select('name')
+                    .eq('id', newMessage.sender_id)
+                    .single()
 
-                const senderName = senderData?.name || 'Пользователь'
+                  const senderName = senderData?.name || 'Пользователь'
 
-                // Fetch chat info
-                const { data: chatData } = await supabase
-                  .from('chats')
-                  .select('id')
-                  .eq('id', newMessage.chat_id)
-                  .single()
-
-                if (chatData) {
                   addNotification({
                     type: 'message',
                     title: `Новое сообщение от "${senderName}"`,
@@ -102,43 +94,130 @@ export const useNotifications = () => {
                     userId: newMessage.sender_id,
                     chatId: newMessage.chat_id,
                   })
+                } catch (error) {
+                  console.error('Error processing new message notification:', error)
+                  addNotification({
+                    type: 'message',
+                    title: 'Новое сообщение',
+                    description: 'У вас новое сообщение',
+                  })
                 }
-              } catch (error) {
-                console.error('Error processing new message notification:', error)
-                // Still add a generic notification if queries fail
+              }
+            }
+          )
+          .subscribe()
+
+        // Subscribe to companion chat requests (new and status changes)
+        requestSubscription = supabase
+          .channel('chat_requests')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'companion_chat_requests',
+            },
+            async (payload) => {
+              const newRequest = payload.new as any
+
+              if (newRequest.companion_id === userId) {
+                try {
+                  const { data: requesterData } = await supabase
+                    .from('users')
+                    .select('name')
+                    .eq('id', newRequest.user_id)
+                    .single()
+
+                  const requesterName = requesterData?.name || 'Пользователь'
+
+                  addNotification({
+                    type: 'application',
+                    title: `Новая заявка от "${requesterName}"`,
+                    description: 'Новый пользователь хочет пообщаться с вами',
+                    userId: newRequest.user_id,
+                    chatId: newRequest.id,
+                  })
+                } catch (error) {
+                  console.error('Error processing request notification:', error)
+                  addNotification({
+                    type: 'application',
+                    title: 'Новая заявка',
+                    description: 'Вы получили новую заявку',
+                  })
+                }
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'companion_chat_requests',
+            },
+            async (payload) => {
+              const updatedRequest = payload.new as any
+              const oldRequest = payload.old as any
+
+              // Notify user when their request is approved
+              if (updatedRequest.user_id === userId && oldRequest.status === 'pending' && updatedRequest.status === 'approved') {
+                try {
+                  const { data: companionData } = await supabase
+                    .from('users')
+                    .select('name')
+                    .eq('id', updatedRequest.companion_id)
+                    .single()
+
+                  const companionName = companionData?.name || 'Спутник'
+
+                  addNotification({
+                    type: 'application',
+                    title: `Заявка принята`,
+                    description: `"${companionName}" одобрил(а) вашу заявку`,
+                    userId: updatedRequest.companion_id,
+                    chatId: updatedRequest.chat_id,
+                  })
+                } catch (error) {
+                  console.error('Error processing approval notification:', error)
+                  addNotification({
+                    type: 'application',
+                    title: 'Заявка принята',
+                    description: 'Ваша заявка была одобрена',
+                  })
+                }
+              }
+
+              // Notify user when their request is rejected
+              if (updatedRequest.user_id === userId && oldRequest.status === 'pending' && updatedRequest.status === 'rejected') {
                 addNotification({
-                  type: 'message',
-                  title: 'Новое сообщение',
-                  description: 'У вас новое сообщение',
+                  type: 'application',
+                  title: 'Заявка отклонена',
+                  description: updatedRequest.rejection_reason || 'Ваша заявка была отклонена',
+                  userId: updatedRequest.companion_id,
                 })
               }
             }
-          }
-        )
-        .subscribe()
+          )
+          .subscribe()
+      } catch (error) {
+        console.error('Error initializing real-time listeners:', error)
+      }
+    })()
 
-      isInitialized = true
-    } catch (error) {
-      console.error('Error initializing real-time listeners:', error)
-    }
+    return initPromise
   }
 
-  // Cleanup subscription on unmount
   const unsubscribeRealtimeListeners = () => {
     if (messageSubscription) {
       messageSubscription.unsubscribe()
       messageSubscription = null
     }
-    isInitialized = false
+    if (requestSubscription) {
+      requestSubscription.unsubscribe()
+      requestSubscription = null
+    }
+    initPromise = null
   }
-
-  // Initialize on first use
-  initializeRealtimeListeners()
-
-  // Cleanup on component unmount
-  onBeforeUnmount(() => {
-    unsubscribeRealtimeListeners()
-  })
 
   return {
     notifications: computed(() => notifications.value),
@@ -150,5 +229,6 @@ export const useNotifications = () => {
     removeNotification,
     clearAll,
     initializeRealtimeListeners,
+    unsubscribeRealtimeListeners,
   }
 }

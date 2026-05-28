@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useNotifications } from '../composables/useNotifications'
+import { currentUser } from '../composables/useAppState'
 
-const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications()
+const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, initializeRealtimeListeners } = useNotifications()
 const isOpen = ref(false)
 const panelRef = ref<HTMLDivElement | null>(null)
+
+onMounted(async () => {
+  // Wait a bit for currentUser to be loaded if just mounted
+  if (currentUser.value) {
+    await initializeRealtimeListeners()
+  } else {
+    // Watch for user login
+    const stopWatching = watch(currentUser, async (newUser) => {
+      if (newUser) {
+        await initializeRealtimeListeners()
+        stopWatching()
+      }
+    })
+  }
+})
 
 const handleNotificationClick = (notificationId: string) => {
   markAsRead(notificationId)
