@@ -542,23 +542,23 @@ const handleUnblockUser = async () => {
   try {
     const { error } = await supabase
       .from('chats')
-      .update({ status: 'offline' })
+      .update({ status: 'active' })
       .eq('id', chatId.value)
 
     if (error) {
-      console.error('Error unblocking user:', error)
-      alert('Ошибка при разблокировке пользователя')
+      console.error('Error restoring chat:', error)
+      alert('Ошибка при восстановлении чата')
       return
     }
 
-    blockSuccess.value = 'Пользователь разблокирован'
+    blockSuccess.value = 'Чат восстановлен'
     showActionMenu.value = false
     setTimeout(() => {
       router.push('/profile')
     }, 1500)
   } catch (err) {
-    console.error('Error unblocking user:', err)
-    alert('Ошибка при разблокировке пользователя')
+    console.error('Error restoring chat:', err)
+    alert('Ошибка при восстановлении чата')
   } finally {
     isBlockingUser.value = false
   }
