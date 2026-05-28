@@ -1998,7 +1998,28 @@ export const syncSessionCounts = async (userId: string) => {
       return
     }
 
-    const userSessionCount = userChats?.length || 0
+    let userSessionCount = userChats?.length || 0
+
+    // If user is a companion, also count chats where they are the companion
+    if (currentUser.value && currentUser.value.id === userId && currentUser.value.role === 'companion') {
+      try {
+        const companionId = await getCurrentCompanionId()
+        if (companionId) {
+          const { data: companionChats, error: companionChatsError } = await supabase
+            .from('chats')
+            .select('id')
+            .eq('companion_id', parseInt(companionId.toString()))
+
+          if (!companionChatsError && companionChats) {
+            // Merge both sets of chats (no duplicates expected since they have different user_id/companion_id)
+            userSessionCount += companionChats.length
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching companion chats for session count:', err)
+        // Continue with user chats only
+      }
+    }
 
     // Update user sessions
     const { error: updateUserError } = await supabase

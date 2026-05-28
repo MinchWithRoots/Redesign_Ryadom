@@ -18,13 +18,16 @@ const companion = ref<(typeof companions)['value'][0] | null>(null)
 const isLoading = ref(true)
 const showNotification = ref('')
 const hasRequestSent = ref(false)
-const companionSessions = ref(0)
 const reviewsListRef = ref<any>(null)
 
 const isCurrentUserCompanion = computed(() => {
-  return currentUser.value && companion.value && 
-         currentUser.value.role === 'companion' && 
+  return currentUser.value && companion.value &&
+         currentUser.value.role === 'companion' &&
          currentUser.value.id === companion.value.user_id
+})
+
+const companionSessions = computed(() => {
+  return companion.value?.sessions || 0
 })
 
 const companionId = computed(() => {
@@ -41,9 +44,13 @@ onMounted(async () => {
     const comp = await getCompanionById(companionId.value.toString())
     if (comp) {
       companion.value = comp
-      companionSessions.value = comp.sessions || 0
       // Sync companion session counts based on actual chats
       await syncCompanionSessionCounts(comp.id)
+      // Update companion.value with synced data from companions array
+      const syncedCompanion = companions.value.find(c => c.id === comp.id)
+      if (syncedCompanion) {
+        companion.value = syncedCompanion
+      }
     } else {
       console.error('Companion not found with ID:', companionId.value)
     }
@@ -60,7 +67,6 @@ const handleSendConnectionRequest = async () => {
   try {
     await sendConnectionRequest(companion.value.id)
     hasRequestSent.value = true
-    companionSessions.value += 1
     showNotification.value = `Запрос отправлен ${companion.value.name}!`
     setTimeout(() => {
       showNotification.value = ''
@@ -104,13 +110,19 @@ const handleReviewsLoaded = async (reviews: any[]) => {
     // Refresh companion data to get updated sessions info
     const refreshedCompanion = await getCompanionById(companion.value.id.toString())
     if (refreshedCompanion) {
-      companionSessions.value = refreshedCompanion.sessions || 0
-      // Ensure reviews_count stays synced
-      companion.value.reviews_count = refreshedCompanion.reviews_count ?? reviews.length
+      companion.value = refreshedCompanion
     }
 
     // Sync companion session counts based on actual chats
-    await syncCompanionSessionCounts(companion.value.id)
+    if (companion.value) {
+      await syncCompanionSessionCounts(companion.value.id)
+
+      // Update companion.value with synced data from companions array
+      const syncedCompanion = companions.value.find(c => c.id === companion.value?.id)
+      if (syncedCompanion) {
+        companion.value = syncedCompanion
+      }
+    }
   }
 }
 
@@ -121,6 +133,7 @@ watch(companion, async (newVal, oldVal) => {
     reviewsListRef.value.loadReviews()
   }
 })
+
 </script>
 
 <template>

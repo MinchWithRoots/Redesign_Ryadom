@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics, getCompanionById, getCurrentCompanionId, syncSessionCounts, syncCompanionSessionCounts } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, loadCurrentUser, topics, loadTopics, getCompanionById, getCurrentCompanionId, syncSessionCounts, syncCompanionSessionCounts } from '../composables/useAppState'
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import ReviewModal from '../components/ReviewModal.vue'
@@ -146,6 +146,12 @@ const handleSaveProfile = async () => {
       image: userEditForm.value.image || undefined,
       topics: userEditForm.value.selectedTopics,
     })
+
+    // Refresh session counts after profile update
+    if (currentUser.value) {
+      await syncSessionCounts(currentUser.value.id)
+    }
+
     successMessage.value = 'Профиль обновлён успешно!'
     setTimeout(() => {
       successMessage.value = ''
@@ -212,8 +218,6 @@ const settings = ref({
   emailNotifications: true,
   newMessagesNotifications: true,
   marketingEmails: false,
-  showOnlineStatus: true,
-  allowEmailSearch: true,
 })
 
 const isSavingSettings = ref(false)
@@ -360,6 +364,11 @@ const handleReviewSuccess = async () => {
 onMounted(async () => {
   isLoadingChats.value = true
   try {
+    // Ensure current user is loaded first
+    if (!currentUser.value) {
+      await loadCurrentUser()
+    }
+
     await loadChats()
   } finally {
     isLoadingChats.value = false
@@ -1003,35 +1012,6 @@ watch(
               </div>
             </div>
 
-            <!-- Privacy -->
-            <div class="profile-settings__group">
-              <h3 class="profile-settings__subtitle">Приватность</h3>
-              <div class="profile-settings__options">
-                <label class="profile-settings__option">
-                  <input
-                    v-model="settings.showOnlineStatus"
-                    type="checkbox"
-                    class="profile-settings__checkbox"
-                  />
-                  <div class="profile-settings__content">
-                    <span class="profile-settings__label">Показывать мой статус онлайн</span>
-                    <p class="profile-settings__description">Люди смогут видеть, когда вы онлайн</p>
-                  </div>
-                </label>
-                <label class="profile-settings__option">
-                  <input
-                    v-model="settings.allowEmailSearch"
-                    type="checkbox"
-                    class="profile-settings__checkbox"
-                  />
-                  <div class="profile-settings__content">
-                    <span class="profile-settings__label">Позволить находить меня по email</span>
-                    <p class="profile-settings__description">Другие пользователи смогут вас найти</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-
             <!-- Buttons -->
             <div class="profile-form__buttons">
               <button
@@ -1348,6 +1328,7 @@ watch(
   height: 1rem;
   border-radius: 9999px;
   border: 2px solid var(--color-white);
+  z-index: 10;
 }
 
 .profile-chat-item__status--active {
