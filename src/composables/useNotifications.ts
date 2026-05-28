@@ -66,7 +66,8 @@ export const useNotifications = () => {
         }
 
         const userId = userData.user.id
-        console.log('[useNotifications] Initializing realtime listeners for user:', userId)
+        console.log('[useNotifications] ⏳ Initializing realtime listeners for user:', userId)
+        console.log('[useNotifications] 📋 Current user details:', { userId, email: userData.user.email })
 
         // Subscribe to new messages
         messageSubscription = supabase
@@ -80,11 +81,16 @@ export const useNotifications = () => {
             },
             async (payload) => {
               const newMessage = payload.new as any
-              console.log('[useNotifications] New message event received:', {
+              console.log('[useNotifications] 🔔 MESSAGE INSERT EVENT RECEIVED:', {
+                event: 'postgres_changes INSERT on messages',
                 senderId: newMessage.sender_id,
                 currentUserId: userId,
+                isSelfMessage: newMessage.sender_id === userId,
                 chatId: newMessage.chat_id,
+                messageId: newMessage.id,
                 textLength: newMessage.text?.length || 0,
+                encryptedLength: newMessage.encrypted_text?.length || 0,
+                timestamp: new Date().toISOString(),
               })
 
               if (newMessage.sender_id !== userId) {
@@ -118,7 +124,12 @@ export const useNotifications = () => {
             }
           )
           .subscribe((status) => {
-            console.log('[useNotifications] Message subscription status:', status)
+            console.log('[useNotifications] 📡 Message subscription status:', status)
+            if (status === 'SUBSCRIBED') {
+              console.log('✅ Successfully subscribed to message INSERT events')
+            } else if (status === 'CHANNEL_ERROR') {
+              console.error('❌ Channel error - messages may not work')
+            }
           })
 
         console.log('[useNotifications] Message subscription setup complete')
