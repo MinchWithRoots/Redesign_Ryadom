@@ -218,8 +218,6 @@ const settings = ref({
   emailNotifications: true,
   newMessagesNotifications: true,
   marketingEmails: false,
-  showOnlineStatus: true,
-  allowEmailSearch: true,
 })
 
 const isSavingSettings = ref(false)
@@ -1009,35 +1007,6 @@ watch(
                   <div class="profile-settings__content">
                     <span class="profile-settings__label">Маркетинговые письма</span>
                     <p class="profile-settings__description">Узнавайте о новых функциях</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <!-- Privacy -->
-            <div class="profile-settings__group">
-              <h3 class="profile-settings__subtitle">Приватность</h3>
-              <div class="profile-settings__options">
-                <label class="profile-settings__option">
-                  <input
-                    v-model="settings.showOnlineStatus"
-                    type="checkbox"
-                    class="profile-settings__checkbox"
-                  />
-                  <div class="profile-settings__content">
-                    <span class="profile-settings__label">Показывать мой статус онлайн</span>
-                    <p class="profile-settings__description">Люди смогут видеть, когда вы онлайн</p>
-                  </div>
-                </label>
-                <label class="profile-settings__option">
-                  <input
-                    v-model="settings.allowEmailSearch"
-                    type="checkbox"
-                    class="profile-settings__checkbox"
-                  />
-                  <div class="profile-settings__content">
-                    <span class="profile-settings__label">Позволить находить меня по email</span>
-                    <p class="profile-settings__description">Другие пользователи смогут вас найти</p>
                   </div>
                 </label>
               </div>
