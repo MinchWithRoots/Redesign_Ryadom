@@ -176,16 +176,16 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
   try {
     const { error } = await supabase
       .from('chats')
-      .update({ status: 'offline' })
+      .update({ status: 'active' })
       .eq('id', chatId)
 
     if (error) {
-      console.error('Error unblocking chat:', error)
-      alert('Ошибка при разблокировке')
+      console.error('Error restoring chat:', error)
+      alert('Ошибка при восстановлении чата')
       return
     }
 
-    successMessage.value = 'Пользователь разблокирован'
+    successMessage.value = 'Чат восстановлен'
     setTimeout(() => {
       successMessage.value = ''
     }, 3000)
@@ -199,7 +199,7 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
     }
   } catch (err) {
     console.error('Error in handleUnblockChat:', err)
-    alert('Ошибка при разблокировке')
+    alert('Ошибка при восстановлении чата')
   }
 }
 

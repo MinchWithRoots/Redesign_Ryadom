@@ -1067,6 +1067,34 @@ export const getChatMessages = async (chatId: string) => {
       throw loadMessagesError
     }
 
+    // Load encryption key if available for this chat
+    let decryptionKey: string | null = null
+    if (currentUser.value) {
+      try {
+        // Try to load encryption key for current user
+        const { data: keyData } = await supabase
+          .from('chat_encryption_keys')
+          .select('encrypted_key')
+          .eq('chat_id', chatId)
+          .eq('user_id', currentUser.value.id)
+          .maybeSingle()
+
+        if (keyData?.encrypted_key) {
+          // Get the chat to find the companion ID for password derivation
+          const chat = getChatById(chatId)
+          if (chat) {
+            const autoPassword = chat.companion_id.toString()
+            const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
+            decryptionKey = encryptionService.decryptData(keyData.encrypted_key, userDerivedKey)
+            console.log('[getChatMessages] Loaded encryption key for decryption')
+          }
+        }
+      } catch (encErr) {
+        console.warn('[getChatMessages] Could not load encryption key:', encErr)
+        // Continue without encryption
+      }
+    }
+
     // Fetch sender info for each message separately
     const messagesWithSenders = await Promise.all(
       (result || []).map(async (messageItem: any) => {
@@ -1077,10 +1105,21 @@ export const getChatMessages = async (chatId: string) => {
             .eq('id', messageItem.sender_id)
             .single()
 
+          // Decrypt text if encryption key is available
+          let displayText = messageItem.text
+          if (decryptionKey && messageItem.text && messageItem.text.includes(':') && /^[0-9a-f]+:/.test(messageItem.text)) {
+            try {
+              displayText = encryptionService.decryptData(messageItem.text, decryptionKey)
+            } catch (decErr) {
+              console.warn('[getChatMessages] Failed to decrypt message:', decErr)
+              displayText = messageItem.text
+            }
+          }
+
           return {
             id: messageItem.id,
             sender_id: messageItem.sender_id,
-            text: messageItem.text,
+            text: displayText,
             created_at: messageItem.created_at,
             author: senderData?.name || 'Unknown',
             image: senderData?.image || '',
@@ -1124,16 +1163,72 @@ export const sendMessage = async (chatId: string, text: string) => {
 
     if (!currentUser.value) throw new Error('No user logged in')
 
-    // Insert message
+    // Try to load encryption key for this chat
+    let encryptionKey: string | null = null
+    let encryptedText: string | null = null
+    let isEncrypted = false
+
+    try {
+      const chat = getChatById(chatId)
+      if (chat) {
+        // Load encryption key for current user
+        const { data: keyData } = await supabase
+          .from('chat_encryption_keys')
+          .select('encrypted_key')
+          .eq('chat_id', chatId)
+          .eq('user_id', currentUser.value.id)
+          .maybeSingle()
+
+        if (keyData?.encrypted_key) {
+          const autoPassword = chat.companion_id.toString()
+          const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
+          encryptionKey = encryptionService.decryptData(keyData.encrypted_key, userDerivedKey)
+
+          if (encryptionKey) {
+            // Encrypt the message
+            encryptedText = encryptionService.encryptData(text, encryptionKey)
+            isEncrypted = true
+            console.log('[sendMessage] Message encrypted')
+          }
+        } else {
+          // No encryption key exists for this chat yet, generate one
+          console.log('[sendMessage] No encryption key found, generating one')
+          const masterKey = encryptionService.generateMasterKey()
+          const userDerivedKey = encryptionService.deriveKeyFromPassword(chat.companion_id.toString(), currentUser.value.id)
+
+          try {
+            await encryptionService.storeEncryptedChatKey(chatId, currentUser.value.id, masterKey, userDerivedKey)
+            console.log('[sendMessage] Encryption key stored')
+
+            encryptionKey = masterKey
+            encryptedText = encryptionService.encryptData(text, encryptionKey)
+            isEncrypted = true
+          } catch (storeErr) {
+            console.error('[sendMessage] Failed to store encryption key:', storeErr)
+            // Continue without encryption
+          }
+        }
+      }
+    } catch (encErr) {
+      console.warn('[sendMessage] Could not set up encryption:', encErr)
+      // Continue without encryption
+    }
+
+    // Insert message with encryption if available
+    const messageToInsert: any = {
+      chat_id: chatId,
+      sender_id: currentUser.value.id,
+      text: encryptedText || text,
+    }
+
+    if (isEncrypted) {
+      messageToInsert.encrypted_text = encryptedText
+      messageToInsert.is_encrypted = true
+    }
+
     const { data: messageData, error: sendMessageError } = await supabase
       .from('messages')
-      .insert([
-        {
-          chat_id: chatId,
-          sender_id: currentUser.value.id,
-          text,
-        },
-      ])
+      .insert([messageToInsert])
       .select()
       .single()
 
@@ -1147,7 +1242,7 @@ export const sendMessage = async (chatId: string, text: string) => {
       throw sendMessageError
     }
 
-    // Update chat last_message
+    // Update chat last_message (store plaintext for last message display)
     const { error: updateErr } = await supabase
       .from('chats')
       .update({
@@ -1167,7 +1262,7 @@ export const sendMessage = async (chatId: string, text: string) => {
     const message: Message = {
       id: messageData.id,
       sender_id: messageData.sender_id,
-      text: messageData.text,
+      text: text,
       created_at: messageData.created_at,
       author: currentUser.value.name || 'Unknown',
       isMine: true,
@@ -1461,10 +1556,10 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
 
     console.log('Chat created successfully:', chat)
 
-    // Initialize encryption for this chat if password is provided
-    // Only the companion (current user approving) stores their own key
-    // The user who created the request will store their key when they first access the chat
-    if (chat && currentUser.value && encryptionPassword) {
+    // Always initialize encryption for this chat
+    // Store encryption key for the companion (current user approving the request)
+    // The user who created the request will store their own key when they first access the chat
+    if (chat && currentUser.value) {
       try {
         // Get the companion's user_id (current user is the companion approving the request)
         const { data: companionData, error: companionError } = await supabase
@@ -1476,54 +1571,96 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
         if (companionError || !companionData?.user_id) {
           console.warn('Could not fetch companion user_id for encryption:', companionError)
           // Non-critical - keys can be generated on first chat load
-          return
-        }
+        } else {
+          const companionUserId = companionData.user_id
 
-        const companionUserId = companionData.user_id
+          // Generate a random master key for this chat - will be shared by both users
+          const masterKey = encryptionService.generateMasterKey()
 
-        // Generate a random master key for this chat
-        const masterKey = encryptionService.generateMasterKey()
+          // Use provided password or derive from companion ID (deterministic)
+          const password = encryptionPassword || request.companion_id.toString()
 
-        // Derive the companion's (current user's) key from password
-        const companionDerivedKey = encryptionService.deriveKeyFromPassword(encryptionPassword, companionUserId)
-        const encryptedMasterKeyForCompanion = encryptionService.encryptData(masterKey, companionDerivedKey)
+          // Derive the companion's (current user's) key from password
+          const companionDerivedKey = encryptionService.deriveKeyFromPassword(password, companionUserId)
+          const encryptedMasterKeyForCompanion = encryptionService.encryptData(masterKey, companionDerivedKey)
 
-        // Store ONLY the companion's encryption key (current user)
-        // The user who created the request will store their own key when they first load the chat
-        try {
-          console.log('[approveChatRequest] Storing companion encryption key for chat:', chat.id, 'companion user:', companionUserId)
+          // Derive the requesting user's key from password
+          const userDerivedKey = encryptionService.deriveKeyFromPassword(password, request.user_id)
+          const encryptedMasterKeyForUser = encryptionService.encryptData(masterKey, userDerivedKey)
 
-          const { error: encErr } = await supabase
-            .from('chat_encryption_keys')
-            .insert([
-              {
-                chat_id: chat.id,
+          // Store encryption keys for BOTH users with the SAME master key
+          // Store separately to get better error details and handle one user at a time
+          try {
+            console.log('[approveChatRequest] Storing encryption keys for both users', {
+              chatId: chat.id,
+              companionUserId,
+              requestingUserId: request.user_id,
+              masterKeyLength: masterKey.length,
+              encryptedMasterKeyForCompanionLength: encryptedMasterKeyForCompanion.length,
+              encryptedMasterKeyForUserLength: encryptedMasterKeyForUser.length
+            })
+
+            // Store key for companion (current user approving request)
+            console.log('[approveChatRequest] Storing key for companion user:', companionUserId)
+            const { error: companionErr } = await supabase
+              .from('chat_encryption_keys')
+              .insert({
+                chat_id: Number(chat.id),
                 user_id: companionUserId,
                 encrypted_key: encryptedMasterKeyForCompanion,
-              }
-            ])
+              })
 
-          if (encErr) {
-            const errorMsg = (encErr as any)?.message || JSON.stringify(encErr)
-            console.error('Failed to store companion encryption key:', {
+            if (companionErr) {
+              const errorMsg = (companionErr as any)?.message || String(companionErr)
+              console.error('Failed to store companion encryption key:', {
+                message: errorMsg,
+                code: (companionErr as any)?.code,
+                hint: (companionErr as any)?.hint,
+                details: (companionErr as any)?.details,
+                status: (companionErr as any)?.status,
+                chatId: chat.id,
+                userId: companionUserId
+              })
+            } else {
+              console.log('[approveChatRequest] Successfully stored key for companion user:', companionUserId)
+            }
+
+            // Store key for requesting user
+            console.log('[approveChatRequest] Storing key for requesting user:', request.user_id)
+            const { error: userErr } = await supabase
+              .from('chat_encryption_keys')
+              .insert({
+                chat_id: Number(chat.id),
+                user_id: request.user_id,
+                encrypted_key: encryptedMasterKeyForUser,
+              })
+
+            if (userErr) {
+              const errorMsg = (userErr as any)?.message || String(userErr)
+              console.error('Failed to store requesting user encryption key:', {
+                message: errorMsg,
+                code: (userErr as any)?.code,
+                hint: (userErr as any)?.hint,
+                details: (userErr as any)?.details,
+                status: (userErr as any)?.status,
+                chatId: chat.id,
+                userId: request.user_id
+              })
+            } else {
+              console.log('[approveChatRequest] Successfully stored key for requesting user:', request.user_id)
+            }
+
+            if (!companionErr && !userErr) {
+              console.log('[approveChatRequest] Encryption keys stored successfully for both users for chat:', chat.id)
+            }
+          } catch (storeErr) {
+            const errorMsg = storeErr instanceof Error ? storeErr.message : String(storeErr)
+            console.error('Exception while storing encryption keys:', {
               message: errorMsg,
-              code: (encErr as any)?.code,
-              hint: (encErr as any)?.hint,
-              details: (encErr as any)?.details,
-              chatId: chat.id,
-              userId: companionUserId
+              stack: storeErr instanceof Error ? storeErr.stack : undefined,
+              error: storeErr
             })
-            // Non-critical - encryption can be set up later
-          } else {
-            console.log('Companion encryption key stored successfully for chat:', chat.id)
           }
-        } catch (storeErr) {
-          const errorMsg = storeErr instanceof Error ? storeErr.message : JSON.stringify(storeErr)
-          console.warn('Could not store companion encryption key:', {
-            message: errorMsg,
-            stack: storeErr instanceof Error ? storeErr.stack : undefined
-          })
-          // Non-critical - encryption can be set up later
         }
       } catch (encErr) {
         console.warn('Failed to initialize chat encryption:', encErr)

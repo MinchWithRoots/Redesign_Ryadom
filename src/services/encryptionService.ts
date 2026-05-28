@@ -159,29 +159,29 @@ export async function storeEncryptedChatKey(
     // Encrypt the master key using the derived key
     const encryptedKey = encryptData(masterKey, derivedKey)
 
-    console.log('[storeEncryptedChatKey] Storing key for chat:', chatId, 'user:', userId)
+    console.log('[storeEncryptedChatKey] Storing key for chat:', chatId, 'user:', userId, {
+      masterKeyLength: masterKey.length,
+      derivedKeyLength: derivedKey.length,
+      encryptedKeyLength: encryptedKey.length
+    })
 
-    // Store in database
+    // Store in database using insert (simpler, better for debugging)
     const { error } = await supabase
       .from('chat_encryption_keys')
-      .upsert(
-        {
-          chat_id: Number(chatId),
-          user_id: userId,
-          encrypted_key: encryptedKey,
-        },
-        {
-          onConflict: 'chat_id,user_id',
-        }
-      )
+      .insert({
+        chat_id: Number(chatId),
+        user_id: userId,
+        encrypted_key: encryptedKey,
+      })
 
     if (error) {
-      const errorMsg = error?.message || JSON.stringify(error)
+      const errorMsg = (error as any)?.message || String(error)
       console.error('[storeEncryptedChatKey] Error storing encrypted chat key:', {
         message: errorMsg,
         code: (error as any)?.code,
         hint: (error as any)?.hint,
         details: (error as any)?.details,
+        status: (error as any)?.status,
         chatId: Number(chatId),
         userId,
         encryptedKeyLength: encryptedKey?.length
@@ -191,11 +191,12 @@ export async function storeEncryptedChatKey(
 
     console.log('[storeEncryptedChatKey] Successfully stored key for chat:', chatId)
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err)
+    const errorMsg = err instanceof Error ? err.message : String(err)
     console.error('[storeEncryptedChatKey] Failed to store encrypted chat key:', {
       message: errorMsg,
       stack: err instanceof Error ? err.stack : undefined,
-      error: err
+      error: err,
+      errorType: typeof err
     })
     throw err
   }

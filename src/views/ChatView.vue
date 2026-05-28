@@ -91,10 +91,39 @@ const loadMessages = async () => {
 
           console.log('[Encryption] Key loaded:', !!key, 'keyLength:', key?.length || 0)
 
+          // If no key exists, wait a moment and try again (in case it was just created)
+          // This handles the case where the companion just approved the request
+          if (!key) {
+            console.log('[Encryption] No key found on first try, retrying after delay...')
+            await new Promise(resolve => setTimeout(resolve, 500))
+            key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+            console.log('[Encryption] Key loaded after retry:', !!key)
+          }
+
+          // Only generate a new key if absolutely none exists
+          if (!key) {
+            console.log('[Encryption] Still no key found, generating new one for this chat')
+            try {
+              const masterKey = encryptionService.generateMasterKey()
+              const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
+              await encryptionService.storeEncryptedChatKey(
+                chatId.value,
+                currentUser.value.id,
+                masterKey,
+                userDerivedKey
+              )
+              console.log('[Encryption] Successfully stored new encryption key for current user')
+              key = masterKey
+            } catch (storeErr) {
+              console.error('[Encryption] Failed to store new encryption key:', storeErr)
+              // Continue without encryption
+            }
+          }
+
           if (key) {
             console.log('Chat encryption key loaded successfully')
           } else {
-            console.debug('No encryption key found for this chat (unencrypted)')
+            console.debug('No encryption key found for this chat')
           }
 
           currentChatMasterKey.value = key || undefined
@@ -225,7 +254,34 @@ const sendMessage = async () => {
         const autoPassword = chat.value.companion_id.toString()
         // Initialize encryption service FIRST
         encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, autoPassword, currentUser.value.id)
-        const key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+        let key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+
+        // If no key exists, try again after a short delay (in case it was just created)
+        if (!key) {
+          console.log('[Send] No key found on first try, retrying after delay...')
+          await new Promise(resolve => setTimeout(resolve, 300))
+          key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+        }
+
+        // Only generate a new key if still no key exists
+        if (!key) {
+          console.log('[Send] Still no key found, generating and storing new one')
+          try {
+            const masterKey = encryptionService.generateMasterKey()
+            const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
+            await encryptionService.storeEncryptedChatKey(
+              chatId.value,
+              currentUser.value.id,
+              masterKey,
+              userDerivedKey
+            )
+            console.log('[Send] Successfully stored new encryption key')
+            key = masterKey
+          } catch (storeErr) {
+            console.error('[Send] Failed to store encryption key:', storeErr)
+          }
+        }
+
         currentChatMasterKey.value = key || undefined
       } catch (encErr) {
         console.warn('Could not load encryption key, proceeding without encryption:', encErr)
@@ -486,23 +542,23 @@ const handleUnblockUser = async () => {
   try {
     const { error } = await supabase
       .from('chats')
-      .update({ status: 'offline' })
+      .update({ status: 'active' })
       .eq('id', chatId.value)
 
     if (error) {
-      console.error('Error unblocking user:', error)
-      alert('Ошибка при разблокировке пользователя')
+      console.error('Error restoring chat:', error)
+      alert('Ошибка при восстановлении чата')
       return
     }
 
-    blockSuccess.value = 'Пользователь разблокирован'
+    blockSuccess.value = 'Чат восстановлен'
     showActionMenu.value = false
     setTimeout(() => {
       router.push('/profile')
     }, 1500)
   } catch (err) {
-    console.error('Error unblocking user:', err)
-    alert('Ошибка при разблокировке пользователя')
+    console.error('Error restoring chat:', err)
+    alert('Ошибка при восстановлении чата')
   } finally {
     isBlockingUser.value = false
   }
