@@ -3,27 +3,38 @@ import { ref, watch, onMounted } from 'vue'
 import { useNotifications } from '../composables/useNotifications'
 import { currentUser } from '../composables/useAppState'
 
-const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, initializeRealtimeListeners } = useNotifications()
+const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, initializeRealtimeListeners, unsubscribeRealtimeListeners, loadSavedNotifications } = useNotifications()
 const isOpen = ref(false)
 const panelRef = ref<HTMLDivElement | null>(null)
 
 onMounted(async () => {
   console.log('[NotificationPanel] Mounted, currentUser:', currentUser.value?.name)
 
-  // Wait a bit for currentUser to be loaded if just mounted
+  // Watch for user changes (login, logout, or switching profiles)
+  watch(currentUser, async (newUser, oldUser) => {
+    if (newUser?.id !== oldUser?.id) {
+      console.log('[NotificationPanel] User changed from', oldUser?.name, 'to', newUser?.name)
+
+      // Unsubscribe from old user's listeners
+      if (oldUser) {
+        console.log('[NotificationPanel] Unsubscribing from old user listeners')
+        unsubscribeRealtimeListeners()
+      }
+
+      // Initialize for new user
+      if (newUser) {
+        console.log('[NotificationPanel] Initializing listeners for new user:', newUser.name)
+        await initializeRealtimeListeners()
+      }
+    }
+  }, { deep: true })
+
+  // Initial setup
   if (currentUser.value) {
     console.log('[NotificationPanel] User already logged in, initializing listeners')
     await initializeRealtimeListeners()
   } else {
     console.log('[NotificationPanel] User not logged in yet, waiting...')
-    // Watch for user login
-    const stopWatching = watch(currentUser, async (newUser) => {
-      if (newUser) {
-        console.log('[NotificationPanel] User logged in, initializing listeners')
-        await initializeRealtimeListeners()
-        stopWatching()
-      }
-    })
   }
 })
 
