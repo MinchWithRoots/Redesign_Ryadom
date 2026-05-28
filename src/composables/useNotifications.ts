@@ -451,6 +451,7 @@ export const useNotifications = () => {
   }
 
   const unsubscribeRealtimeListeners = () => {
+    console.log('[useNotifications] Unsubscribing from realtime listeners')
     if (messageSubscription) {
       messageSubscription.unsubscribe()
       messageSubscription = null
@@ -460,6 +461,7 @@ export const useNotifications = () => {
       requestSubscription = null
     }
     initPromise = null
+    console.log('[useNotifications] ✅ Unsubscribed from all listeners')
   }
 
   return {
