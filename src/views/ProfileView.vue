@@ -1328,6 +1328,7 @@ watch(
   height: 1rem;
   border-radius: 9999px;
   border: 2px solid var(--color-white);
+  z-index: 10;
 }
 
 .profile-chat-item__status--active {
