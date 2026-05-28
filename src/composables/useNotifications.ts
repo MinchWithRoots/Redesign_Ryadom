@@ -115,55 +115,45 @@ export const useNotifications = () => {
                   chatId: chatData.id,
                   user_id: chatData.user_id,
                   companion_id: chatData.companion_id,
-                  sender_id: newMessage.sender_id
+                  sender_id: newMessage.sender_id,
+                  current_user_id: userId
                 })
 
-                // Determine who the SENDER is in the chat
-                let senderRole = null
-                if (newMessage.sender_id === chatData.user_id) {
-                  senderRole = 'user'
+                // Check if current user is IN this chat
+                let isCurrentUserInChat = false
+                let currentUserRole = null
+
+                if (chatData.user_id === userId) {
+                  isCurrentUserInChat = true
+                  currentUserRole = 'user'
+                  console.log('[useNotifications] Current user is the CHAT USER')
                 } else if (chatData.companion_id) {
+                  // Check if current user is the companion
                   const { data: companionData } = await supabase
                     .from('companions')
                     .select('user_id, id')
                     .eq('id', chatData.companion_id)
                     .single()
 
-                  if (companionData?.user_id === newMessage.sender_id) {
-                    senderRole = 'companion'
+                  if (companionData?.user_id === userId) {
+                    isCurrentUserInChat = true
+                    currentUserRole = 'companion'
+                    console.log('[useNotifications] Current user is the COMPANION')
                   }
                 }
 
-                console.log('[useNotifications] Sender role in chat:', senderRole)
-
-                // Check if CURRENT USER is the recipient (i.e., NOT the sender)
-                let isCurrentUserRecipient = false
-                let recipientRole = null
-
-                if (chatData.user_id === userId && senderRole !== 'user') {
-                  // Current user is chat user, and sender is not chat user → current user is recipient
-                  console.log('[useNotifications] ✅ Current user is RECIPIENT (chat user)')
-                  isCurrentUserRecipient = true
-                  recipientRole = 'user'
-                } else if (chatData.companion_id) {
-                  const { data: companionData } = await supabase
-                    .from('companions')
-                    .select('user_id, id')
-                    .eq('id', chatData.companion_id)
-                    .single()
-
-                  if (companionData?.user_id === userId && senderRole !== 'companion') {
-                    // Current user is companion, and sender is not companion → current user is recipient
-                    console.log('[useNotifications] ✅ Current user is RECIPIENT (companion)')
-                    isCurrentUserRecipient = true
-                    recipientRole = 'companion'
-                  }
-                }
-
-                if (!isCurrentUserRecipient) {
-                  console.log('[useNotifications] ❌ Current user is NOT the recipient, skipping notification')
+                if (!isCurrentUserInChat) {
+                  console.log('[useNotifications] ❌ Current user is NOT in this chat, skipping notification')
                   return
                 }
+
+                // Check if SENDER is NOT the current user (i.e., is message for me?)
+                if (newMessage.sender_id === userId) {
+                  console.log('[useNotifications] ❌ Current user is the SENDER, skipping self-notification')
+                  return
+                }
+
+                console.log('[useNotifications] ✅ Current user is RECIPIENT (' + currentUserRole + ')')
 
                 // Get sender info for notification
                 const { data: senderData } = await supabase
