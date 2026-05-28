@@ -1589,44 +1589,77 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
           const encryptedMasterKeyForUser = encryptionService.encryptData(masterKey, userDerivedKey)
 
           // Store encryption keys for BOTH users with the SAME master key
+          // Store separately to get better error details and handle one user at a time
           try {
-            console.log('[approveChatRequest] Storing encryption keys for both users for chat:', chat.id)
+            console.log('[approveChatRequest] Storing encryption keys for both users', {
+              chatId: chat.id,
+              companionUserId,
+              requestingUserId: request.user_id,
+              masterKeyLength: masterKey.length,
+              encryptedMasterKeyForCompanionLength: encryptedMasterKeyForCompanion.length,
+              encryptedMasterKeyForUserLength: encryptedMasterKeyForUser.length
+            })
 
-            const { error: encErr } = await supabase
+            // Store key for companion (current user approving request)
+            console.log('[approveChatRequest] Storing key for companion user:', companionUserId)
+            const { error: companionErr } = await supabase
               .from('chat_encryption_keys')
-              .insert([
-                {
-                  chat_id: chat.id,
-                  user_id: companionUserId,
-                  encrypted_key: encryptedMasterKeyForCompanion,
-                },
-                {
-                  chat_id: chat.id,
-                  user_id: request.user_id,
-                  encrypted_key: encryptedMasterKeyForUser,
-                }
-              ])
-
-            if (encErr) {
-              const errorMsg = (encErr as any)?.message || JSON.stringify(encErr)
-              console.error('Failed to store encryption keys:', {
-                message: errorMsg,
-                code: (encErr as any)?.code,
-                hint: (encErr as any)?.hint,
-                details: (encErr as any)?.details,
-                chatId: chat.id
+              .insert({
+                chat_id: Number(chat.id),
+                user_id: companionUserId,
+                encrypted_key: encryptedMasterKeyForCompanion,
               })
-              // Non-critical - encryption can be set up later
+
+            if (companionErr) {
+              const errorMsg = (companionErr as any)?.message || String(companionErr)
+              console.error('Failed to store companion encryption key:', {
+                message: errorMsg,
+                code: (companionErr as any)?.code,
+                hint: (companionErr as any)?.hint,
+                details: (companionErr as any)?.details,
+                status: (companionErr as any)?.status,
+                chatId: chat.id,
+                userId: companionUserId
+              })
             } else {
-              console.log('Encryption keys stored successfully for both users for chat:', chat.id)
+              console.log('[approveChatRequest] Successfully stored key for companion user:', companionUserId)
+            }
+
+            // Store key for requesting user
+            console.log('[approveChatRequest] Storing key for requesting user:', request.user_id)
+            const { error: userErr } = await supabase
+              .from('chat_encryption_keys')
+              .insert({
+                chat_id: Number(chat.id),
+                user_id: request.user_id,
+                encrypted_key: encryptedMasterKeyForUser,
+              })
+
+            if (userErr) {
+              const errorMsg = (userErr as any)?.message || String(userErr)
+              console.error('Failed to store requesting user encryption key:', {
+                message: errorMsg,
+                code: (userErr as any)?.code,
+                hint: (userErr as any)?.hint,
+                details: (userErr as any)?.details,
+                status: (userErr as any)?.status,
+                chatId: chat.id,
+                userId: request.user_id
+              })
+            } else {
+              console.log('[approveChatRequest] Successfully stored key for requesting user:', request.user_id)
+            }
+
+            if (!companionErr && !userErr) {
+              console.log('[approveChatRequest] Encryption keys stored successfully for both users for chat:', chat.id)
             }
           } catch (storeErr) {
-            const errorMsg = storeErr instanceof Error ? storeErr.message : JSON.stringify(storeErr)
-            console.warn('Could not store encryption keys:', {
+            const errorMsg = storeErr instanceof Error ? storeErr.message : String(storeErr)
+            console.error('Exception while storing encryption keys:', {
               message: errorMsg,
-              stack: storeErr instanceof Error ? storeErr.stack : undefined
+              stack: storeErr instanceof Error ? storeErr.stack : undefined,
+              error: storeErr
             })
-            // Non-critical - encryption can be set up later
           }
         }
       } catch (encErr) {
