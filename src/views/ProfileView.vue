@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, topics, loadTopics, getCompanionById, getCurrentCompanionId, syncSessionCounts, syncCompanionSessionCounts } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, loadCurrentUser, topics, loadTopics, getCompanionById, getCurrentCompanionId, syncSessionCounts, syncCompanionSessionCounts } from '../composables/useAppState'
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import ReviewModal from '../components/ReviewModal.vue'
@@ -146,6 +146,12 @@ const handleSaveProfile = async () => {
       image: userEditForm.value.image || undefined,
       topics: userEditForm.value.selectedTopics,
     })
+
+    // Refresh session counts after profile update
+    if (currentUser.value) {
+      await syncSessionCounts(currentUser.value.id)
+    }
+
     successMessage.value = 'Профиль обновлён успешно!'
     setTimeout(() => {
       successMessage.value = ''
@@ -360,6 +366,11 @@ const handleReviewSuccess = async () => {
 onMounted(async () => {
   isLoadingChats.value = true
   try {
+    // Ensure current user is loaded first
+    if (!currentUser.value) {
+      await loadCurrentUser()
+    }
+
     await loadChats()
   } finally {
     isLoadingChats.value = false
