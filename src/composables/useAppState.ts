@@ -1340,10 +1340,6 @@ export const endSession = async (chatId: string) => {
     if (currentChat) {
       currentChat.status = 'offline'
       currentChat.lastMessage = 'Сессия завершена'
-
-      // Increment session count for both user and companion
-      await incrementUserSessions(currentChat.user_id)
-      await incrementCompanionSessions(currentChat.companion_id)
     }
 
     return true
@@ -1697,11 +1693,9 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
       chatRequests.value.splice(index, 1)
     }
 
-    // Increase session count for both users
-    if (currentUser.value && currentUser.value.id === request.user_id) {
-      // Current user is the user who made the request
-      await incrementUserSessions(request.user_id)
-    }
+    // Increase session count for both users when chat starts
+    await incrementUserSessions(request.user_id)
+    await incrementCompanionSessions(request.companion_id)
 
     // Reload chats so the new chat appears in the list
     console.log('Reloading chats...')
