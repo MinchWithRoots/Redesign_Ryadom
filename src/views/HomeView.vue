@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 import { getPublishedReviewsForHome } from '@/services/supabaseService'
 import ReviewSlider from '@/components/ReviewSlider.vue'
+import NotificationDemo from '@/components/NotificationDemo.vue'
 import { cacheManager, CACHE_KEYS } from '@/utils/cacheManager'
 import '@/assets/home.css'
 
@@ -330,6 +331,9 @@ onMounted(() => {
               Узнайте, как наша платформа изменила жизни тысячи людей
             </p>
           </div>
+
+          <!-- Notification Demo Component -->
+          <NotificationDemo />
 
           <!-- Reviews Slider -->
           <ReviewSlider :reviews="reviews" />

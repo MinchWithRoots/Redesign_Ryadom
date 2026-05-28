@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentUser, loadCurrentUser, logoutUser } from '../composables/useAppState'
 import { useAuth } from '../composables/useAuth'
+import NotificationPanel from './NotificationPanel.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -77,6 +78,9 @@ onUnmounted(() => {})
 
       <!-- Desktop Auth Buttons -->
       <div class="site-header__actions">
+        <!-- Notifications Panel (visible when logged in) -->
+        <NotificationPanel v-if="currentUser" />
+
         <template v-if="!currentUser">
           <button class="btn-header-login" @click="navigate('/auth')">Логин</button>
           <button class="btn-header-register" @click="navigate('/auth', { mode: 'register' })">Регистрация</button>
@@ -116,6 +120,9 @@ onUnmounted(() => {})
         <button class="site-header__mobile-nav-btn" @click="scrollToSection('contacts')">Контакты</button>
 
         <div class="site-header__mobile-actions">
+          <!-- Notifications Panel (visible when logged in on mobile) -->
+          <NotificationPanel v-if="currentUser" />
+
           <template v-if="!currentUser">
             <button class="btn-mobile-login" @click="navigate('/auth')">Логин</button>
             <button class="btn-mobile-register" @click="navigate('/auth', { mode: 'register' })">Регистрация</button>
