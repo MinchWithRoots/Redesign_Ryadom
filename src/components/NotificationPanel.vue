@@ -165,7 +165,7 @@ const handleOutsideClick = (event: MouseEvent) => {
 .notification-icon {
   width: 24px;
   height: 24px;
-  color: #ff6330;
+  color: var(--color-primary);
 }
 
 .notification-badge {
@@ -177,7 +177,7 @@ const handleOutsideClick = (event: MouseEvent) => {
   justify-content: center;
   width: 20px;
   height: 20px;
-  background-color: #ff6330;
+  background-color: var(--color-primary);
   color: white;
   border-radius: 50%;
   font-size: 12px;
@@ -191,8 +191,8 @@ const handleOutsideClick = (event: MouseEvent) => {
   top: calc(100% + 8px);
   width: 360px;
   max-width: calc(100vw - 20px);
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
@@ -206,22 +206,22 @@ const handleOutsideClick = (event: MouseEvent) => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f9f9f9;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-secondary-light);
 }
 
 .notification-dropdown__title {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-secondary);
 }
 
 .notification-dropdown__mark-read {
   padding: 0;
   background: none;
   border: none;
-  color: #ff6330;
+  color: var(--color-primary);
   cursor: pointer;
   font-size: 12px;
   text-decoration: none;
@@ -244,7 +244,7 @@ const handleOutsideClick = (event: MouseEvent) => {
   justify-content: center;
   padding: 32px 16px;
   text-align: center;
-  color: #999;
+  color: var(--color-secondary-60);
 }
 
 .notification-empty p {
@@ -261,18 +261,18 @@ const handleOutsideClick = (event: MouseEvent) => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
-  background-color: white;
+  background-color: var(--color-white);
   transition: background-color 0.2s;
 }
 
 .notification-item:hover {
-  background-color: #fafafa;
+  background-color: var(--color-secondary-light);
 }
 
 .notification-item--unread {
-  background-color: #fff5f0;
+  background-color: var(--color-primary-light);
 }
 
 .notification-item__content {
@@ -284,20 +284,20 @@ const handleOutsideClick = (event: MouseEvent) => {
   margin: 0 0 4px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-secondary);
 }
 
 .notification-item__description {
   margin: 0 0 6px 0;
   font-size: 13px;
-  color: #666;
+  color: var(--color-secondary-60);
   line-height: 1.4;
 }
 
 .notification-item__time {
   display: block;
   font-size: 12px;
-  color: #999;
+  color: var(--color-secondary-70);
   font-style: normal;
 }
 
@@ -310,13 +310,13 @@ const handleOutsideClick = (event: MouseEvent) => {
   justify-content: center;
   background: none;
   border: none;
-  color: #ccc;
+  color: var(--color-secondary-30);
   cursor: pointer;
   font-size: 16px;
   transition: color 0.2s;
 }
 
 .notification-item__close:hover {
-  color: #ff6330;
+  color: var(--color-primary);
 }
 </style>

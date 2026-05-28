@@ -39,7 +39,7 @@ const addApplicationNotification = () => {
 <style scoped>
 .notification-demo {
   padding: 20px;
-  background: #f5f5f5;
+  background: var(--color-secondary-light);
   border-radius: 8px;
   margin: 20px 0;
 }
@@ -47,11 +47,11 @@ const addApplicationNotification = () => {
 .notification-demo h2 {
   margin-top: 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-secondary);
 }
 
 .notification-demo p {
-  color: #666;
+  color: var(--color-secondary-60);
   font-size: 14px;
   margin: 10px 0 20px 0;
 }
@@ -64,7 +64,7 @@ const addApplicationNotification = () => {
 
 .demo-btn {
   padding: 10px 16px;
-  background-color: #ff6330;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -75,6 +75,6 @@ const addApplicationNotification = () => {
 }
 
 .demo-btn:hover {
-  background-color: #e55a1f;
+  background-color: var(--color-primary-dark);
 }
 </style>
