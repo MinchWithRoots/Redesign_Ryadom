@@ -95,8 +95,36 @@ export const useNotifications = () => {
                 timestamp: new Date().toISOString(),
               })
 
+              // Only notify if this message was NOT sent by current user
               if (newMessage.sender_id !== userId) {
                 try {
+                  // Get chat details to verify current user is a participant
+                  const { data: chatData } = await supabase
+                    .from('chats')
+                    .select('id, user_id, companion_id')
+                    .eq('id', newMessage.chat_id)
+                    .single()
+
+                  if (!chatData) {
+                    console.warn('[useNotifications] Chat not found for message', newMessage.chat_id)
+                    return
+                  }
+
+                  // Check if current user is in this chat
+                  const isCurrentUserInChat = chatData.user_id === userId ||
+                    (chatData.companion_id &&
+                     (await supabase
+                       .from('companions')
+                       .select('user_id')
+                       .eq('id', chatData.companion_id)
+                       .single()
+                     ).data?.user_id === userId)
+
+                  if (!isCurrentUserInChat) {
+                    console.log('[useNotifications] Current user is not part of this chat, skipping notification')
+                    return
+                  }
+
                   const { data: senderData } = await supabase
                     .from('users')
                     .select('name')
@@ -104,7 +132,7 @@ export const useNotifications = () => {
                     .single()
 
                   const senderName = senderData?.name || 'Пользователь'
-                  console.log('[useNotifications] Adding message notification from:', senderName)
+                  console.log('[useNotifications] ✅ Adding message notification from:', senderName)
 
                   const messagePreview = newMessage.text || newMessage.encrypted_text || 'Сообщение получено'
                   addNotification({
@@ -122,6 +150,8 @@ export const useNotifications = () => {
                     description: 'У вас новое сообщение',
                   })
                 }
+              } else {
+                console.log('[useNotifications] ❌ Skipping notification: current user is the sender')
               }
             }
           )
