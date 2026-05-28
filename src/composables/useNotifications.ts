@@ -70,14 +70,16 @@ export const useNotifications = () => {
         console.log('[useNotifications] 📋 Current user details:', { userId, email: userData.user.email })
 
         // Subscribe to new messages
+        console.log('[useNotifications] 📡 Subscribing to messages channel with user ID filter:', userId)
         messageSubscription = supabase
-          .channel('new_messages')
+          .channel(`messages:${userId}`)
           .on(
             'postgres_changes',
             {
               event: 'INSERT',
               schema: 'public',
               table: 'messages',
+              filter: `chat_id=gt.0`, // Ensure valid chat_id
             },
             async (payload) => {
               const newMessage = payload.new as any
