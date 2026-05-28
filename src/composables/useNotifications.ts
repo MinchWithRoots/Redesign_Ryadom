@@ -163,7 +163,7 @@ export const useNotifications = () => {
                   .single()
 
                 const senderName = senderData?.name || 'Пользователь'
-                console.log('[useNotifications] 📬 Sending notification to', recipientRole, 'from:', senderName)
+                console.log('[useNotifications] 📬 Sending notification to', currentUserRole, 'from:', senderName)
 
                 const messagePreview = newMessage.text || newMessage.encrypted_text || 'Сообщение получено'
                 addNotification({
