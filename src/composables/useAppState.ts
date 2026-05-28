@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 import * as encryptionService from '@/services/encryptionService'
+import { useNotifications } from './useNotifications'
 
 // Types
 export interface User {
@@ -481,6 +482,9 @@ export const logoutUser = async () => {
     currentUser.value = null
     chats.value = []
     messages.value = []
+    // Clear notifications on logout
+    const { clearAll } = useNotifications()
+    clearAll()
   } catch (err) {
     console.error('Logout error:', err)
   }
