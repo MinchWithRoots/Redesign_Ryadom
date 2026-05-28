@@ -8,13 +8,18 @@ const isOpen = ref(false)
 const panelRef = ref<HTMLDivElement | null>(null)
 
 onMounted(async () => {
+  console.log('[NotificationPanel] Mounted, currentUser:', currentUser.value?.name)
+
   // Wait a bit for currentUser to be loaded if just mounted
   if (currentUser.value) {
+    console.log('[NotificationPanel] User already logged in, initializing listeners')
     await initializeRealtimeListeners()
   } else {
+    console.log('[NotificationPanel] User not logged in yet, waiting...')
     // Watch for user login
     const stopWatching = watch(currentUser, async (newUser) => {
       if (newUser) {
+        console.log('[NotificationPanel] User logged in, initializing listeners')
         await initializeRealtimeListeners()
         stopWatching()
       }

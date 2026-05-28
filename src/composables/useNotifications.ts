@@ -60,9 +60,13 @@ export const useNotifications = () => {
     initPromise = (async () => {
       try {
         const { data: userData } = await supabase.auth.getUser()
-        if (!userData?.user?.id) return
+        if (!userData?.user?.id) {
+          console.warn('[useNotifications] No authenticated user found')
+          return
+        }
 
         const userId = userData.user.id
+        console.log('[useNotifications] Initializing realtime listeners for user:', userId)
 
         // Subscribe to new messages
         messageSubscription = supabase
@@ -76,6 +80,12 @@ export const useNotifications = () => {
             },
             async (payload) => {
               const newMessage = payload.new as any
+              console.log('[useNotifications] New message event received:', {
+                senderId: newMessage.sender_id,
+                currentUserId: userId,
+                chatId: newMessage.chat_id,
+                textLength: newMessage.text?.length || 0,
+              })
 
               if (newMessage.sender_id !== userId) {
                 try {
@@ -86,16 +96,18 @@ export const useNotifications = () => {
                     .single()
 
                   const senderName = senderData?.name || 'Пользователь'
+                  console.log('[useNotifications] Adding message notification from:', senderName)
 
+                  const messagePreview = newMessage.text || newMessage.encrypted_text || 'Сообщение получено'
                   addNotification({
                     type: 'message',
                     title: `Новое сообщение от "${senderName}"`,
-                    description: newMessage.text?.substring(0, 100) || 'Сообщение получено',
+                    description: messagePreview.substring(0, 100),
                     userId: newMessage.sender_id,
                     chatId: newMessage.chat_id,
                   })
                 } catch (error) {
-                  console.error('Error processing new message notification:', error)
+                  console.error('[useNotifications] Error processing new message notification:', error)
                   addNotification({
                     type: 'message',
                     title: 'Новое сообщение',
@@ -105,7 +117,13 @@ export const useNotifications = () => {
               }
             }
           )
-          .subscribe()
+          .subscribe((status) => {
+            console.log('[useNotifications] Message subscription status:', status)
+          })
+
+        console.log('[useNotifications] Message subscription setup complete')
+
+        console.log('[useNotifications] Setting up companion_chat_requests subscription...')
 
         // Subscribe to companion chat requests (new and status changes)
         requestSubscription = supabase
@@ -197,10 +215,15 @@ export const useNotifications = () => {
                 })
               }
             }
-          )
-          .subscribe()
+        )
+        .subscribe((status) => {
+          console.log('[useNotifications] Chat requests subscription status:', status)
+        })
+
+        console.log('[useNotifications] All subscriptions setup complete')
       } catch (error) {
-        console.error('Error initializing real-time listeners:', error)
+        console.error('[useNotifications] Error initializing real-time listeners:', error)
+        initPromise = null
       }
     })()
 
