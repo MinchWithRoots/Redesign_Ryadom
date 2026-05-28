@@ -4,6 +4,7 @@ import { useNotifications } from '../composables/useNotifications'
 
 const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications()
 const isOpen = ref(false)
+const panelRef = ref<HTMLDivElement | null>(null)
 
 const handleNotificationClick = (notificationId: string) => {
   markAsRead(notificationId)
@@ -25,28 +26,29 @@ const formatTime = (date: Date) => {
   if (minutes < 60) return `${minutes} мин назад`
   if (hours < 24) return `${hours} ч назад`
   if (days < 7) return `${days} дн назад`
-  
+
   return date.toLocaleDateString('ru-RU')
+}
+
+const handleOutsideClick = (event: MouseEvent) => {
+  if (panelRef.value && !panelRef.value.contains(event.target as Node)) {
+    isOpen.value = false
+  }
 }
 
 watch(isOpen, (newVal) => {
   if (newVal) {
-    document.addEventListener('click', handleOutsideClick)
+    setTimeout(() => {
+      document.addEventListener('click', handleOutsideClick)
+    }, 0)
   } else {
     document.removeEventListener('click', handleOutsideClick)
   }
 })
-
-const handleOutsideClick = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  if (!target.closest('[data-notification-panel]')) {
-    isOpen.value = false
-  }
-}
 </script>
 
 <template>
-  <div data-notification-panel class="notification-panel">
+  <div ref="panelRef" data-notification-panel class="notification-panel">
     <!-- Notification Bell Button -->
     <button
       class="notification-bell"
