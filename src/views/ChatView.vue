@@ -91,9 +91,18 @@ const loadMessages = async () => {
 
           console.log('[Encryption] Key loaded:', !!key, 'keyLength:', key?.length || 0)
 
-          // If no key exists, generate one and store it for this user
+          // If no key exists, wait a moment and try again (in case it was just created)
+          // This handles the case where the companion just approved the request
           if (!key) {
-            console.log('[Encryption] No key found, generating and storing new one for this chat')
+            console.log('[Encryption] No key found on first try, retrying after delay...')
+            await new Promise(resolve => setTimeout(resolve, 500))
+            key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+            console.log('[Encryption] Key loaded after retry:', !!key)
+          }
+
+          // Only generate a new key if absolutely none exists
+          if (!key) {
+            console.log('[Encryption] Still no key found, generating new one for this chat')
             try {
               const masterKey = encryptionService.generateMasterKey()
               const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
@@ -112,9 +121,9 @@ const loadMessages = async () => {
           }
 
           if (key) {
-            console.log('Chat encryption key loaded/generated successfully')
+            console.log('Chat encryption key loaded successfully')
           } else {
-            console.debug('No encryption key found and could not generate one')
+            console.debug('No encryption key found for this chat')
           }
 
           currentChatMasterKey.value = key || undefined
@@ -247,9 +256,16 @@ const sendMessage = async () => {
         encryptionService.initializeWithPasswordAndSalt(currentUser.value.id, autoPassword, currentUser.value.id)
         let key = await encryptionService.loadChatKey(chatId.value, autoPassword)
 
-        // If no key exists, generate one
+        // If no key exists, try again after a short delay (in case it was just created)
         if (!key) {
-          console.log('[Send] No key found, generating and storing new one')
+          console.log('[Send] No key found on first try, retrying after delay...')
+          await new Promise(resolve => setTimeout(resolve, 300))
+          key = await encryptionService.loadChatKey(chatId.value, autoPassword)
+        }
+
+        // Only generate a new key if still no key exists
+        if (!key) {
+          console.log('[Send] Still no key found, generating and storing new one')
           try {
             const masterKey = encryptionService.generateMasterKey()
             const userDerivedKey = encryptionService.deriveKeyFromPassword(autoPassword, currentUser.value.id)
