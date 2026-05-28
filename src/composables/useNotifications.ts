@@ -79,7 +79,6 @@ export const useNotifications = () => {
               event: 'INSERT',
               schema: 'public',
               table: 'messages',
-              filter: `chat_id=gt.0`, // Ensure valid chat_id
             },
             async (payload) => {
               const newMessage = payload.new as any
@@ -159,8 +158,11 @@ export const useNotifications = () => {
             console.log('[useNotifications] 📡 Message subscription status:', status)
             if (status === 'SUBSCRIBED') {
               console.log('✅ Successfully subscribed to message INSERT events')
+              console.log('[useNotifications] 🔍 Listening for new messages on all chats...')
             } else if (status === 'CHANNEL_ERROR') {
               console.error('❌ Channel error - messages may not work')
+            } else if (status === 'CLOSED') {
+              console.warn('[useNotifications] Channel closed')
             }
           })
 
