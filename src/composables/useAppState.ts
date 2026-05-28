@@ -1904,7 +1904,15 @@ export const incrementUserSessions = async (userId: string) => {
       .eq('id', userId)
 
     if (updateError) {
-      console.error('Error updating sessions:', updateError)
+      console.error('Error updating user sessions on increment:', {
+        message: updateError.message,
+        code: (updateError as any).code,
+        hint: (updateError as any).hint,
+        details: (updateError as any).details,
+        status: (updateError as any).status,
+        userId,
+        newSessions,
+      })
       return
     }
 
@@ -1949,7 +1957,15 @@ export const incrementCompanionSessions = async (companionId: string | number) =
       .eq('id', parseInt(companionIdStr))
 
     if (updateError) {
-      console.error('Error updating companion sessions:', updateError)
+      console.error('Error updating companion sessions on increment:', {
+        message: updateError.message,
+        code: (updateError as any).code,
+        hint: (updateError as any).hint,
+        details: (updateError as any).details,
+        status: (updateError as any).status,
+        companionId: companionIdStr,
+        newSessions,
+      })
       return
     }
 
@@ -1991,7 +2007,13 @@ export const syncSessionCounts = async (userId: string) => {
       .eq('id', userId)
 
     if (updateUserError) {
-      console.error('Error updating user sessions:', updateUserError)
+      console.error('Error updating user sessions:', {
+        message: updateUserError.message,
+        code: (updateUserError as any).code,
+        hint: (updateUserError as any).hint,
+        details: (updateUserError as any).details,
+        status: (updateUserError as any).status,
+      })
       return
     }
 
@@ -2034,7 +2056,13 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
       .eq('id', parseInt(companionIdStr))
 
     if (updateError) {
-      console.error('Error updating companion sessions:', updateError)
+      console.error('Error updating companion sessions:', {
+        message: updateError.message,
+        code: (updateError as any).code,
+        hint: (updateError as any).hint,
+        details: (updateError as any).details,
+        status: (updateError as any).status,
+      })
       return
     }
 
