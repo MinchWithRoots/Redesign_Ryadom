@@ -94,87 +94,102 @@ export const useNotifications = () => {
                 timestamp: new Date().toISOString(),
               })
 
-              console.log('[useNotifications] 🔍 Checking notification eligibility...')
-              console.log('[useNotifications] Sender:', newMessage.sender_id)
+              console.log('[useNotifications] 🔍 Processing message event...')
+              console.log('[useNotifications] Message sender:', newMessage.sender_id)
               console.log('[useNotifications] Current auth user:', userId)
-              console.log('[useNotifications] Are they same?', newMessage.sender_id === userId)
 
-              // Only notify if this message was NOT sent by current user
-              if (newMessage.sender_id !== userId) {
-                try {
-                  // Get chat details to find all participants
-                  const { data: chatData } = await supabase
-                    .from('chats')
-                    .select('id, user_id, companion_id')
-                    .eq('id', newMessage.chat_id)
-                    .single()
+              try {
+                // Get chat details to identify participants
+                const { data: chatData } = await supabase
+                  .from('chats')
+                  .select('id, user_id, companion_id')
+                  .eq('id', newMessage.chat_id)
+                  .single()
 
-                  if (!chatData) {
-                    console.warn('[useNotifications] Chat not found for message', newMessage.chat_id)
-                    return
-                  }
-
-                  console.log('[useNotifications] Chat details:', {
-                    chatId: chatData.id,
-                    chatUserId: chatData.user_id,
-                    companionId: chatData.companion_id
-                  })
-
-                  // Check if current user is the recipient in this chat
-                  let isRecipient = false
-                  let recipientRole = null
-
-                  if (chatData.user_id === userId) {
-                    console.log('[useNotifications] Current user is CHAT USER (not companion)')
-                    isRecipient = true
-                    recipientRole = 'user'
-                  } else if (chatData.companion_id) {
-                    // Check if current user is the companion
-                    const { data: companionData } = await supabase
-                      .from('companions')
-                      .select('user_id, id')
-                      .eq('id', chatData.companion_id)
-                      .single()
-
-                    if (companionData?.user_id === userId) {
-                      console.log('[useNotifications] Current user is COMPANION')
-                      isRecipient = true
-                      recipientRole = 'companion'
-                    }
-                  }
-
-                  if (!isRecipient) {
-                    console.log('[useNotifications] Current user is NOT a recipient in this chat, skipping')
-                    return
-                  }
-
-                  const { data: senderData } = await supabase
-                    .from('users')
-                    .select('name')
-                    .eq('id', newMessage.sender_id)
-                    .single()
-
-                  const senderName = senderData?.name || 'Пользователь'
-                  console.log('[useNotifications] ✅ Adding message notification from:', senderName, 'to', recipientRole)
-
-                  const messagePreview = newMessage.text || newMessage.encrypted_text || 'Сообщение получено'
-                  addNotification({
-                    type: 'message',
-                    title: `Новое сообщение от "${senderName}"`,
-                    description: messagePreview.substring(0, 100),
-                    userId: newMessage.sender_id,
-                    chatId: newMessage.chat_id,
-                  })
-                } catch (error) {
-                  console.error('[useNotifications] Error processing new message notification:', error)
-                  addNotification({
-                    type: 'message',
-                    title: 'Новое сообщение',
-                    description: 'У вас новое сообщение',
-                  })
+                if (!chatData) {
+                  console.warn('[useNotifications] Chat not found for message', newMessage.chat_id)
+                  return
                 }
-              } else {
-                console.log('[useNotifications] ❌ Skipping notification: sender_id === currentUserId (sender is self)')
+
+                console.log('[useNotifications] Chat structure:', {
+                  chatId: chatData.id,
+                  user_id: chatData.user_id,
+                  companion_id: chatData.companion_id,
+                  sender_id: newMessage.sender_id
+                })
+
+                // Determine who the SENDER is in the chat
+                let senderRole = null
+                if (newMessage.sender_id === chatData.user_id) {
+                  senderRole = 'user'
+                } else if (chatData.companion_id) {
+                  const { data: companionData } = await supabase
+                    .from('companions')
+                    .select('user_id, id')
+                    .eq('id', chatData.companion_id)
+                    .single()
+
+                  if (companionData?.user_id === newMessage.sender_id) {
+                    senderRole = 'companion'
+                  }
+                }
+
+                console.log('[useNotifications] Sender role in chat:', senderRole)
+
+                // Check if CURRENT USER is the recipient (i.e., NOT the sender)
+                let isCurrentUserRecipient = false
+                let recipientRole = null
+
+                if (chatData.user_id === userId && senderRole !== 'user') {
+                  // Current user is chat user, and sender is not chat user → current user is recipient
+                  console.log('[useNotifications] ✅ Current user is RECIPIENT (chat user)')
+                  isCurrentUserRecipient = true
+                  recipientRole = 'user'
+                } else if (chatData.companion_id) {
+                  const { data: companionData } = await supabase
+                    .from('companions')
+                    .select('user_id, id')
+                    .eq('id', chatData.companion_id)
+                    .single()
+
+                  if (companionData?.user_id === userId && senderRole !== 'companion') {
+                    // Current user is companion, and sender is not companion → current user is recipient
+                    console.log('[useNotifications] ✅ Current user is RECIPIENT (companion)')
+                    isCurrentUserRecipient = true
+                    recipientRole = 'companion'
+                  }
+                }
+
+                if (!isCurrentUserRecipient) {
+                  console.log('[useNotifications] ❌ Current user is NOT the recipient, skipping notification')
+                  return
+                }
+
+                // Get sender info for notification
+                const { data: senderData } = await supabase
+                  .from('users')
+                  .select('name')
+                  .eq('id', newMessage.sender_id)
+                  .single()
+
+                const senderName = senderData?.name || 'Пользователь'
+                console.log('[useNotifications] 📬 Sending notification to', recipientRole, 'from:', senderName)
+
+                const messagePreview = newMessage.text || newMessage.encrypted_text || 'Сообщение получено'
+                addNotification({
+                  type: 'message',
+                  title: `Новое сообщение от "${senderName}"`,
+                  description: messagePreview.substring(0, 100),
+                  userId: newMessage.sender_id,
+                  chatId: newMessage.chat_id,
+                })
+              } catch (error) {
+                console.error('[useNotifications] Error processing message notification:', error)
+                addNotification({
+                  type: 'message',
+                  title: 'Новое сообщение',
+                  description: 'У вас новое сообщение',
+                })
               }
             }
           )
