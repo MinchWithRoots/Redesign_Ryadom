@@ -9,6 +9,7 @@ import ReviewModal from '../components/ReviewModal.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import LoaderAnimation from '../components/LoaderAnimation.vue'
+import AsyncLoader from '../components/AsyncLoader.vue'
 import { getUserReviews, deleteReview, getCompanionReviews } from '../services/supabaseService'
 import { getAgeForm } from '../utils/ageForm'
 import { supabase } from '@/utils/supabase'
@@ -744,8 +745,8 @@ watch(
 
           <!-- Loading State -->
           <div v-if="isLoadingChats" class="profile-loading-container">
-            <LoaderAnimation type="dots" size="md" />
-            <p class="profile-loading-text">Загрузка чатов...</p>
+            <AsyncLoader type="spinner" size="md" />
+            <p class="profile-loading-container__text">Загрузка чатов...</p>
           </div>
 
           <!-- Empty State -->
@@ -923,8 +924,8 @@ watch(
 
             <!-- Loading State -->
             <div v-if="isLoadingReviews" class="profile-loading-container">
-              <img src="/src/images/loading.svg" alt="Загрузка" class="profile-loading-icon" />
-              <p class="profile-loading-text">Загрузка отзывов...</p>
+              <AsyncLoader type="rings" size="md" />
+              <p class="profile-loading-container__text">Загрузка отзывов...</p>
             </div>
 
             <!-- Reviews List -->

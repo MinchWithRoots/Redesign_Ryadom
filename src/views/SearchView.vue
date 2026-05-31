@@ -6,6 +6,7 @@ import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import LoaderAnimation from '../components/LoaderAnimation.vue'
+import AsyncLoader from '../components/AsyncLoader.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 import { preloadImages } from '../utils/imageCache'
@@ -313,9 +314,9 @@ const getRussianPlural = (count: number, word: string) => {
           </transition>
 
           <!-- Loading State -->
-          <div v-if="isLoading" class="loading-container">
-            <LoaderAnimation type="gradient" size="lg" />
-            <p class="loading-text">Загрузка спутников...</p>
+          <div v-if="isLoading" class="search-loading-container">
+            <AsyncLoader type="bars" size="md" />
+            <p class="search-loading-container__text">Загрузка спутников...</p>
           </div>
 
           <!-- Companions Grid -->

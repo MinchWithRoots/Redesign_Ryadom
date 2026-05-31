@@ -10,6 +10,7 @@ import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import LoaderAnimation from '../components/LoaderAnimation.vue'
+import AsyncLoader from '../components/AsyncLoader.vue'
 import '@/assets/chat.css'
 
 const { isOpen, title, message, confirmText, cancelText, isDangerous, openDialog, handleConfirm, handleCancel } = useConfirmDialog()
@@ -1089,8 +1090,15 @@ onBeforeUnmount(() => {
         ref="messagesContainer"
         class="chat-messages-container"
       >
+        <!-- Loading state -->
+        <template v-if="isLoadingMessages && chatMessages.length === 0">
+          <AsyncLoader type="message-skeleton" />
+          <AsyncLoader type="message-skeleton" />
+          <AsyncLoader type="message-skeleton" />
+        </template>
+
         <!-- Empty state -->
-        <div v-if="chatMessages.length === 0" class="chat-empty-state">
+        <div v-else-if="chatMessages.length === 0" class="chat-empty-state">
           <!-- Avatar -->
           <div class="chat-empty-avatar-wrapper">
             <ImageWithFallback
