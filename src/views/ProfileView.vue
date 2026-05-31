@@ -1879,22 +1879,28 @@ watch(
 }
 
 .profile-review-item__delete-btn {
-  padding: 6px 12px;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 4px;
-  color: #c33;
-  font-size: 12px;
-  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid #ef4444;
+  background: var(--color-white);
+  color: #ef4444;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
   gap: 6px;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .profile-review-item__delete-btn:hover {
-  background: #fdd;
-  border-color: #fbb;
+  background: #fee;
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
 .profile-empty-reviews {
