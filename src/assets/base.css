@@ -38,8 +38,14 @@
 
   --transition-fast: 200ms ease;
   --transition-base: 300ms ease;
+  --transition-normal: 300ms ease;
 
   --container-max-width: 1200px;
+
+  --radius-full: 9999px;
+  --radius-2xl: 1.5rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.5rem;
 }
 
 *,

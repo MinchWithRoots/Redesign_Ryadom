@@ -1232,12 +1232,12 @@ const handleRejectApplication = async (applicationId: string | number) => {
 
     <!-- Confirm Dialog -->
     <ConfirmDialog
-      :isOpen="confirmDialog.isOpen"
+      :is-open="confirmDialog.isOpen"
       :title="confirmDialog.title"
       :message="confirmDialog.message"
-      :confirmText="confirmDialog.confirmText"
-      :cancelText="confirmDialog.cancelText"
-      :isDangerous="confirmDialog.isDangerous"
+      :confirm-text="confirmDialog.confirmText"
+      :cancel-text="confirmDialog.cancelText"
+      :is-dangerous="confirmDialog.isDangerous"
       @confirm="handleDialogConfirm"
       @cancel="closeConfirmDialog"
     />
