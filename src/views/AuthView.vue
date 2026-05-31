@@ -493,9 +493,9 @@ const navigate = (path: string) => {
               <input v-model="registerForm.acceptTerms" type="checkbox" />
               <span>
                 Я согласен с
-                <button type="button" class="auth-form__link">условиями использования</button>
+                <button type="button" @click.prevent="navigate('/terms')" class="auth-form__link">условиями использования</button>
                 и
-                <button type="button" class="auth-form__link">политикой конфиденциальности</button>
+                <button type="button" @click.prevent="navigate('/privacy')" class="auth-form__link">политикой конфиденциальности</button>
               </span>
             </label>
 

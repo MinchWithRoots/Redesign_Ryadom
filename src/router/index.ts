@@ -63,6 +63,16 @@ const routes = [
     component: () => import('../views/CompanionApplicationView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: () => import('../views/TermsView.vue'),
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy',
+    component: () => import('../views/PrivacyView.vue'),
+  },
 ]
 
 const router = createRouter({
