@@ -193,11 +193,11 @@ const navigateToCompanion = (companionId?: string) => {
 
 @media screen and (min-width: 1024px) {
   .emotions-slider {
-    padding: 3rem 0;
+    padding: 2.5rem 0;
   }
 
   .emotions-slider__slide {
-    min-height: 620px;
+    min-height: 590px;
   }
 }
 

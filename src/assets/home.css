@@ -462,7 +462,7 @@
 
 @media (min-width: 1024px) {
   #reviews {
-    padding: 10rem 2rem;
+    padding: 8.5rem 2rem;
   }
 }
 
@@ -615,7 +615,7 @@
 
 @media (min-width: 1024px) {
   .reviews-container {
-    gap: 5rem;
+    gap: 4rem;
     padding: 0 3rem;
   }
 }
