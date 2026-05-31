@@ -26,9 +26,26 @@ const router = useRouter()
 const modules = [Navigation, Pagination, Autoplay, Virtual]
 const swiperInstance = ref<any>(null)
 const imageLoadErrors = ref<Set<number | string>>(new Set())
+const centerSlideIndex = ref<number>(0)
 
 const handleSwiperInit = (swiper: any) => {
   swiperInstance.value = swiper
+  updateCenterSlide(swiper)
+}
+
+const updateCenterSlide = (swiper: any) => {
+  const slidesPerView = swiper.params.slidesPerView || 1
+  if (slidesPerView === 3) {
+    centerSlideIndex.value = swiper.activeIndex + 1
+  } else {
+    centerSlideIndex.value = swiper.activeIndex
+  }
+}
+
+const handleSlideChange = () => {
+  if (swiperInstance.value) {
+    updateCenterSlide(swiperInstance.value)
+  }
 }
 
 const handleImageError = (reviewId: number | string) => {
@@ -82,9 +99,10 @@ const navigateToCompanion = (companionId?: string) => {
         1024: { slidesPerView: 3, spaceBetween: 24 }
       }"
       @swiper="handleSwiperInit"
+      @slideChange="handleSlideChange"
       class="emotions-slider__slider swiper"
     >
-      <SwiperSlide v-for="review in reviews" :key="review.id" class="emotions-slider__slide swiper-slide">
+      <SwiperSlide v-for="(review, index) in reviews" :key="review.id" class="emotions-slider__slide swiper-slide" :class="{ 'emotions-slider__slide_center': index === centerSlideIndex }">
         <div class="emotions-slider__item emotions-slider-item">
           <!-- Avatar as Image -->
           <div class="emotions-slider-item__image">
@@ -320,7 +338,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 }
 
-.emotions-slider__slide.swiper-slide-active .emotions-slider-item {
+.emotions-slider__slide.emotions-slider__slide_center .emotions-slider-item {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 20px rgba(255, 114, 94, 0.15);
 }
 
@@ -547,9 +565,9 @@ const navigateToCompanion = (companionId?: string) => {
   }
 }
 
-/* Hide header/footer for non-active slides */
-.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__header,
-.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__footer {
+/* Show header/footer only for center slide */
+.emotions-slider__slide:not(.emotions-slider__slide_center) .emotions-slider-item__header,
+.emotions-slider__slide:not(.emotions-slider__slide_center) .emotions-slider-item__footer {
   max-height: 0;
 }
 
