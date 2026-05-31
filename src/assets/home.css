@@ -67,6 +67,8 @@
   .hero-bg-image--desktop {
     width: auto;
     object-position: center center;
+    right: 0;
+    left: auto;
   }
 }
 
@@ -391,7 +393,13 @@
 
 @media (min-width: 1024px) {
   .hero-planet img {
-    width: 100%;
+    width: 70%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-planet img {
+    width: 80%;
   }
 }
 
