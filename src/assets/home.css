@@ -170,6 +170,7 @@
 @media (min-width: 1024px) {
   .hero-heading {
     justify-content: flex-start;
+    margin-bottom: 10px;
   }
 }
 
