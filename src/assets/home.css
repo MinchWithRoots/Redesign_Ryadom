@@ -102,6 +102,13 @@
 
 @media (min-width: 1024px) {
   .hero-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1500px) {
+  .hero-grid {
     grid-template-columns: 5fr 4fr;
     gap: 2rem;
   }
@@ -121,10 +128,19 @@
   }
 }
 
-@media (min-width: 1020px) {
+@media (min-width: 1024px) {
+  .hero-text-group {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+@media (min-width: 1500px) {
   .hero-text-group {
     align-items: center;
     text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
