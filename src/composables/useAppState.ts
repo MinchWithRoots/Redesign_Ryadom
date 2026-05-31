@@ -1513,6 +1513,10 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
       throw new Error('Request not found in local state')
     }
 
+    if (!request.user_id || !request.companion_id) {
+      throw new Error(`Invalid request data: user_id=${request.user_id}, companion_id=${request.companion_id}`)
+    }
+
     console.log('Found request:', {
       id: request.id,
       user_id: request.user_id,
@@ -1537,13 +1541,16 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
       .single()
 
     if (createChatError) {
-      console.error('Chat creation error details:', {
+      const errorDetails = {
         message: createChatError.message,
         code: (createChatError as any).code,
         hint: (createChatError as any).hint,
         details: (createChatError as any).details,
-      })
-      throw new Error(`Failed to create chat: ${createChatError.message}`)
+        status: (createChatError as any).status,
+      }
+      console.error('Chat creation error details:', errorDetails)
+      console.error('Full error:', createChatError)
+      throw new Error(`Failed to create chat: ${createChatError.message || 'Unknown error'}`)
     }
 
     if (!chat) {
@@ -1694,12 +1701,24 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
     }
 
     // Increase session count for both users when chat starts
-    await incrementUserSessions(request.user_id)
-    await incrementCompanionSessions(request.companion_id)
+    try {
+      console.log('Incrementing sessions for user:', request.user_id)
+      await incrementUserSessions(request.user_id)
+      console.log('Incrementing sessions for companion:', request.companion_id)
+      await incrementCompanionSessions(request.companion_id)
+    } catch (sessionErr) {
+      console.warn('Warning: Failed to increment sessions, but chat was created:', sessionErr)
+      // Non-critical error - don't throw
+    }
 
     // Reload chats so the new chat appears in the list
     console.log('Reloading chats...')
-    await loadChats()
+    try {
+      await loadChats()
+    } catch (reloadErr) {
+      console.warn('Warning: Failed to reload chats list:', reloadErr)
+      // Non-critical error - don't throw
+    }
 
     console.log('Chat request approved successfully')
     return { request: updatedRequest, chat }
@@ -1708,9 +1727,12 @@ export const approveChatRequest = async (requestId: string, encryptionPassword?:
     error.value = errorMessage
     console.error('Full approve request error:', {
       message: errorMessage,
-      error: err,
+      errorType: typeof err,
+      errorString: String(err),
       stack: err instanceof Error ? err.stack : undefined,
+      details: err instanceof Error ? err : JSON.stringify(err),
     })
+    console.error('Full error object:', err)
     throw err
   } finally {
     isLoading.value = false

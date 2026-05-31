@@ -244,10 +244,12 @@ const handleApprove = async (requestId: string) => {
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
     console.error('Error approving request:', {
-      error: err,
-      message: errorMsg,
+      errorMsg,
+      errorType: typeof err,
+      errorString: String(err),
       stack: err instanceof Error ? err.stack : undefined,
     })
+    console.error('Full error:', err)
     notification.value = `Ошибка: ${errorMsg}`
     setTimeout(() => {
       notification.value = ''
