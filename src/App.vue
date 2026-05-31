@@ -23,4 +23,11 @@ import Footer from './components/Footer.vue'
 .app-main {
   flex: 1;
 }
+
+/* Add mobile top padding equal to header height */
+@media (max-width: 768px) {
+  .app-main {
+    padding-top: 85px;
+  }
+}
 </style>

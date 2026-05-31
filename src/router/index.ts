@@ -73,6 +73,11 @@ const routes = [
     name: 'Privacy',
     component: () => import('../views/PrivacyView.vue'),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFoundView.vue'),
+  },
 ]
 
 const router = createRouter({
