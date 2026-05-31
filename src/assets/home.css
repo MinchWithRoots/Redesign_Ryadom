@@ -144,7 +144,7 @@
 
 @media (min-width: 1500px) {
   .hero-text-group {
-    align-items: inherit;
+    /* align-items: inherit; */
     text-align: left;
    
     margin-right: auto;
