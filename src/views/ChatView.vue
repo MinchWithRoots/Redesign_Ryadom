@@ -852,7 +852,9 @@ watch(chatId, async () => {
     unsubscribeFromMessages()
     unsubscribeFromReadStatus()
     messages.value = []
+    isLoadingMessages.value = true
     currentChatMasterKey.value = null // Reset to "not loaded" state for new chat
+    await nextTick() // Ensure DOM updates with cleared messages before loading
     await loadChats()
     await loadMessages()
     await markMessagesAsRead()
