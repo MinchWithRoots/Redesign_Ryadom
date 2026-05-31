@@ -3,7 +3,8 @@
     <div id="particles-js"></div>
     <div class="denied__wrapper">
       <h1>404</h1>
-      <h3>ПОТЕРЯНЫ В <span>КОСМОСЕ</span>? Похоже, эта страница не существует.</h3>
+      <h3 class="lost-text">ПОТЕРЯНЫ В <span>КОСМОСЕ</span></h3>
+      <h3 class="error-text">Похоже, эта страница не существует.</h3>
       <svg
         id="astronaut"
         xmlns="http://www.w3.org/2000/svg"
@@ -311,11 +312,12 @@ onMounted(() => {
 .denied__wrapper {
   max-width: 390px;
   width: 100%;
-  height: 390px;
+  min-height: 600px;
   display: block;
   margin: 0 auto;
   position: relative;
   margin-top: 8vh;
+  padding: 40px 20px;
 }
 
 .permission_denied h1 {
@@ -333,9 +335,17 @@ onMounted(() => {
   font-size: 19px;
   line-height: 23px;
   max-width: 330px;
-  margin: 0 auto 30px;
+  margin: 0 auto;
   font-family: 'Dosis', sans-serif;
   font-weight: 400;
+}
+
+.lost-text {
+  margin-bottom: 20px !important;
+}
+
+.error-text {
+  margin-bottom: 30px !important;
 }
 
 .permission_denied h3 span {
