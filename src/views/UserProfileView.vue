@@ -43,15 +43,33 @@ onMounted(async () => {
       await loadCurrentUser()
     }
 
-    const comp = await getCompanionById(companionId.value.toString())
+    // First load companion data
+    let comp = await getCompanionById(companionId.value.toString())
     if (comp) {
+      console.log('Loaded companion from DB:', {
+        id: comp.id,
+        name: comp.name,
+        sessions: comp.sessions,
+        reviews_count: comp.reviews_count
+      })
       companion.value = comp
+
       // Sync companion session counts based on actual chats
       await syncCompanionSessionCounts(comp.id)
-      // Update companion.value with synced data from companions array
-      const syncedCompanion = companions.value.find(c => c.id === comp.id)
-      if (syncedCompanion) {
-        companion.value = syncedCompanion
+
+      // Small delay to allow database to update
+      await new Promise(resolve => setTimeout(resolve, 150))
+
+      // Reload companion data to get updated sessions from database
+      const refreshedComp = await getCompanionById(comp.id.toString())
+      if (refreshedComp) {
+        console.log('Reloaded companion after sync:', {
+          id: refreshedComp.id,
+          name: refreshedComp.name,
+          sessions: refreshedComp.sessions,
+          reviews_count: refreshedComp.reviews_count
+        })
+        companion.value = refreshedComp
       }
     } else {
       console.error('Companion not found with ID:', companionId.value)

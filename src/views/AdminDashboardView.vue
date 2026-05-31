@@ -18,6 +18,14 @@ const applications = ref<any[]>([])
 const reports = ref<any[]>([])
 const rejectionReasons = ref<{ [key: string]: string }>({})
 const isLoading = ref(false)
+const loadingStates = ref({
+  users: false,
+  companions: false,
+  reviews: false,
+  chats: false,
+  applications: false,
+  reports: false
+})
 const successMessage = ref('')
 const errorMessage = ref('')
 
@@ -117,6 +125,7 @@ const loadDashboardData = async () => {
 }
 
 const loadUsers = async () => {
+  loadingStates.value.users = true
   try {
     const { data, error } = await supabase
       .from('users')
@@ -134,10 +143,13 @@ const loadUsers = async () => {
     console.error('Failed to fetch users:', err)
     errorMessage.value = `Ошибка подключения: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
     setTimeout(() => (errorMessage.value = ''), 5000)
+  } finally {
+    loadingStates.value.users = false
   }
 }
 
 const loadCompanionsList = async () => {
+  loadingStates.value.companions = true
   try {
     const { data, error } = await supabase
       .from('companions')
@@ -151,10 +163,13 @@ const loadCompanionsList = async () => {
     companionsList.value = data || []
   } catch (err) {
     console.error('Failed to fetch companions:', err)
+  } finally {
+    loadingStates.value.companions = false
   }
 }
 
 const loadReviews = async () => {
+  loadingStates.value.reviews = true
   try {
     const { data, error } = await supabase
       .from('reviews')
@@ -168,14 +183,17 @@ const loadReviews = async () => {
     reviews.value = data || []
   } catch (err) {
     console.error('Failed to fetch reviews:', err)
+  } finally {
+    loadingStates.value.reviews = false
   }
 }
 
 const loadChats = async () => {
+  loadingStates.value.chats = true
   try {
     const { data, error } = await supabase
       .from('chats')
-      .select('*')
+      .select('*, companion:companions(name, id), user:users(name, id)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -185,10 +203,13 @@ const loadChats = async () => {
     chats.value = data || []
   } catch (err) {
     console.error('Failed to fetch chats:', err)
+  } finally {
+    loadingStates.value.chats = false
   }
 }
 
 const loadApplications = async () => {
+  loadingStates.value.applications = true
   try {
     const { data, error } = await supabase
       .from('companion_applications')
@@ -202,10 +223,13 @@ const loadApplications = async () => {
     applications.value = data || []
   } catch (err) {
     console.error('Failed to fetch applications:', err)
+  } finally {
+    loadingStates.value.applications = false
   }
 }
 
 const loadReports = async () => {
+  loadingStates.value.reports = true
   try {
     const { data, error } = await supabase
       .from('reports')
@@ -219,6 +243,8 @@ const loadReports = async () => {
     reports.value = data || []
   } catch (err) {
     console.error('Failed to fetch reports:', err)
+  } finally {
+    loadingStates.value.reports = false
   }
 }
 
@@ -796,9 +822,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'users'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Пользователи ({{ users.length }})</h2>
 
-        <div v-if="isLoading" class="loading-state">
+        <div v-if="loadingStates.users" class="loading-state">
           <LoaderAnimation type="pulse" size="md" />
-          <div class="loading-state__text">Загрузка...</div>
+          <div class="loading-state__text">Загрузка пользователей...</div>
         </div>
 
         <div v-else-if="users.length > 0" class="card-table">
@@ -859,9 +885,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'companions'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companionsList.length }})</h2>
 
-        <div v-if="isLoading" class="loading-state">
+        <div v-if="loadingStates.companions" class="loading-state">
           <LoaderAnimation type="dots" size="md" />
-          <div class="loading-state__text">Загрузка...</div>
+          <div class="loading-state__text">Загрузка спутников...</div>
         </div>
 
         <div v-else-if="companionsList.length > 0" class="grid gap-4">
@@ -913,9 +939,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'reviews'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Отзывы ({{ reviews.length }})</h2>
 
-        <div v-if="isLoading" class="loading-state">
+        <div v-if="loadingStates.reviews" class="loading-state">
           <LoaderAnimation type="bars" size="md" />
-          <div class="loading-state__text">Загрузка...</div>
+          <div class="loading-state__text">Загрузка отзывов...</div>
         </div>
 
         <div v-else-if="reviews.length > 0" class="grid gap-4">
@@ -953,9 +979,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
       <div v-if="activeTab === 'chats'" class="space-y-4">
         <h2 class="text-2xl font-bold text-secondary mb-6">Чаты ({{ chats.length }})</h2>
 
-        <div v-if="isLoading" class="loading-state">
+        <div v-if="loadingStates.chats" class="loading-state">
           <LoaderAnimation type="gradient" size="md" />
-          <div class="loading-state__text">Загрузка...</div>
+          <div class="loading-state__text">Загрузка чатов...</div>
         </div>
 
         <div v-else-if="chats.length > 0" class="card-table">
@@ -974,8 +1000,8 @@ const handleRejectApplication = async (applicationId: string | number) => {
               <tbody>
                 <tr v-for="chat in chats" :key="chat.id" class="table-tr">
                   <td class="px-4 py-4 text-secondary text-sm">{{ chat.id }}</td>
-                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.user_id }}</td>
-                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion_id }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.user?.name || chat.user_id }}</td>
+                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion?.name || chat.companion_id }}</td>
                   <td class="px-4 py-4">
                     <span class="status-badge" :class="[chat.status === 'active' ? 'status-badge--active' : 'status-badge--inactive']">
                       {{ chat.status === 'active' ? 'Активен' : 'Завершен' }}
@@ -1013,9 +1039,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
+        <div v-if="loadingStates.applications" class="loading-state">
           <LoaderAnimation type="path" size="md" />
-          <div class="loading-state__text">Загрузка...</div>
+          <div class="loading-state__text">Загрузка заявок...</div>
         </div>
 
         <div v-else-if="applications.length > 0" class="grid gap-6">
@@ -1120,9 +1146,9 @@ const handleRejectApplication = async (applicationId: string | number) => {
           </div>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
+        <div v-if="loadingStates.reports" class="loading-state">
           <LoaderAnimation type="pulse" size="md" />
-          <div class="loading-state__text">Загрузка...</div>
+          <div class="loading-state__text">Загрузка жалоб...</div>
         </div>
 
         <div v-else-if="reports.length > 0" class="grid gap-6">
