@@ -34,6 +34,8 @@ const companionId = ref<string | null>(null)
 // Loading states
 const isLoadingChats = ref(false)
 const isLoadingHistory = ref(false)
+const isLoadingUserRequests = ref(false)
+const isLoadingCompanionRequests = ref(false)
 
 // Reviews
 const userReviews = ref<any[]>([])
