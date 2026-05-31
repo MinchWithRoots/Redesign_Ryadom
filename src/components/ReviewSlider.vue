@@ -198,6 +198,13 @@ const navigateToCompanion = (companionId?: string) => {
   display: flex;
   align-items: stretch;
   min-height: auto;
+  transition: transform 0.6s ease-in-out, z-index 0.6s ease-in-out;
+  z-index: 1;
+}
+
+.emotions-slider__slide_center {
+  transform: scale(1.08);
+  z-index: 2;
 }
 
 @media screen and (max-width: 1023px) {
@@ -339,7 +346,7 @@ const navigateToCompanion = (companionId?: string) => {
 }
 
 .emotions-slider__slide.emotions-slider__slide_center .emotions-slider-item {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 20px rgba(255, 114, 94, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16), 0 0 30px rgba(255, 114, 94, 0.25);
 }
 
 @media screen and (max-width: 1023px) {
