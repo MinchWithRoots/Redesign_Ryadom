@@ -115,10 +115,37 @@
   z-index: 40;
 }
 
+.chat-header-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-light-bg);
+  border: none;
+  cursor: pointer;
+  color: var(--color-secondary);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.chat-header-back:hover {
+  background-color: var(--color-border);
+  color: var(--color-secondary);
+}
+
+.chat-header-back svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2;
+}
+
 .chat-header-info {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  flex: 1;
 }
 
 .chat-avatar-wrapper {
