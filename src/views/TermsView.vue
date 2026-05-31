@@ -1,12 +1,22 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import '@/assets/legal.css'
+
+const router = useRouter()
+
+const goBack = () => {
+  router.push('/auth?mode=register')
+}
 </script>
 
 <template>
   <div class="legal-page">
     <div class="legal-page__container">
+      <button @click="goBack" class="legal-page__back-button">
+        <span>←</span> Назад к регистрации
+      </button>
       <h1 class="legal-page__title">Условия использования</h1>
-      <p class="legal-page__date">Дата последнего обновления: январь 2024</p>
+      <p class="legal-page__date">Дата последнего обновления: май 2026</p>
 
       <div class="legal-page__content">
         <section class="legal-section">
