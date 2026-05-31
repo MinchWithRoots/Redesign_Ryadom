@@ -1929,18 +1929,26 @@ watch(
 }
 
 .profile-history-item__review-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
+  border-radius: var(--radius-full);
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
+  background: linear-gradient(90deg, var(--color-accent-orange) 0%, var(--color-accent-red) 100%);
+  box-shadow: var(--shadow-gradient);
+  color: var(--color-white);
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
+  font-size: 13px;
+  line-height: 20px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .profile-history-item__review-btn:hover {
-  background: #2563eb;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
 }
 </style>
