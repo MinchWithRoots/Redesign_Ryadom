@@ -493,6 +493,228 @@
   }
 }
 
+/* ===== INLINE LOADERS ===== */
+
+/* Loader 1: Double border with dots */
+.loader-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+.loader-inline__border {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px double var(--color-primary);
+  border-radius: 50%;
+  animation: ball-turn 1s linear infinite;
+}
+
+.loader-inline__dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  animation: dot-pulse 1s ease-in-out infinite;
+}
+
+.loader-inline__dot:first-of-type {
+  bottom: 0;
+  left: 50%;
+  margin-left: -2px;
+  animation-delay: 0s;
+}
+
+.loader-inline__dot:last-of-type {
+  top: 0;
+  left: 50%;
+  margin-left: -2px;
+  animation-delay: 0.5s;
+}
+
+@keyframes ball-turn {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dot-pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Loader 2: Pulse rings */
+.loader-pulse-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+.loader-pulse-inline__ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: pulse-expand 1.2s ease-out infinite;
+}
+
+.loader-pulse-inline__ring:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loader-pulse-inline__ring:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse-expand {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Loader 3: Bouncing dots */
+.loader-bounce-inline {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  width: 24px;
+  height: 24px;
+}
+
+.loader-bounce-inline__dot {
+  width: 4px;
+  height: 4px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  animation: bounce-vertical 1s ease-in-out infinite;
+}
+
+.loader-bounce-inline__dot:nth-child(1) {
+  animation-delay: -0.2s;
+}
+
+.loader-bounce-inline__dot:nth-child(2) {
+  animation-delay: -0.1s;
+}
+
+.loader-bounce-inline__dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes bounce-vertical {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 0.6;
+  }
+}
+
+/* Loader 4: Gradient spinner */
+.loader-gradient-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.loader-gradient-inline::before {
+  content: '';
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
+  border-top-color: var(--color-primary);
+  border-right-color: var(--color-accent-orange-light);
+  border-radius: 50%;
+  animation: spin-gradient 0.8s linear infinite;
+}
+
+@keyframes spin-gradient {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loader 5: Stripe animation */
+.loader-stripe-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 16px;
+  gap: 2px;
+}
+
+.loader-stripe-inline__bar {
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-accent-orange-light));
+  border-radius: 2px;
+  animation: stripe-bounce 1s ease-in-out infinite;
+}
+
+.loader-stripe-inline__bar:nth-child(1) {
+  animation-delay: -0.2s;
+  height: 40%;
+}
+
+.loader-stripe-inline__bar:nth-child(2) {
+  animation-delay: -0.1s;
+  height: 60%;
+}
+
+.loader-stripe-inline__bar:nth-child(3) {
+  animation-delay: 0s;
+  height: 80%;
+}
+
+@keyframes stripe-bounce {
+  0%,
+  100% {
+    height: 40%;
+    opacity: 0.6;
+  }
+  50% {
+    height: 100%;
+    opacity: 1;
+  }
+}
+
 /* ===== BADGES & PILLS ===== */
 
 .badge {

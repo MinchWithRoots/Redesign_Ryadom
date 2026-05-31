@@ -5,6 +5,7 @@ import { currentUser, companions, chats, sendConnectionRequest, loadCompanions, 
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
+import LoaderAnimation from '../components/LoaderAnimation.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 import { preloadImages } from '../utils/imageCache'
@@ -313,7 +314,7 @@ const getRussianPlural = (count: number, word: string) => {
 
           <!-- Loading State -->
           <div v-if="isLoading" class="loading-container">
-            <LoadingSpinner size="lg" variant="primary" />
+            <LoaderAnimation type="gradient" size="lg" />
             <p class="loading-text">Загрузка спутников...</p>
           </div>
 

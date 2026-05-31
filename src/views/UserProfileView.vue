@@ -6,6 +6,7 @@ import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import ReviewsList from '../components/ReviewsList.vue'
+import LoaderAnimation from '../components/LoaderAnimation.vue'
 import supportIcon from '../images/support.svg'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
@@ -155,7 +156,7 @@ watch(companion, async (newVal, oldVal) => {
       </button>
 
       <div v-if="isLoading" class="profile-loading">
-        <div class="profile-loading__spinner"></div>
+        <LoaderAnimation type="pulse" size="lg" />
         <p class="profile-loading__text">Загрузка профиля...</p>
       </div>
 

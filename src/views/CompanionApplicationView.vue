@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { currentUser, loadCurrentUser } from '@/composables/useAppState'
 import { submitCompanionApplication, getUserApplication } from '@/services/supabaseService'
 import { supabase } from '@/utils/supabase'
+import LoaderAnimation from '@/components/LoaderAnimation.vue'
 import '@/assets/become-companion.css'
 
 const router = useRouter()
@@ -356,7 +357,7 @@ const submitApplication = async () => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="become-companion-loading">
-        <div class="become-companion-spinner"></div>
+        <LoaderAnimation type="gradient" size="lg" />
         <p class="become-companion-loading-text">Загрузка...</p>
       </div>
 

@@ -6,6 +6,7 @@ import { supabase } from '@/utils/supabase'
 import { getGenderInRussian } from '@/utils/genderForm'
 import { getExperienceText } from '@/utils/experienceForm'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import LoaderAnimation from '@/components/LoaderAnimation.vue'
 
 const router = useRouter()
 const activeTab = ref('overview')
@@ -796,6 +797,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         <h2 class="text-2xl font-bold text-secondary mb-6">Пользователи ({{ users.length }})</h2>
 
         <div v-if="isLoading" class="loading-state">
+          <LoaderAnimation type="pulse" size="md" />
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
@@ -858,6 +860,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         <h2 class="text-2xl font-bold text-secondary mb-6">Спутники ({{ companionsList.length }})</h2>
 
         <div v-if="isLoading" class="loading-state">
+          <LoaderAnimation type="dots" size="md" />
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
@@ -911,6 +914,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         <h2 class="text-2xl font-bold text-secondary mb-6">Отзывы ({{ reviews.length }})</h2>
 
         <div v-if="isLoading" class="loading-state">
+          <LoaderAnimation type="bars" size="md" />
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
@@ -950,6 +954,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         <h2 class="text-2xl font-bold text-secondary mb-6">Чаты ({{ chats.length }})</h2>
 
         <div v-if="isLoading" class="loading-state">
+          <LoaderAnimation type="gradient" size="md" />
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
@@ -1009,6 +1014,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
 
         <div v-if="isLoading" class="loading-state">
+          <LoaderAnimation type="path" size="md" />
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
@@ -1115,6 +1121,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
 
         <div v-if="isLoading" class="loading-state">
+          <LoaderAnimation type="pulse" size="md" />
           <div class="loading-state__text">Загрузка...</div>
         </div>
 
