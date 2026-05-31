@@ -47,7 +47,7 @@
 }
 
 .profile-layout__sidebar {
-  order: 2;
+  order: 1;
 }
 
 @media (min-width: 1024px) {
@@ -60,7 +60,7 @@
 }
 
 .profile-layout__main {
-  order: 1;
+  order: 2;
 }
 
 @media (min-width: 1024px) {
