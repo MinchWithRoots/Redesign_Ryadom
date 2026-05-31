@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { currentUser, companions, chats, sendConnectionRequest, loadCompanions, topics, loadTopics } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 import { getAgeForm } from '../utils/ageForm'
 import { getExperienceText } from '../utils/experienceForm'
 import { preloadImages } from '../utils/imageCache'
@@ -310,8 +311,14 @@ const getRussianPlural = (count: number, word: string) => {
             </div>
           </transition>
 
+          <!-- Loading State -->
+          <div v-if="isLoading" class="loading-container">
+            <LoadingSpinner size="lg" variant="primary" />
+            <p class="loading-text">Загрузка спутников...</p>
+          </div>
+
           <!-- Companions Grid -->
-          <div class="companions-grid">
+          <div v-else class="companions-grid">
             <div
               v-for="companion in filteredCompanions"
               :key="companion.id"
