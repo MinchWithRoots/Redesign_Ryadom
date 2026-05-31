@@ -1,6 +1,13 @@
 <template>
   <div class="user-requests-container">
-    <div v-if="userRequests.length === 0" class="user-requests-empty">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="user-requests-loading">
+      <AsyncLoader type="bars" size="md" />
+      <p class="user-requests-loading__text">Загрузка запросов...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="userRequests.length === 0" class="user-requests-empty">
       <svg class="user-requests-empty__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
@@ -66,8 +73,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { userChatRequests, loadUserChatRequests, currentUser } from '../composables/useAppState'
+import AsyncLoader from './AsyncLoader.vue'
 
 const userRequests = computed(() => userChatRequests.value)
+const isLoading = ref(false)
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -100,10 +109,13 @@ const getStatusText = (status: string) => {
 
 onMounted(async () => {
   if (currentUser.value) {
+    isLoading.value = true
     try {
       await loadUserChatRequests(currentUser.value.id)
     } catch (err) {
       console.error('Error loading user chat requests:', err)
+    } finally {
+      isLoading.value = false
     }
   }
 })
@@ -112,6 +124,25 @@ onMounted(async () => {
 <style scoped>
 .user-requests-container {
   width: 100%;
+}
+
+.user-requests-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  background: var(--color-light-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+}
+
+.user-requests-loading__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary-60);
+  font-weight: var(--font-weight-medium);
+  margin: 0;
 }
 
 .user-requests-empty {
