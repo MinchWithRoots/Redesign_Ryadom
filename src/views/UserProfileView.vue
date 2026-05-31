@@ -137,10 +137,13 @@ const handleReviewsLoaded = async (reviews: any[]) => {
     if (companion.value) {
       await syncCompanionSessionCounts(companion.value.id)
 
-      // Update companion.value with synced data from companions array
-      const syncedCompanion = companions.value.find(c => c.id === companion.value?.id)
-      if (syncedCompanion) {
-        companion.value = syncedCompanion
+      // Small delay to allow database to update
+      await new Promise(resolve => setTimeout(resolve, 150))
+
+      // Reload companion data to get updated sessions from database
+      const reloadedCompanion = await getCompanionById(companion.value.id.toString())
+      if (reloadedCompanion) {
+        companion.value = reloadedCompanion
       }
     }
   }
