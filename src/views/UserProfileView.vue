@@ -48,10 +48,10 @@ onMounted(async () => {
       companion.value = comp
       // Sync companion session counts based on actual chats
       await syncCompanionSessionCounts(comp.id)
-      // Update companion.value with synced data from companions array
-      const syncedCompanion = companions.value.find(c => c.id === comp.id)
-      if (syncedCompanion) {
-        companion.value = syncedCompanion
+      // Reload companion data to get updated sessions from database
+      const refreshedComp = await getCompanionById(comp.id.toString())
+      if (refreshedComp) {
+        companion.value = refreshedComp
       }
     } else {
       console.error('Companion not found with ID:', companionId.value)
