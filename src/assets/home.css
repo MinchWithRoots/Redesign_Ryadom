@@ -144,8 +144,8 @@
 
 @media (min-width: 1500px) {
   .hero-text-group {
-    align-items: center;
-    text-align: center;
+    align-items: left;
+    text-align: left;
     margin-left: auto;
     margin-right: auto;
   }
