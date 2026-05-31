@@ -26,9 +26,7 @@
               @mouseenter="hoverRating = i"
               @mouseleave="hoverRating = 0"
             >
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
+              <img src="/src/images/star.svg" alt="Star" class="rating-star__icon" />
             </button>
           </div>
         </div>
@@ -187,14 +185,15 @@ const submitReview = async () => {
 }
 
 .review-modal {
-  background: white;
-  border-radius: 12px;
-  padding: 32px;
+  background: var(--color-white);
+  border-radius: var(--radius-2xl);
+  padding: 2rem;
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  font-family: 'Inter', sans-serif;
 }
 
 .review-modal__header {
@@ -205,49 +204,53 @@ const submitReview = async () => {
 }
 
 .review-modal__title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #000;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
   margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .review-modal__close {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
-  transition: color 0.2s;
+  color: var(--color-secondary-60);
+  transition: color var(--transition-fast);
+  width: 2rem;
+  height: 2rem;
 }
 
 .review-modal__close:hover {
-  color: #000;
+  color: var(--color-secondary);
 }
 
 .review-modal__form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .form-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary);
+  font-family: 'Inter', sans-serif;
 }
 
 .rating-stars {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   justify-content: center;
 }
 
@@ -255,12 +258,12 @@ const submitReview = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
-  color: #ddd;
+  transition: transform var(--transition-fast);
+  opacity: 0.2;
 }
 
 .rating-star:hover {
@@ -268,23 +271,37 @@ const submitReview = async () => {
 }
 
 .rating-star--filled {
-  color: #ffc107;
+  opacity: 1;
+}
+
+.rating-star__icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-primary);
+  filter: brightness(0) saturate(100%) invert(38%) sepia(62%) saturate(1373%) hue-rotate(342deg) brightness(107%) contrast(105%);
+}
+
+.rating-star--filled .rating-star__icon {
+  filter: brightness(0) saturate(100%) invert(74%) sepia(44%) saturate(1219%) hue-rotate(342deg) brightness(104%) contrast(99%);
 }
 
 .form-input,
 .form-textarea {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  transition: border-color 0.2s;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: 'Inter', sans-serif;
+  color: var(--color-secondary);
+  transition: border-color var(--transition-fast);
+  background-color: var(--color-white);
 }
 
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 106, 47, 0.1);
 }
 
 .form-textarea {
@@ -293,67 +310,74 @@ const submitReview = async () => {
 }
 
 .form-hint {
-  font-size: 12px;
-  color: #999;
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary-60);
   text-align: right;
+  font-family: 'Inter', sans-serif;
 }
 
 .checkbox-group {
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   cursor: pointer;
+  font-family: 'Inter', sans-serif;
 }
 
 .checkbox-input {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   cursor: pointer;
+  accent-color: var(--color-primary);
 }
 
 .checkbox-text {
-  font-size: 14px;
-  color: #333;
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary);
+  font-family: 'Inter', sans-serif;
 }
 
 .error-message {
-  padding: 12px;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 8px;
-  color: #c33;
-  font-size: 14px;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  font-size: var(--font-size-sm);
+  font-family: 'Inter', sans-serif;
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .btn-primary,
 .btn-secondary {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   flex: 1;
+  font-family: 'Inter', sans-serif;
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2563eb;
+  background: #d32032;
+  box-shadow: 0 4px 12px rgba(255, 106, 47, 0.3);
 }
 
 .btn-primary:disabled {
@@ -362,11 +386,13 @@ const submitReview = async () => {
 }
 
 .btn-secondary {
-  background: #f0f0f0;
-  color: #333;
+  background: transparent;
+  color: var(--color-secondary-60);
+  border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: var(--color-light-bg);
+  color: var(--color-secondary);
 }
 </style>
