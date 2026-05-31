@@ -351,8 +351,20 @@ const loadCompanionReviews = async () => {
   }
 }
 
+// Check if a review already exists for a companion
+const hasExistingReview = (companionId: string | number) => {
+  return userReviews.value.some(review =>
+    review.companion_id === companionId ||
+    review.companions?.id === companionId
+  )
+}
+
 // Open review modal for session
 const openReviewModal = (session: any) => {
+  // Don't allow opening modal if review already exists
+  if (hasExistingReview(session.companionId)) {
+    return
+  }
   selectedSessionForReview.value = session
   showReviewModal.value = true
 }
@@ -899,9 +911,11 @@ watch(
                 </div>
                 <button
                   @click="openReviewModal(session)"
+                  :disabled="hasExistingReview(session.companionId)"
                   class="profile-history-item__review-btn"
+                  :title="hasExistingReview(session.companionId) ? 'Отзыв для этого спутника уже существует' : ''"
                 >
-                  Оставить отзыв
+                  {{ hasExistingReview(session.companionId) ? 'Отзыв уже оставлен' : 'Оставить отзыв' }}
                 </button>
               </div>
             </div>
@@ -1947,8 +1961,14 @@ watch(
   white-space: nowrap;
 }
 
-.profile-history-item__review-btn:hover {
+.profile-history-item__review-btn:hover:not(:disabled) {
   box-shadow: var(--shadow-lg);
   transform: translateY(-1px);
+}
+
+.profile-history-item__review-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(90deg, #9ca3af 0%, #6b7280 100%);
 }
 </style>
