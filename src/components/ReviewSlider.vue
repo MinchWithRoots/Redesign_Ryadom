@@ -79,7 +79,8 @@ const navigateToCompanion = (companionId?: string) => {
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
-        1024: { slidesPerView: 3, spaceBetween: 40, centeredSlides: true }
+        768: { slidesPerView: 2, spaceBetween: 30 },
+        1024: { slidesPerView: 3, spaceBetween: 40 }
       }"
       @swiper="handleSwiperInit"
       class="emotions-slider__slider swiper"
