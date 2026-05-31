@@ -9,71 +9,6 @@
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
       >
-        <style>
-          .st0 {
-            fill: none;
-          }
-          .st1 {
-            fill: #504e55;
-          }
-          .st2 {
-            fill: #f39e72;
-          }
-          .st3 {
-            fill: #ffffff;
-          }
-          .st4 {
-            opacity: 0.24;
-          }
-          .st5 {
-            fill: #77574e;
-          }
-          .st6 {
-            fill: #fbd68d;
-          }
-          .st7 {
-            fill: #ececec;
-          }
-          .st8 {
-            fill: #f4a89c;
-          }
-          .st9 {
-            fill: #cfc9e5;
-          }
-          .st10 {
-            opacity: 0.28;
-          }
-          .st11 {
-            opacity: 0.25;
-          }
-          .st12 {
-            fill: #6f635c;
-          }
-          .st13 {
-            fill: #dae7be;
-          }
-          .st14 {
-            fill: #ffe0a6;
-          }
-          .st15 {
-            fill: #5f5e60;
-          }
-          .st16 {
-            fill: #cfe1af;
-          }
-          .st17 {
-            fill: #ebe9f5;
-          }
-          .st18 {
-            fill: #53515a;
-          }
-          .st19 {
-            opacity: 0.42;
-          }
-          .st20 {
-            fill: #53515b;
-          }
-        </style>
         <circle cx="256.8" cy="255.3" r="247.9" class="st0" />
         <path
           d="M346.4 475H164.9V244.8c0-14 11.4-25.4 25.4-25.4H321c14 0 25.4 11.4 25.4 25.4V475z"
@@ -312,13 +247,8 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
-
-// Initialize particles.js when component mounts
 onMounted(() => {
-  // Load particles.js library dynamically
   if (typeof particlesJS !== 'undefined') {
     const particles = {
       particles: {
@@ -513,5 +443,89 @@ onMounted(() => {
   100% {
     transform: translateY(-3px);
   }
+}
+
+svg .st0 {
+  fill: none;
+}
+
+svg .st1 {
+  fill: #504e55;
+}
+
+svg .st2 {
+  fill: #f39e72;
+}
+
+svg .st3 {
+  fill: #ffffff;
+}
+
+svg .st4 {
+  opacity: 0.24;
+}
+
+svg .st5 {
+  fill: #77574e;
+}
+
+svg .st6 {
+  fill: #fbd68d;
+}
+
+svg .st7 {
+  fill: #ececec;
+}
+
+svg .st8 {
+  fill: #f4a89c;
+}
+
+svg .st9 {
+  fill: #cfc9e5;
+}
+
+svg .st10 {
+  opacity: 0.28;
+}
+
+svg .st11 {
+  opacity: 0.25;
+}
+
+svg .st12 {
+  fill: #6f635c;
+}
+
+svg .st13 {
+  fill: #dae7be;
+}
+
+svg .st14 {
+  fill: #ffe0a6;
+}
+
+svg .st15 {
+  fill: #5f5e60;
+}
+
+svg .st16 {
+  fill: #cfe1af;
+}
+
+svg .st17 {
+  fill: #ebe9f5;
+}
+
+svg .st18 {
+  fill: #53515a;
+}
+
+svg .st19 {
+  opacity: 0.42;
+}
+
+svg .st20 {
+  fill: #53515b;
 }
 </style>
