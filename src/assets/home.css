@@ -72,6 +72,12 @@
   }
 }
 
+@media (min-width: 1517px) {
+  .hero-bg-image--desktop {
+    width: 100%;
+  }
+}
+
 .hero-content {
   position: relative;
   z-index: 10;
