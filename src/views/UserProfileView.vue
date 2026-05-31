@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser, syncCompanionSessionCounts } from '../composables/useAppState'
+import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
@@ -54,26 +54,6 @@ onMounted(async () => {
       })
       companion.value = comp
 
-      // Sync companion session counts only if user is logged in
-      // (unauthenticated users can view the stored session count)
-      if (currentUser.value) {
-        await syncCompanionSessionCounts(comp.id)
-
-        // Small delay to allow database to update
-        await new Promise(resolve => setTimeout(resolve, 150))
-
-        // Reload companion data to get updated sessions from database
-        const refreshedComp = await getCompanionById(comp.id.toString())
-        if (refreshedComp) {
-          console.log('Reloaded companion after sync:', {
-            id: refreshedComp.id,
-            name: refreshedComp.name,
-            sessions: refreshedComp.sessions,
-            reviews_count: refreshedComp.reviews_count
-          })
-          companion.value = refreshedComp
-        }
-      }
     } else {
       console.error('Companion not found with ID:', companionId.value)
     }
