@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 import { getPublishedReviewsForHome } from '@/services/supabaseService'
 import ReviewSlider from '@/components/ReviewSlider.vue'
+import LoaderAnimation from '@/components/LoaderAnimation.vue'
 import { cacheManager, CACHE_KEYS } from '@/utils/cacheManager'
 import '@/assets/home.css'
 
@@ -331,8 +332,14 @@ onMounted(() => {
             </p>
           </div>
 
+          <!-- Loading State -->
+          <div v-if="isLoadingReviews" class="reviews-loading-container">
+            <LoaderAnimation type="bars" size="md" />
+            <p class="reviews-loading-text">Загружаются отзывы...</p>
+          </div>
+
           <!-- Reviews Slider -->
-          <ReviewSlider :reviews="reviews" />
+          <ReviewSlider v-else :reviews="reviews" />
         </div>
       </div>
     </section>

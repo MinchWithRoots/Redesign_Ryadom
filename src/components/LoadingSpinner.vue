@@ -10,11 +10,13 @@
 interface Props {
   size?: 'sm' | 'md' | 'lg'
   variant?: 'primary' | 'secondary'
+  type?: 'circle' | 'dots' | 'pulse'
 }
 
 withDefaults(defineProps<Props>(), {
   size: 'md',
-  variant: 'primary'
+  variant: 'primary',
+  type: 'circle'
 })
 </script>
 

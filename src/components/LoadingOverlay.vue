@@ -2,7 +2,7 @@
   <transition name="fade">
     <div v-if="isVisible" class="loading-overlay">
       <div class="loading-overlay__content">
-        <LoadingSpinner size="lg" variant="primary" />
+        <LoaderAnimation type="pulse" size="lg" />
         <p v-if="message" class="loading-overlay__message">{{ message }}</p>
       </div>
     </div>
@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import LoadingSpinner from './LoadingSpinner.vue'
+import LoaderAnimation from './LoaderAnimation.vue'
 
 interface Props {
   isLoading: boolean

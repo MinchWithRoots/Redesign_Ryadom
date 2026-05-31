@@ -9,6 +9,7 @@ import * as encryptionService from '@/services/encryptionService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
+import LoaderAnimation from '../components/LoaderAnimation.vue'
 import '@/assets/chat.css'
 
 const { isOpen, title, message, confirmText, cancelText, isDangerous, openDialog, handleConfirm, handleCancel } = useConfirmDialog()
@@ -881,7 +882,7 @@ onBeforeUnmount(() => {
       <!-- Loading or Chat Header -->
       <div v-if="!chat && isLoadingMessages" class="chat-header-loading">
         <div class="chat-header-loading-content">
-          <div class="chat-spinner"></div>
+          <LoaderAnimation type="pulse" size="md" />
           <p class="chat-loading-text">Загрузка чата...</p>
         </div>
       </div>

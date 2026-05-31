@@ -1027,3 +1027,23 @@
 footer {
   background-color: #090B2E;
 }
+
+/* ===== REVIEWS LOADING STATE ===== */
+
+.reviews-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: 3rem 1rem;
+  min-height: 300px;
+  position: relative;
+  z-index: 1;
+}
+
+.reviews-loading-text {
+  font-size: var(--font-size-base);
+  color: var(--color-secondary-70);
+  margin: 0;
+}
