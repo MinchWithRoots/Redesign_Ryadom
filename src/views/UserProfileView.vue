@@ -54,22 +54,25 @@ onMounted(async () => {
       })
       companion.value = comp
 
-      // Sync companion session counts based on actual chats
-      await syncCompanionSessionCounts(comp.id)
+      // Sync companion session counts only if user is logged in
+      // (unauthenticated users can view the stored session count)
+      if (currentUser.value) {
+        await syncCompanionSessionCounts(comp.id)
 
-      // Small delay to allow database to update
-      await new Promise(resolve => setTimeout(resolve, 150))
+        // Small delay to allow database to update
+        await new Promise(resolve => setTimeout(resolve, 150))
 
-      // Reload companion data to get updated sessions from database
-      const refreshedComp = await getCompanionById(comp.id.toString())
-      if (refreshedComp) {
-        console.log('Reloaded companion after sync:', {
-          id: refreshedComp.id,
-          name: refreshedComp.name,
-          sessions: refreshedComp.sessions,
-          reviews_count: refreshedComp.reviews_count
-        })
-        companion.value = refreshedComp
+        // Reload companion data to get updated sessions from database
+        const refreshedComp = await getCompanionById(comp.id.toString())
+        if (refreshedComp) {
+          console.log('Reloaded companion after sync:', {
+            id: refreshedComp.id,
+            name: refreshedComp.name,
+            sessions: refreshedComp.sessions,
+            reviews_count: refreshedComp.reviews_count
+          })
+          companion.value = refreshedComp
+        }
       }
     } else {
       console.error('Companion not found with ID:', companionId.value)
@@ -133,14 +136,17 @@ const handleReviewsLoaded = async (reviews: any[]) => {
       companion.value = refreshedCompanion
     }
 
-    // Sync companion session counts based on actual chats
-    if (companion.value) {
+    // Sync companion session counts only if user is logged in
+    if (currentUser.value && companion.value) {
       await syncCompanionSessionCounts(companion.value.id)
 
-      // Update companion.value with synced data from companions array
-      const syncedCompanion = companions.value.find(c => c.id === companion.value?.id)
-      if (syncedCompanion) {
-        companion.value = syncedCompanion
+      // Small delay to allow database to update
+      await new Promise(resolve => setTimeout(resolve, 150))
+
+      // Reload companion data to get updated sessions from database
+      const reloadedCompanion = await getCompanionById(companion.value.id.toString())
+      if (reloadedCompanion) {
+        companion.value = reloadedCompanion
       }
     }
   }

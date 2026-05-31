@@ -511,6 +511,62 @@ export const getCompanionById = async (id: string) => {
       return null
     }
 
+    // Get actual session count from chats table (for public profiles)
+    // Try using RPC function first (works for all users including anon)
+    try {
+      const { data: rpcResult, error: rpcError } = await supabase
+        .rpc('get_companion_session_count', { companion_id: companionId })
+
+      if (!rpcError && rpcResult !== null && rpcResult !== undefined) {
+        data.sessions = rpcResult
+        console.debug(`Session count for companion ${companionId}: ${rpcResult}`)
+      } else if (!rpcError) {
+        // Function exists but returned null, use stored value
+        console.debug('RPC function returned null, using stored value:', data.sessions)
+      }
+    } catch (err) {
+      // If RPC function doesn't exist or fails, try direct count
+      try {
+        const { count, error: countError } = await supabase
+          .from('chats')
+          .select('id', { count: 'exact', head: true })
+          .eq('companion_id', companionId)
+
+        if (!countError && count !== null) {
+          data.sessions = count
+          console.debug(`Direct session count for companion ${companionId}: ${count}`)
+        }
+      } catch (innerErr) {
+        // Fall back to stored value
+        console.debug('Could not refresh session count, using stored value:', data.sessions)
+      }
+    }
+
+    // Update stored sessions in companions table if count differs (non-blocking)
+    if (currentUser.value && data.sessions !== undefined) {
+      const { data: storedData } = await supabase
+        .from('companions')
+        .select('sessions')
+        .eq('id', companionId)
+        .single()
+
+      const storedSessions = storedData?.sessions
+
+      if (storedSessions !== data.sessions) {
+        // Fire and forget - don't block on this update
+        supabase
+          .from('companions')
+          .update({ sessions: data.sessions })
+          .eq('id', companionId)
+          .then(() => {
+            console.debug(`Updated stored sessions for companion ${companionId} from ${storedSessions} to ${data.sessions}`)
+          })
+          .catch(err => {
+            console.warn(`Could not update companion sessions (non-blocking):`, err instanceof Error ? err.message : String(err))
+          })
+      }
+    }
+
     // Sync profile data from user only if needed (don't block on this)
     if (data.user_id) {
       try {
@@ -1988,9 +2044,9 @@ export const incrementCompanionSessions = async (companionId: string | number) =
 export const syncSessionCounts = async (userId: string) => {
   try {
     // Count unique companions the user has chatted with (each chat = 1 session)
-    const { data: userChats, error: userChatsError } = await supabase
+    const { count: userChatsCount, error: userChatsError } = await supabase
       .from('chats')
-      .select('id')
+      .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
 
     if (userChatsError) {
@@ -1998,21 +2054,21 @@ export const syncSessionCounts = async (userId: string) => {
       return
     }
 
-    let userSessionCount = userChats?.length || 0
+    let userSessionCount = userChatsCount || 0
 
     // If user is a companion, also count chats where they are the companion
     if (currentUser.value && currentUser.value.id === userId && currentUser.value.role === 'companion') {
       try {
         const companionId = await getCurrentCompanionId()
         if (companionId) {
-          const { data: companionChats, error: companionChatsError } = await supabase
+          const { count: companionChatsCount, error: companionChatsError } = await supabase
             .from('chats')
-            .select('id')
+            .select('id', { count: 'exact', head: true })
             .eq('companion_id', parseInt(companionId.toString()))
 
-          if (!companionChatsError && companionChats) {
+          if (!companionChatsError && companionChatsCount) {
             // Merge both sets of chats (no duplicates expected since they have different user_id/companion_id)
-            userSessionCount += companionChats.length
+            userSessionCount += companionChatsCount
           }
         }
       } catch (err) {
@@ -2058,9 +2114,9 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     const companionIdStr = companionId.toString()
 
     // Count total chats for this companion (each chat = 1 session)
-    const { data: companionChats, error: chatsError } = await supabase
+    const { count, error: chatsError } = await supabase
       .from('chats')
-      .select('id')
+      .select('id', { count: 'exact', head: true })
       .eq('companion_id', parseInt(companionIdStr))
 
     if (chatsError) {
@@ -2068,7 +2124,7 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
       return
     }
 
-    const companionSessionCount = companionChats?.length || 0
+    const companionSessionCount = count || 0
 
     // Update companion sessions
     const { error: updateError } = await supabase
