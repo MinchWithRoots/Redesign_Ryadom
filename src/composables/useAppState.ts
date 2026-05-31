@@ -2064,11 +2064,16 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
       .eq('companion_id', parseInt(companionIdStr))
 
     if (chatsError) {
-      console.error('Error fetching companion chats for sync:', chatsError)
+      console.error('Error fetching companion chats for sync:', {
+        companionId: companionIdStr,
+        error: chatsError,
+        message: chatsError?.message
+      })
       return
     }
 
     const companionSessionCount = count || 0
+    console.log(`Counted ${companionSessionCount} chats for companion ${companionIdStr}`)
 
     // Update companion sessions
     const { error: updateError } = await supabase
@@ -2099,6 +2104,27 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     console.log(`Session count synced for companion ${companionIdStr}: ${companionSessionCount}`)
   } catch (err) {
     console.error('Error in syncCompanionSessionCounts:', err)
+  }
+}
+
+// Sync all companion session counts (admin function)
+export const syncAllCompanionSessionCounts = async () => {
+  try {
+    console.log('Starting sync of all companion session counts...')
+
+    if (companions.value.length === 0) {
+      await loadCompanions()
+    }
+
+    for (const companion of companions.value) {
+      await syncCompanionSessionCounts(companion.id)
+    }
+
+    console.log('All companion session counts synced successfully')
+    return true
+  } catch (err) {
+    console.error('Error syncing all companion session counts:', err)
+    return false
   }
 }
 
