@@ -824,7 +824,7 @@
   background: linear-gradient(90deg, rgba(212, 132, 106, 0.05) 0%, rgba(212, 132, 106, 0.00) 50%, rgba(93, 90, 136, 0.05) 100%);
   z-index: 1;
 }
-
+/* 
 .cta-decorative-1 {
   position: absolute;
   top: -1px;
@@ -835,7 +835,7 @@
   filter: blur(32px);
   background-color: rgba(212, 132, 106, 0.10);
   z-index: 1;
-}
+} */
 
 .cta-decorative-2 {
   position: absolute;
@@ -852,7 +852,7 @@
 .cta-decorative-3 {
   position: absolute;
   top: 23px;
-  right: -100px;
+  right: -300px;
   width: 433px;
   height: 449px;
   border-radius: 9999px;
