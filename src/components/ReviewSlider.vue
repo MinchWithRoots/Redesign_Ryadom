@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation, Pagination, Autoplay, Virtual } from 'swiper/modules'
+import { Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Review {
@@ -23,29 +23,12 @@ defineProps<{
 
 const router = useRouter()
 
-const modules = [Navigation, Pagination, Autoplay, Virtual]
+const modules = [Navigation, Pagination, Autoplay]
 const swiperInstance = ref<any>(null)
 const imageLoadErrors = ref<Set<number | string>>(new Set())
-const centerSlideIndex = ref<number>(0)
 
 const handleSwiperInit = (swiper: any) => {
   swiperInstance.value = swiper
-  updateCenterSlide(swiper)
-}
-
-const updateCenterSlide = (swiper: any) => {
-  const slidesPerView = swiper.params.slidesPerView || 1
-  if (slidesPerView === 3) {
-    centerSlideIndex.value = swiper.activeIndex + 1
-  } else {
-    centerSlideIndex.value = swiper.activeIndex
-  }
-}
-
-const handleSlideChange = () => {
-  if (swiperInstance.value) {
-    updateCenterSlide(swiperInstance.value)
-  }
 }
 
 const handleImageError = (reviewId: number | string) => {
@@ -92,17 +75,18 @@ const navigateToCompanion = (companionId?: string) => {
       :space-between="20"
       :speed="600"
       :loop="true"
+      :centered-slides="true"
+      :watch-slides-progress="true"
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
-        768: { slidesPerView: 2, spaceBetween: 30 },
-        1024: { slidesPerView: 3, spaceBetween: 24 }
+        768: { slidesPerView: 2, spaceBetween: 30, centeredSlides: true },
+        1024: { slidesPerView: 3, spaceBetween: 24, centeredSlides: true }
       }"
       @swiper="handleSwiperInit"
-      @slideChange="handleSlideChange"
       class="emotions-slider__slider swiper"
     >
-      <SwiperSlide v-for="(review, index) in reviews" :key="review.id" class="emotions-slider__slide swiper-slide" :class="{ 'emotions-slider__slide_center': index === centerSlideIndex }">
+      <SwiperSlide v-for="review in reviews" :key="review.id" class="emotions-slider__slide swiper-slide">
         <div class="emotions-slider__item emotions-slider-item">
           <!-- Avatar as Image -->
           <div class="emotions-slider-item__image">
@@ -202,7 +186,7 @@ const navigateToCompanion = (companionId?: string) => {
   z-index: 1;
 }
 
-.emotions-slider__slide_center {
+.emotions-slider__slide.swiper-slide-active {
   transform: scale(1.08);
   z-index: 2;
 }
@@ -355,7 +339,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 }
 
-.emotions-slider__slide.emotions-slider__slide_center .emotions-slider-item {
+.emotions-slider__slide.swiper-slide-active .emotions-slider-item {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16), 0 0 30px rgba(255, 114, 94, 0.25);
 }
 
@@ -582,9 +566,9 @@ const navigateToCompanion = (companionId?: string) => {
   }
 }
 
-/* Show header/footer only for center slide */
-.emotions-slider__slide:not(.emotions-slider__slide_center) .emotions-slider-item__header,
-.emotions-slider__slide:not(.emotions-slider__slide_center) .emotions-slider-item__footer {
+/* Show header/footer only for active (center) slide */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__header,
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__footer {
   max-height: 0;
 }
 
