@@ -1,0 +1,137 @@
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import '@/assets/legal.css'
+
+const router = useRouter()
+
+const goBack = () => {
+  router.push('/auth?mode=register')
+}
+</script>
+
+<template>
+  <div class="legal-page">
+    <div class="legal-page__container">
+      <button @click="goBack" class="legal-page__back-button">
+        <span>←</span> Назад к регистрации
+      </button>
+      <h1 class="legal-page__title">Политика конфиденциальности</h1>
+      <p class="legal-page__date">Дата последнего обновления: май 2026</p>
+
+      <div class="legal-page__content">
+        <section class="legal-section">
+          <h2 class="legal-section__title">1. Введение</h2>
+          <p class="legal-section__text">
+            Платформа Ryadom уважает вашу конфиденциальность и защищает ваши личные данные. Эта Политика конфиденциальности объясняет, как мы собираем, используем, раскрываем и защищаем информацию о вас.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">2. Информация, которую мы собираем</h2>
+          <p class="legal-section__text">
+            Мы можем собирать следующие типы информации:
+          </p>
+          <ul class="legal-section__list">
+            <li><strong>Информация при регистрации:</strong> имя, электронная почта, пароль и профильная информация</li>
+            <li><strong>Информация об использовании:</strong> данные о том, как вы используете Сервис</li>
+            <li><strong>Коммуникационные данные:</strong> сообщения, которые вы отправляете через Сервис</li>
+            <li><strong>Технические данные:</strong> IP-адрес, тип браузера, операционная система</li>
+            <li><strong>Файлы cookies:</strong> для улучшения вашего опыта</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">3. Как мы используем вашу информацию</h2>
+          <p class="legal-section__text">
+            Мы используем собираемую информацию для:
+          </p>
+          <ul class="legal-section__list">
+            <li>Предоставления и улучшения Сервиса</li>
+            <li>Создания и управления вашей учетной записью</li>
+            <li>Отправки уведомлений и обновлений</li>
+            <li>Обеспечения безопасности и защиты от мошенничества</li>
+            <li>Соблюдения законодательства и правовых требований</li>
+            <li>Анализа использования платформы и трендов</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">4. Раскрытие информации</h2>
+          <p class="legal-section__text">
+            Мы не продаем и не передаем ваши личные данные третьим лицам без вашего согласия, кроме как:
+          </p>
+          <ul class="legal-section__list">
+            <li>Поставщикам услуг, которые помогают нам работать (например, хостинг, аналитика)</li>
+            <li>При требовании закона или судебного приказа</li>
+            <li>Для защиты наших прав, конфиденциальности и безопасности</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">5. Безопасность данных</h2>
+          <p class="legal-section__text">
+            Мы применяем технические, административные и физические меры безопасности для защиты ваших данных от несанкционированного доступа, изменения, раскрытия или уничтожения.
+          </p>
+          <p class="legal-section__text">
+            Однако никакая система безопасности не является полностью непроницаемой. Мы не можем гарантировать абсолютную безопасность передачи данных.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">6. Ваши права</h2>
+          <p class="legal-section__text">
+            В зависимости от вашего местоположения, вы можете иметь следующие права:
+          </p>
+          <ul class="legal-section__list">
+            <li>Право доступа к своим данным</li>
+            <li>Право на исправление неточных данных</li>
+            <li>Право на удаление своих данных</li>
+            <li>Право на портативность данных</li>
+            <li>Право возразить против обработки данных</li>
+          </ul>
+          <p class="legal-section__text">
+            Для реализации этих прав, пожалуйста, свяжитесь с нами через форму обратной связи на нашем сайте.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">7. Cookies и отслеживание</h2>
+          <p class="legal-section__text">
+            Мы используем cookies для улучшения вашего опыта на Сервисе. Cookies – это небольшие файлы, сохраняемые на вашем устройстве.
+          </p>
+          <p class="legal-section__text">
+            Вы можете контролировать использование cookies через настройки вашего браузера. Отключение cookies может повлиять на функциональность Сервиса.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">8. Хранение данных</h2>
+          <p class="legal-section__text">
+            Мы сохраняем ваши данные столько, сколько это необходимо для предоставления Сервиса и выполнения наших правовых обязательств. Вы можете запросить удаление ваших данных в любое время.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">9. Дети</h2>
+          <p class="legal-section__text">
+            Сервис не предназначен для лиц младше 18 лет. Мы не сознательно собираем информацию от детей до 18 лет. Если вы подозреваете, что ребенок предоставил нам информацию, пожалуйста, свяжитесь с нами немедленно.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">10. Изменения политики</h2>
+          <p class="legal-section__text">
+            Мы можем обновлять эту Политику конфиденциальности время от времени. Об изменениях будет объявлено на этой странице, и дата «последнего обновления» будет обновлена.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2 class="legal-section__title">11. Контакты</h2>
+          <p class="legal-section__text">
+            Если у вас есть вопросы об этой Политике конфиденциальности или о том, как мы обрабатываем ваши данные, пожалуйста, свяжитесь с нами через форму обратной связи на нашем сайте.
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+</template>
