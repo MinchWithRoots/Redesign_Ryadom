@@ -2056,30 +2056,29 @@ export const syncSessionCounts = async (userId: string) => {
 export const syncCompanionSessionCounts = async (companionId: string | number) => {
   try {
     const companionIdStr = companionId.toString()
+    const companionIdNum = parseInt(companionIdStr)
 
-    // Count total chats for this companion (each chat = 1 session)
-    const { count, error: chatsError } = await supabase
-      .from('chats')
-      .select('id', { count: 'exact', head: true })
-      .eq('companion_id', parseInt(companionIdStr))
+    // Use RPC function to count chats (bypasses RLS restrictions)
+    const { data: companionSessionCount, error: rpcError } = await supabase
+      .rpc('get_companion_session_count', { companion_id: companionIdNum })
 
-    if (chatsError) {
-      console.error('Error fetching companion chats for sync:', {
+    if (rpcError) {
+      console.error('Error fetching companion session count via RPC:', {
         companionId: companionIdStr,
-        error: chatsError,
-        message: chatsError?.message
+        error: rpcError,
+        message: rpcError?.message
       })
       return
     }
 
-    const companionSessionCount = count || 0
-    console.log(`Counted ${companionSessionCount} chats for companion ${companionIdStr}`)
+    const sessionCount = companionSessionCount || 0
+    console.log(`Counted ${sessionCount} chats for companion ${companionIdStr}`)
 
     // Update companion sessions
     const { error: updateError } = await supabase
       .from('companions')
-      .update({ sessions: companionSessionCount })
-      .eq('id', parseInt(companionIdStr))
+      .update({ sessions: sessionCount })
+      .eq('id', companionIdNum)
 
     if (updateError) {
       console.error('Error updating companion sessions:', {
@@ -2093,15 +2092,15 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     }
 
     // Update local state in companions array
-    const index = companions.value.findIndex(c => c.id.toString() === companionIdStr)
+    const index = companions.value.findIndex(c => c.id === companionIdNum)
     if (index !== -1) {
       companions.value[index] = {
         ...companions.value[index],
-        sessions: companionSessionCount,
+        sessions: sessionCount,
       }
     }
 
-    console.log(`Session count synced for companion ${companionIdStr}: ${companionSessionCount}`)
+    console.log(`Session count synced for companion ${companionIdStr}: ${sessionCount}`)
   } catch (err) {
     console.error('Error in syncCompanionSessionCounts:', err)
   }
