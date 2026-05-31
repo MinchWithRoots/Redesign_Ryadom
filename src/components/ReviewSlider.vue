@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation, Pagination, Autoplay, Virtual } from 'swiper/modules'
+import { Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Review {
@@ -23,7 +23,7 @@ defineProps<{
 
 const router = useRouter()
 
-const modules = [Navigation, Pagination, Autoplay, Virtual]
+const modules = [Navigation, Pagination, Autoplay]
 const swiperInstance = ref<any>(null)
 const imageLoadErrors = ref<Set<number | string>>(new Set())
 
@@ -75,11 +75,13 @@ const navigateToCompanion = (companionId?: string) => {
       :space-between="20"
       :speed="600"
       :loop="true"
+      :centered-slides="true"
+      :watch-slides-progress="true"
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
-        768: { slidesPerView: 2, spaceBetween: 30 },
-        1024: { slidesPerView: 3, spaceBetween: 24 }
+        768: { slidesPerView: 2, spaceBetween: 30, centeredSlides: true },
+        1024: { slidesPerView: 3, spaceBetween: 24, centeredSlides: true }
       }"
       @swiper="handleSwiperInit"
       class="emotions-slider__slider swiper"
@@ -180,6 +182,23 @@ const navigateToCompanion = (companionId?: string) => {
   display: flex;
   align-items: stretch;
   min-height: auto;
+  transition: transform 0.6s ease-in-out, z-index 0.6s ease-in-out;
+  z-index: 1;
+}
+
+.emotions-slider__slide.swiper-slide-active {
+  transform: scale(1.08);
+  z-index: 2;
+}
+
+@media screen and (min-width: 1024px) {
+  .emotions-slider {
+    padding: 2.5rem 0;
+  }
+
+  .emotions-slider__slide {
+    min-height: 590px;
+  }
 }
 
 @media screen and (max-width: 1023px) {
@@ -321,7 +340,7 @@ const navigateToCompanion = (companionId?: string) => {
 }
 
 .emotions-slider__slide.swiper-slide-active .emotions-slider-item {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 20px rgba(255, 114, 94, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16), 0 0 30px rgba(255, 114, 94, 0.25);
 }
 
 @media screen and (max-width: 1023px) {
@@ -547,7 +566,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 }
 
-/* Hide header/footer for non-active slides */
+/* Show header/footer only for active (center) slide */
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__header,
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__footer {
   max-height: 0;
