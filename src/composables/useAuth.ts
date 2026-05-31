@@ -156,7 +156,7 @@ export const signUp = async (email: string, password: string, name: string) => {
     return data.user
   } catch (err) {
     const message = getErrorMessage(err)
-    error.value = message
+    error.value = typeof message === 'string' ? message : String(message)
     console.error('Sign up error:', message, { originalError: err })
     throw new Error(message)
   } finally {
@@ -274,7 +274,7 @@ export const login = async (email: string, password: string) => {
     return data.user
   } catch (err) {
     const message = getErrorMessage(err)
-    error.value = message
+    error.value = typeof message === 'string' ? message : String(message)
     console.error('Login error:', message, { originalError: err })
     throw new Error(message)
   } finally {
@@ -296,7 +296,7 @@ export const logout = async () => {
     encryptionService.clearAllKeys()
   } catch (err) {
     const message = getErrorMessage(err)
-    error.value = message
+    error.value = typeof message === 'string' ? message : String(message)
     console.error('Logout error:', message)
     throw new Error(message)
   } finally {
@@ -390,7 +390,7 @@ export const updateProfile = async (updates: Partial<UserProfile>) => {
     return data
   } catch (err) {
     const message = getErrorMessage(err)
-    error.value = message
+    error.value = typeof message === 'string' ? message : String(message)
     console.error('Update profile error:', message)
     throw new Error(message)
   } finally {

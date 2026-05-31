@@ -30,7 +30,7 @@ const icons = {
 // Watch for errors from useAuth
 watch(error, (newError) => {
   if (newError) {
-    errorMessage.value = newError
+    errorMessage.value = typeof newError === 'string' ? newError : String(newError)
   }
 })
 

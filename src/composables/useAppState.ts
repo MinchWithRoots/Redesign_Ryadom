@@ -511,62 +511,6 @@ export const getCompanionById = async (id: string) => {
       return null
     }
 
-    // Get actual session count from chats table (for public profiles)
-    // Try using RPC function first (works for all users including anon)
-    try {
-      const { data: rpcResult, error: rpcError } = await supabase
-        .rpc('get_companion_session_count', { companion_id: companionId })
-
-      if (!rpcError && rpcResult !== null && rpcResult !== undefined) {
-        data.sessions = rpcResult
-        console.debug(`Session count for companion ${companionId}: ${rpcResult}`)
-      } else if (!rpcError) {
-        // Function exists but returned null, use stored value
-        console.debug('RPC function returned null, using stored value:', data.sessions)
-      }
-    } catch (err) {
-      // If RPC function doesn't exist or fails, try direct count
-      try {
-        const { count, error: countError } = await supabase
-          .from('chats')
-          .select('id', { count: 'exact', head: true })
-          .eq('companion_id', companionId)
-
-        if (!countError && count !== null) {
-          data.sessions = count
-          console.debug(`Direct session count for companion ${companionId}: ${count}`)
-        }
-      } catch (innerErr) {
-        // Fall back to stored value
-        console.debug('Could not refresh session count, using stored value:', data.sessions)
-      }
-    }
-
-    // Update stored sessions in companions table if count differs (non-blocking)
-    if (currentUser.value && data.sessions !== undefined) {
-      const { data: storedData } = await supabase
-        .from('companions')
-        .select('sessions')
-        .eq('id', companionId)
-        .single()
-
-      const storedSessions = storedData?.sessions
-
-      if (storedSessions !== data.sessions) {
-        // Fire and forget - don't block on this update
-        supabase
-          .from('companions')
-          .update({ sessions: data.sessions })
-          .eq('id', companionId)
-          .then(() => {
-            console.debug(`Updated stored sessions for companion ${companionId} from ${storedSessions} to ${data.sessions}`)
-          })
-          .catch(err => {
-            console.warn(`Could not update companion sessions (non-blocking):`, err instanceof Error ? err.message : String(err))
-          })
-      }
-    }
-
     // Sync profile data from user only if needed (don't block on this)
     if (data.user_id) {
       try {
@@ -2112,25 +2056,29 @@ export const syncSessionCounts = async (userId: string) => {
 export const syncCompanionSessionCounts = async (companionId: string | number) => {
   try {
     const companionIdStr = companionId.toString()
+    const companionIdNum = parseInt(companionIdStr)
 
-    // Count total chats for this companion (each chat = 1 session)
-    const { count, error: chatsError } = await supabase
-      .from('chats')
-      .select('id', { count: 'exact', head: true })
-      .eq('companion_id', parseInt(companionIdStr))
+    // Use RPC function to count chats (bypasses RLS restrictions)
+    const { data: companionSessionCount, error: rpcError } = await supabase
+      .rpc('get_companion_session_count', { companion_id: companionIdNum })
 
-    if (chatsError) {
-      console.error('Error fetching companion chats for sync:', chatsError)
+    if (rpcError) {
+      console.error('Error fetching companion session count via RPC:', {
+        companionId: companionIdStr,
+        error: rpcError,
+        message: rpcError?.message
+      })
       return
     }
 
-    const companionSessionCount = count || 0
+    const sessionCount = companionSessionCount || 0
+    console.log(`Counted ${sessionCount} chats for companion ${companionIdStr}`)
 
     // Update companion sessions
     const { error: updateError } = await supabase
       .from('companions')
-      .update({ sessions: companionSessionCount })
-      .eq('id', parseInt(companionIdStr))
+      .update({ sessions: sessionCount })
+      .eq('id', companionIdNum)
 
     if (updateError) {
       console.error('Error updating companion sessions:', {
@@ -2144,17 +2092,38 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     }
 
     // Update local state in companions array
-    const index = companions.value.findIndex(c => c.id.toString() === companionIdStr)
+    const index = companions.value.findIndex(c => c.id === companionIdNum)
     if (index !== -1) {
       companions.value[index] = {
         ...companions.value[index],
-        sessions: companionSessionCount,
+        sessions: sessionCount,
       }
     }
 
-    console.log(`Session count synced for companion ${companionIdStr}: ${companionSessionCount}`)
+    console.log(`Session count synced for companion ${companionIdStr}: ${sessionCount}`)
   } catch (err) {
     console.error('Error in syncCompanionSessionCounts:', err)
+  }
+}
+
+// Sync all companion session counts (admin function)
+export const syncAllCompanionSessionCounts = async () => {
+  try {
+    console.log('Starting sync of all companion session counts...')
+
+    if (companions.value.length === 0) {
+      await loadCompanions()
+    }
+
+    for (const companion of companions.value) {
+      await syncCompanionSessionCounts(companion.id)
+    }
+
+    console.log('All companion session counts synced successfully')
+    return true
+  } catch (err) {
+    console.error('Error syncing all companion session counts:', err)
+    return false
   }
 }
 

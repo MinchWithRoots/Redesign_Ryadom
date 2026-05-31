@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, loadCurrentUser, topics, loadTopics, getCompanionById, getCurrentCompanionId, syncSessionCounts, syncCompanionSessionCounts } from '../composables/useAppState'
+import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, loadCurrentUser, topics, loadTopics, getCompanionById, getCurrentCompanionId } from '../composables/useAppState'
 import { useConfirmDialog } from '../composables/useConfirmDialog'
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
@@ -407,11 +407,6 @@ onMounted(async () => {
   await loadSessionHistory()
   await loadUserReviews()
 
-  // Sync session counts based on actual chats
-  if (currentUser.value) {
-    await syncSessionCounts(currentUser.value.id)
-  }
-
   // If user is a companion, load companion ID and reviews for that companion
   if (currentUser.value?.role === 'companion') {
     try {
@@ -420,8 +415,6 @@ onMounted(async () => {
       console.log('Companion ID loaded:', id)
       if (id) {
         await loadCompanionReviews()
-        // Sync companion session counts
-        await syncCompanionSessionCounts(id)
       }
     } catch (err) {
       console.error('Error loading companion data:', err)
