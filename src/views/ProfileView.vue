@@ -533,9 +533,7 @@ watch(
                   activeTab === 'companion-requests' && 'profile-menu__item--active'
                 ]"
               >
-                <svg class="profile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m0 0h6m0 0l-6-6m0 0l6 6" />
-                </svg>
+                <img src="../images/send.svg" alt="Requests" class="profile-menu__icon" />
                 Мои заявки
               </button>
 
