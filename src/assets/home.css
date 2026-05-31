@@ -75,8 +75,6 @@
 @media (min-width: 1517px) {
   .hero-bg-image--desktop {
     width: 100%;
-    left: 0;
-    right: auto;
   }
 }
 
@@ -98,12 +96,6 @@
 @media (min-width: 1024px) {
   .hero-content {
     padding: 4rem 2rem 5rem;
-  }
-}
-
-@media (min-width: 1517px) {
-  .hero-content {
-    padding-left: 4rem;
   }
 }
 
@@ -146,6 +138,7 @@
   .hero-text-group {
     align-items: flex-start;
     text-align: left;
+    margin-left: 15px;
   }
 }
 
@@ -155,16 +148,6 @@
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-  }
-}
-
-@media (min-width: 1517px) {
-  .hero-text-group {
-    align-items: flex-start;
-    text-align: left;
-    margin-left: 0;
-    margin-right: 0;
-    max-width: 550px;
   }
 }
 
@@ -194,18 +177,13 @@
 @media (min-width: 1024px) {
   .hero-heading {
     justify-content: flex-start;
+    margin-bottom: 10px;
   }
 }
 
 @media (min-width: 1200px) {
   .hero-heading {
     justify-content: center;
-  }
-}
-
-@media (min-width: 1517px) {
-  .hero-heading {
-    justify-content: flex-start;
   }
 }
 
@@ -326,14 +304,8 @@
 
 @media (min-width: 1200px) {
   .hero-subtitle {
-    text-align: center;
-    max-width: 700px;
-  }
-}
-
-@media (min-width: 1517px) {
-  .hero-subtitle {
     text-align: left;
+    max-width: 700px;
   }
 }
 
@@ -373,12 +345,6 @@
 @media (min-width: 1020px) {
   .hero-buttons {
     justify-content: center;
-  }
-}
-
-@media (min-width: 1517px) {
-  .hero-buttons {
-    justify-content: flex-start;
   }
 }
 
