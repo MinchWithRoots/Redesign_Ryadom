@@ -2,13 +2,17 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, chats, updateUserProfile, logoutUser, deleteChat, markChatAsRead, loadChats, loadCurrentUser, topics, loadTopics, getCompanionById, getCurrentCompanionId, syncSessionCounts, syncCompanionSessionCounts } from '../composables/useAppState'
+import { useConfirmDialog } from '../composables/useConfirmDialog'
 import UserChatRequests from '../components/UserChatRequests.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
 import ReviewModal from '../components/ReviewModal.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { getUserReviews, deleteReview, getCompanionReviews } from '../services/supabaseService'
 import { getAgeForm } from '../utils/ageForm'
 import { supabase } from '@/utils/supabase'
 import '@/assets/profile.css'
+
+const { isOpen, title, message, confirmText, cancelText, isDangerous, openDialog, handleConfirm, handleCancel } = useConfirmDialog()
 
 const router = useRouter()
 const activeTab = ref('chats')
@@ -166,9 +170,16 @@ const handleSaveProfile = async () => {
 }
 
 const handleDeleteChat = (chatId: string | number) => {
-  if (confirm('Вы уверены, что хотите удалить этот чат?')) {
-    deleteChat(chatId.toString())
-  }
+  openDialog({
+    title: 'Удалить чат?',
+    message: 'Вы уверены, что хотите удалить этот чат? Это действие нельзя будет отменить.',
+    confirmText: '✓ Удалить',
+    cancelText: '✕ Отмена',
+    isDangerous: true,
+    onConfirm: async () => {
+      await deleteChat(chatId.toString())
+    },
+  })
 }
 
 const handleOpenChat = (chatId: string | number) => {
@@ -187,7 +198,10 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
 
     if (error) {
       console.error('Error restoring chat:', error)
-      alert('Ошибка при восстановлении чата')
+      errorMessage.value = 'Ошибка при восстановлении чата'
+      setTimeout(() => {
+        errorMessage.value = ''
+      }, 3000)
       return
     }
 
@@ -205,7 +219,10 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
     }
   } catch (err) {
     console.error('Error in handleUnblockChat:', err)
-    alert('Ошибка при восстановлении чата')
+    errorMessage.value = 'Ошибка при восстановлении чата'
+    setTimeout(() => {
+      errorMessage.value = ''
+    }, 3000)
   }
 }
 
@@ -337,21 +354,28 @@ const openReviewModal = (session: any) => {
 
 // Handle review deletion
 const handleDeleteReview = async (reviewId: string) => {
-  if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) return
-
-  try {
-    const success = await deleteReview(reviewId)
-    if (success) {
-      userReviews.value = userReviews.value.filter(r => r.id !== reviewId)
-      successMessage.value = 'Отзыв удалён'
-      setTimeout(() => {
-        successMessage.value = ''
-      }, 3000)
-    }
-  } catch (err) {
-    console.error('Error deleting review:', err)
-    errorMessage.value = 'Ошибка при удалении отзыва'
-  }
+  openDialog({
+    title: 'Удалить отзыв?',
+    message: 'Вы уверены, что хотите удалить этот отзыв? Это действие нельзя будет отменить.',
+    confirmText: '✓ Удалить',
+    cancelText: '✕ Отмена',
+    isDangerous: true,
+    onConfirm: async () => {
+      try {
+        const success = await deleteReview(reviewId)
+        if (success) {
+          userReviews.value = userReviews.value.filter(r => r.id !== reviewId)
+          successMessage.value = 'Отзыв удалён'
+          setTimeout(() => {
+            successMessage.value = ''
+          }, 3000)
+        }
+      } catch (err) {
+        console.error('Error deleting review:', err)
+        errorMessage.value = 'Ошибка при удалении отзыва'
+      }
+    },
+  })
 }
 
 // Handle review success
@@ -1044,6 +1068,18 @@ watch(
         @success="handleReviewSuccess"
         @close="showReviewModal = false"
       />
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog
+      :is-open="isOpen"
+      :title="title"
+      :message="message"
+      :confirm-text="confirmText"
+      :cancel-text="cancelText"
+      :is-dangerous="isDangerous"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
     </div>
   </div>
 </template>

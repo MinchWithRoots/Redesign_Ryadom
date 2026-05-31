@@ -2,12 +2,16 @@
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
+import { useConfirmDialog } from '../composables/useConfirmDialog'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
 import * as encryptionService from '@/services/encryptionService'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import ReviewModal from '../components/ReviewModal.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import '@/assets/chat.css'
+
+const { isOpen, title, message, confirmText, cancelText, isDangerous, openDialog, handleConfirm, handleCancel } = useConfirmDialog()
 import infoIcon from '../images/info-triangle.svg'
 import blockIcon from '../images/block.svg'
 import sendIcon from '../images/send.svg'
@@ -469,7 +473,12 @@ const handleReviewClose = () => {
 
 const handleReportUser = async () => {
   if (!reportReason.value || !reportMessage.value || !chatId.value) {
-    alert('Пожалуйста, выберите причину и опишите ситуацию')
+    openDialog({
+      title: 'Заполните все поля',
+      message: 'Пожалуйста, выберите причину и опишите ситуацию',
+      confirmText: '✓ OK',
+      cancelText: '✕ Отмена',
+    })
     return
   }
 
@@ -477,7 +486,12 @@ const handleReportUser = async () => {
   try {
     const chatData = chat.value
     if (!chatData) {
-      alert('Chat not found')
+      openDialog({
+        title: 'Ошибка',
+        message: 'Чат не найден',
+        confirmText: '✓ OK',
+        cancelText: '✕ Отмена',
+      })
       return
     }
 
@@ -499,7 +513,12 @@ const handleReportUser = async () => {
     }, 2000)
   } catch (err) {
     console.error('Error submitting report:', err)
-    alert('Ошибка при отправке отчёта')
+    openDialog({
+      title: 'Ошибка при отправке',
+      message: 'Ошибка при отправке отчёта. Пожалуйста, попробуйте позже.',
+      confirmText: '✓ OK',
+      cancelText: '✕ Отмена',
+    })
   } finally {
     isReporting.value = false
   }
@@ -518,7 +537,12 @@ const handleBlockUser = async () => {
 
     if (error) {
       console.error('Error blocking user:', error)
-      alert('Ошибка при блокировке пользователя')
+      openDialog({
+        title: 'Ошибка',
+        message: 'Ошибка при блокировке пользователя. Пожалуйста, попробуйте позже.',
+        confirmText: '✓ OK',
+        cancelText: '✕ Отмена',
+      })
       return
     }
 
@@ -529,7 +553,12 @@ const handleBlockUser = async () => {
     }, 1500)
   } catch (err) {
     console.error('Error blocking user:', err)
-    alert('Ошибка при блокировке пользователя')
+    openDialog({
+      title: 'Ошибка',
+      message: 'Ошибка при блокировке пользователя. Пожалуйста, попробуйте позже.',
+      confirmText: '✓ OK',
+      cancelText: '✕ Отмена',
+    })
   } finally {
     isBlockingUser.value = false
   }
@@ -547,7 +576,12 @@ const handleUnblockUser = async () => {
 
     if (error) {
       console.error('Error restoring chat:', error)
-      alert('Ошибка при восстановлении чата')
+      openDialog({
+        title: 'Ошибка',
+        message: 'Ошибка при восстановлении чата. Пожалуйста, попробуйте позже.',
+        confirmText: '✓ OK',
+        cancelText: '✕ Отмена',
+      })
       return
     }
 
@@ -558,7 +592,12 @@ const handleUnblockUser = async () => {
     }, 1500)
   } catch (err) {
     console.error('Error restoring chat:', err)
-    alert('Ошибка при восстановлении чата')
+    openDialog({
+      title: 'Ошибка',
+      message: 'Ошибка при восстановлении чата. Пожалуйста, попробуйте позже.',
+      confirmText: '✓ OK',
+      cancelText: '✕ Отмена',
+    })
   } finally {
     isBlockingUser.value = false
   }
@@ -1182,6 +1221,18 @@ onBeforeUnmount(() => {
       :chat-id="chatId"
       @success="handleReviewSuccess"
       @close="handleReviewClose"
+    />
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog
+      :is-open="isOpen"
+      :title="title"
+      :message="message"
+      :confirm-text="confirmText"
+      :cancel-text="cancelText"
+      :is-dangerous="isDangerous"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
     />
   </div>
 </template>
