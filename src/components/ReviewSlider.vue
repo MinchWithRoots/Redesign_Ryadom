@@ -207,6 +207,16 @@ const navigateToCompanion = (companionId?: string) => {
   z-index: 2;
 }
 
+@media screen and (min-width: 1024px) {
+  .emotions-slider {
+    padding: 2rem 0;
+  }
+
+  .emotions-slider__slide {
+    min-height: 550px;
+  }
+}
+
 @media screen and (max-width: 1023px) {
   .emotions-slider {
     padding-inline: 0;

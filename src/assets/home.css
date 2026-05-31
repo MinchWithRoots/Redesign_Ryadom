@@ -457,12 +457,12 @@
   padding: 5rem 1rem;
   background: linear-gradient(to bottom, var(--color-white), var(--color-light-bg));
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 @media (min-width: 1024px) {
   #reviews {
-    padding: 7rem 1.5rem;
+    padding: 8rem 2rem;
   }
 }
 
@@ -610,11 +610,13 @@
   gap: 3rem;
   position: relative;
   z-index: 1;
+  padding: 0 1rem;
 }
 
 @media (min-width: 1024px) {
   .reviews-container {
-    gap: var(--spacing-4xl);
+    gap: 4rem;
+    padding: 0 3rem;
   }
 }
 
