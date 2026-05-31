@@ -75,12 +75,11 @@ const navigateToCompanion = (companionId?: string) => {
       :space-between="20"
       :speed="600"
       :loop="true"
-      :centered-slides="true"
       :autoplay="{ delay: 6000, disableOnInteraction: false }"
       :pagination="{ el: '.emotions-slider__pagination', clickable: true, type: 'bullets' }"
       :breakpoints="{
         768: { slidesPerView: 2, spaceBetween: 30 },
-        1024: { slidesPerView: 3, spaceBetween: 40 }
+        1024: { slidesPerView: 3, spaceBetween: 24 }
       }"
       @swiper="handleSwiperInit"
       class="emotions-slider__slider swiper"
@@ -179,8 +178,8 @@ const navigateToCompanion = (companionId?: string) => {
 
 .emotions-slider__slide {
   display: flex;
-  align-items: center;
-  min-height: 550px;
+  align-items: stretch;
+  min-height: auto;
 }
 
 @media screen and (max-width: 1023px) {
@@ -305,7 +304,7 @@ const navigateToCompanion = (companionId?: string) => {
   --border-radius: 16px;
 
   width: 100%;
-  max-width: 400px;
+  max-width: 100%;
   background: #ffffff;
   border: none;
   border-radius: var(--border-radius);
@@ -313,6 +312,12 @@ const navigateToCompanion = (companionId?: string) => {
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 114, 94, 0.1);
+}
+
+@media screen and (min-width: 1024px) {
+  .emotions-slider-item {
+    max-width: 100%;
+  }
 }
 
 .emotions-slider__slide.swiper-slide-active .emotions-slider-item {
