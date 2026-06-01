@@ -571,8 +571,8 @@ const handleUnblockUser = async () => {
 
   isBlockingUser.value = true
   try {
-    // Check if current user is the one who blocked
-    if (chat.value.blocked_by !== currentUser.value?.id) {
+    // Check if current user is the one who blocked (only for 'blocked' status, not 'offline')
+    if (chat.value.status === 'blocked' && chat.value.blocked_by !== currentUser.value?.id) {
       openDialog({
         title: 'Нет прав',
         message: 'Только пользователь, который заблокировал чат, может его разблокировать.',

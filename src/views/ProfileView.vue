@@ -200,8 +200,8 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
     // Find the chat to check who blocked it
     const chatToUnblock = chats.value.find(c => c.id === chatId)
 
-    // Check if current user is the one who blocked
-    if (chatToUnblock?.blocked_by !== currentUser.value?.id) {
+    // Check if current user is the one who blocked (only for 'blocked' status, not 'offline')
+    if (chatToUnblock?.status === 'blocked' && chatToUnblock?.blocked_by !== currentUser.value?.id) {
       errorMessage.value = 'Только пользователь, который заблокировал чат, может его разблокировать.'
       setTimeout(() => {
         errorMessage.value = ''
