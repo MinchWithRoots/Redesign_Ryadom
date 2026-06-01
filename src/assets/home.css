@@ -427,6 +427,7 @@
     filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
     margin-top: 60px;
     height: auto;
+    animation: float-hero-planet 5s ease-in-out infinite;
 }
 
 @media (min-width: 1024px) {
@@ -1232,5 +1233,14 @@ footer {
   }
   75% {
     transform: translateY(-8px);
+  }
+}
+
+@keyframes float-hero-planet {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
   }
 }
