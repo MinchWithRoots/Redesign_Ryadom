@@ -245,7 +245,7 @@ const scrollToBottom = () => {
 }
 
 const sendMessage = async () => {
-  if (!messageInput.value.trim() || !chatId.value || !currentUser.value) {
+  if (!messageInput.value.trim() || !chatId.value || !currentUser.value || isBlocked.value) {
     return
   }
 
@@ -1199,14 +1199,14 @@ onBeforeUnmount(() => {
             type="text"
             placeholder="Напишите сообщение..."
             @keyup.enter="sendMessage"
-            :disabled="isSending"
+            :disabled="isSending || isBlocked"
             class="chat-input-field"
           />
 
           <!-- Send Button -->
           <button
             @click="sendMessage"
-            :disabled="!messageInput.trim() || isSending"
+            :disabled="!messageInput.trim() || isSending || isBlocked"
             type="button"
             class="chat-send-button"
             title="Отправить сообщение"
@@ -1220,8 +1220,9 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Info -->
-        <p class="chat-input-info">
-          💬 Сессия активна
+        <p class="chat-input-info" :class="{ 'chat-input-info--blocked': isBlocked }">
+          <span v-if="isBlocked">Чат заблокирован</span>
+          <span v-else>💬 Сессия активна</span>
         </p>
       </div>
       </template>

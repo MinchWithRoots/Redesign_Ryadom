@@ -175,6 +175,21 @@ router.post('/:chatId/messages', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Сообщение не может быть пустым' })
     }
 
+    // Check if chat is blocked
+    const chatCheckResult = await pool.query(
+      'SELECT status FROM chats WHERE id = $1 AND user_id = $2',
+      [chatId, req.userId]
+    )
+
+    if (chatCheckResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Чат не найден' })
+    }
+
+    const chatStatus = chatCheckResult.rows[0].status
+    if (chatStatus === 'blocked' || chatStatus === 'offline') {
+      return res.status(403).json({ error: 'Чат неактивен. Вы не можете отправлять сообщения.' })
+    }
+
     let isEncrypted = false
     let encryptedText = null
 

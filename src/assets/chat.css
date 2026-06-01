@@ -763,6 +763,10 @@
   font-weight: var(--font-weight-medium);
 }
 
+.chat-input-info--blocked {
+  color: var(--color-danger, #ef4444);
+}
+
 /* ===== BUTTONS ===== */
 .chat-button {
   padding: 0.75rem var(--spacing-lg);
