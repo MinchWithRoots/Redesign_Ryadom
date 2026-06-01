@@ -433,7 +433,7 @@ const submitReview = async () => {
   transition: stroke 0.3s;
 }
 
-/* Hover states */
+/* Hover states - smooth fill animation */
 .rating__input-1:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
 .rating__input-2:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
 .rating__input-2:hover ~ .rating__label:nth-of-type(2) .rating__star-stroke,
@@ -450,38 +450,78 @@ const submitReview = async () => {
 .rating__input-5:hover ~ .rating__label:nth-of-type(4) .rating__star-stroke,
 .rating__input-5:hover ~ .rating__label:nth-of-type(5) .rating__star-stroke {
   stroke: var(--color-primary-star);
+  stroke-width: 2;
+  transition: stroke 0.3s cubic-bezier(0.42, 0, 0.58, 1);
+}
+
+.rating__input-1:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-2:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-2:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-3:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-3:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-3:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(4) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(4) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(5) .rating__star-fill {
   transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 /* Checked states - trigger animations */
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star,
+.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
+.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star,
 .rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star,
+.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
+.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star,
 .rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
+.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star,
 .rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star,
+.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-ring,
+.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star,
 .rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star,
 .rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star,
 .rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star,
+.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 /* Stroke animations */
@@ -617,6 +657,24 @@ const submitReview = async () => {
     transform: scale(0.9);
   }
   to {
+    transform: scale(1);
+  }
+}
+
+@keyframes starBounce {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.15);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
     transform: scale(1);
   }
 }
