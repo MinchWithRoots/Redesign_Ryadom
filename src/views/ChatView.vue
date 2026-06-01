@@ -50,7 +50,7 @@ const chatMessages = computed(() => messages.value)
 
 const isBlocked = computed(() => {
   const status = chat.value?.status
-  return status === 'offline'
+  return status === 'offline' || status === 'blocked'
 })
 
 const currentCompanion = computed(() => {
@@ -587,7 +587,7 @@ const handleUnblockUser = async () => {
       return
     }
 
-    blockSuccess.value = 'Чат восстановлен'
+    blockSuccess.value = 'Пользователь разблокирован.'
     showActionMenu.value = false
     setTimeout(() => {
       router.push('/profile')
@@ -1016,7 +1016,7 @@ onBeforeUnmount(() => {
               </svg>
             </div>
             <h2 class="chat-modal-title">{{ blockSuccess }}</h2>
-            <p class="chat-modal-text" v-if="blockSuccess.includes('разблокир')">Вы сможете общаться с этим пользователем снова</p>
+            <p class="chat-modal-text" v-if="blockSuccess.includes('разблокир')">Он снова может писать вам, и вы можете продолжить диалог</p>
             <p class="chat-modal-text" v-else>Вы больше не сможете общаться с этим пользователем</p>
           </div>
         </div>

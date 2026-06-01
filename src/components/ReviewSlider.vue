@@ -168,6 +168,23 @@ const navigateToCompanion = (companionId?: string) => {
 </template>
 
 <style scoped>
+/* Override default Swiper styles that break layout */
+:deep(.swiper) {
+  overflow: visible !important;
+}
+
+:deep(.swiper-wrapper) {
+  overflow: visible !important;
+  align-items: stretch !important;
+  height: auto !important;
+}
+
+:deep(.swiper-slide) {
+  overflow: visible !important;
+  height: auto !important;
+  display: flex !important;
+}
+
 .emotions-slider {
   --color-primary: #FF725E;
   --color-secondary: #6b7280;
@@ -176,7 +193,8 @@ const navigateToCompanion = (companionId?: string) => {
 
   padding-inline: 0;
   position: relative;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .emotions-slider__slide {
@@ -205,6 +223,8 @@ const navigateToCompanion = (companionId?: string) => {
 @media screen and (min-width: 768px) and (max-width: 1023px) {
   .emotions-slider {
     padding-inline: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
     /* Add fade effect at edges for partially visible slides */
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -213,16 +233,26 @@ const navigateToCompanion = (companionId?: string) => {
   .emotions-slider__slide {
     min-height: 550px;
   }
+
+  .emotions-slider__slide.swiper-slide-active {
+    transform: scale(1);
+  }
 }
 
 @media screen and (max-width: 767.9px) {
   .emotions-slider {
     padding: 0;
     margin-inline: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .emotions-slider__slide {
     min-height: 480px;
+  }
+
+  .emotions-slider__slide.swiper-slide-active {
+    transform: scale(1);
   }
 }
 
@@ -344,6 +374,7 @@ const navigateToCompanion = (companionId?: string) => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 114, 94, 0.1);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 @media screen and (min-width: 1024px) {
@@ -408,6 +439,9 @@ const navigateToCompanion = (companionId?: string) => {
   gap: 12px;
   padding: 20px 20px;
   color: var(--color-text);
+  flex: 1;
+  min-height: 0;
+  justify-content: flex-start;
 }
 
 .emotions-slider-item__header,
@@ -415,6 +449,11 @@ const navigateToCompanion = (companionId?: string) => {
   max-height: 60px;
   overflow: visible;
   transition: max-height 0.6s ease-in;
+}
+
+/* Hide button in non-active slides */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__btn {
+  display: none;
 }
 
 .emotions-slider-item__header-inner {
@@ -428,6 +467,11 @@ const navigateToCompanion = (companionId?: string) => {
 .emotions-slider-item__rating {
   display: flex;
   gap: 4px;
+}
+
+/* Hide rating in non-active slides */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__rating {
+  display: none;
 }
 
 .emotions-slider-item__star {
@@ -513,9 +557,11 @@ const navigateToCompanion = (companionId?: string) => {
   transition: max-height 0.6s ease-in;
 }
 
-/* Hide text for non-active slides to maintain consistent card height */
+/* Non-active slides show more text lines for better visibility */
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
 
 .emotions-slider-item__companion {
