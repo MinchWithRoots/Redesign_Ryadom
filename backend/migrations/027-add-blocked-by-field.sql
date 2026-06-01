@@ -5,7 +5,7 @@ ADD COLUMN blocked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 -- Update RLS policy to allow unblocking only by the person who blocked
 DROP POLICY IF EXISTS "Users can update their chats" ON public.chats;
 
--- New policy: More granular update permissions
+-- New policy: Allow updates by chat owner or companion
 CREATE POLICY "Users can update their chats"
 ON public.chats
 FOR UPDATE
@@ -18,25 +18,11 @@ USING (
   )
 )
 WITH CHECK (
-  -- Allow update if:
-  -- 1. User is the chat owner
-  -- 2. User is the companion of this chat
-  -- 3. BUT if changing status to 'active' (unblocking), only the person who blocked can do it
-  (
-    user_id = auth.uid()
-    OR EXISTS (
-      SELECT 1 FROM public.companions comp
-      WHERE comp.id = chats.companion_id
-      AND comp.user_id = auth.uid()
-    )
-  )
-  AND (
-    -- Allow all updates by default
-    (NEW.status = chats.status OR NEW.status IS NULL)
-    -- But if status changes to 'active' from 'blocked', only blocker can do it
-    OR (chats.status = 'blocked' AND NEW.status = 'active' AND chats.blocked_by = auth.uid())
-    -- Blocking is always allowed by chat owner or companion
-    OR (NEW.status = 'blocked')
+  user_id = auth.uid()
+  OR EXISTS (
+    SELECT 1 FROM public.companions comp
+    WHERE comp.id = chats.companion_id
+    AND comp.user_id = auth.uid()
   )
 );
 
