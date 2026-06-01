@@ -223,6 +223,8 @@ const navigateToCompanion = (companionId?: string) => {
 @media screen and (min-width: 768px) and (max-width: 1023px) {
   .emotions-slider {
     padding-inline: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
     /* Add fade effect at edges for partially visible slides */
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -237,6 +239,8 @@ const navigateToCompanion = (companionId?: string) => {
   .emotions-slider {
     padding: 0;
     margin-inline: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .emotions-slider__slide {
