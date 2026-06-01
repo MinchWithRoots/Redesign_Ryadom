@@ -197,7 +197,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 
   .emotions-slider__slide {
-    min-height: 590px;
+    min-height: 620px;
   }
 }
 
@@ -207,7 +207,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 
   .emotions-slider__slide {
-    min-height: 480px;
+    min-height: 510px;
   }
 }
 
@@ -218,7 +218,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 
   .emotions-slider__slide {
-    min-height: 400px;
+    min-height: 430px;
   }
 }
 
@@ -490,6 +490,14 @@ const navigateToCompanion = (companionId?: string) => {
   line-height: 1.5;
   opacity: 0.75;
   color: var(--color-secondary);
+  max-height: 100%;
+  overflow: hidden;
+  transition: max-height 0.6s ease-in;
+}
+
+/* Hide text for non-active slides to maintain consistent card height */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
+  max-height: 0;
 }
 
 .emotions-slider-item__companion {
