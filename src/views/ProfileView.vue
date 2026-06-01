@@ -1806,9 +1806,9 @@ watch(
 
 .profile-review-item {
   padding: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-white);
   transition: box-shadow 0.2s;
 }
 
@@ -1845,22 +1845,25 @@ watch(
 .profile-review-item__companion-name {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-secondary);
   margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__date {
   font-size: 12px;
-  color: #999;
+  color: var(--color-secondary-60);
   margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__anonymous {
   font-size: 12px;
-  color: #666;
+  color: var(--color-secondary-70);
   margin: 0;
   display: flex;
   align-items: center;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__rating {
@@ -1882,15 +1885,17 @@ watch(
 .profile-review-item__title {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-secondary);
   margin: 8px 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__comment {
   font-size: 13px;
-  color: #666;
+  color: var(--color-secondary-70);
   line-height: 1.5;
   margin: 0 0 12px 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__actions {
@@ -1926,13 +1931,15 @@ watch(
 .profile-empty-reviews {
   padding: 32px 16px;
   text-align: center;
-  color: #999;
+  color: var(--color-secondary-60);
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-empty-reviews__hint {
   font-size: 13px;
-  color: #bbb;
+  color: var(--color-secondary-60);
   margin-top: 8px;
+  font-family: 'Inter', sans-serif;
 }
 
 .reviews-loading {
@@ -2002,7 +2009,7 @@ watch(
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .reviews-tab {
@@ -2010,20 +2017,21 @@ watch(
   background: none;
   border: none;
   cursor: pointer;
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-secondary, #64748b);
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary-70);
+  font-weight: var(--font-weight-medium);
+  font-family: 'Inter', sans-serif;
   transition: all 0.3s ease;
   border-bottom: 3px solid transparent;
   margin-bottom: -2px;
 }
 
 .reviews-tab:hover {
-  color: var(--color-primary, #ff6a2f);
+  color: var(--color-secondary);
 }
 
 .reviews-tab--active {
-  color: var(--color-primary, #ff6a2f);
-  border-bottom-color: var(--color-primary, #ff6a2f);
+  color: var(--color-secondary);
+  border-bottom-color: var(--color-primary);
 }
 </style>
