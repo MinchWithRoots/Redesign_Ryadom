@@ -339,9 +339,11 @@ const navigateToCompanion = (companionId?: string) => {
   border: none;
   border-radius: var(--border-radius);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 114, 94, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 @media screen and (min-width: 1024px) {
@@ -370,11 +372,12 @@ const navigateToCompanion = (companionId?: string) => {
 
 .emotions-slider-item__image {
   aspect-ratio: 400 / 270;
-  overflow: hidden;
+  overflow: visible;
   background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .emotions-slider-item__image img {
@@ -382,6 +385,7 @@ const navigateToCompanion = (companionId?: string) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .emotions-slider-item__image-fallback {
@@ -409,7 +413,7 @@ const navigateToCompanion = (companionId?: string) => {
 .emotions-slider-item__header,
 .emotions-slider-item__footer {
   max-height: 60px;
-  overflow: hidden;
+  overflow: visible;
   transition: max-height 0.6s ease-in;
 }
 
