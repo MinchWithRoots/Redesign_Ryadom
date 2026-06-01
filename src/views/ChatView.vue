@@ -587,7 +587,7 @@ const handleUnblockUser = async () => {
       return
     }
 
-    blockSuccess.value = 'Пользователь разблокирован. Вы можете продолжить общение.'
+    blockSuccess.value = 'Пользователь разблокирован.'
     showActionMenu.value = false
     setTimeout(() => {
       router.push('/profile')
