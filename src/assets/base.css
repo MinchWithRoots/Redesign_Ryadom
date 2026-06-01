@@ -1,5 +1,9 @@
 /* Base Styles without Tailwind */
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --color-primary: #ff6a2f;
   --color-primary-dark: #e55a1f;

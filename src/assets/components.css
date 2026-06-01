@@ -91,15 +91,41 @@
   padding: 0;
   transition: color var(--transition-fast);
   white-space: nowrap;
+  position: relative;
+  display: inline-block;
+}
+
+.site-header__nav-link::after,
+.site-header__nav-btn::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  height: 2px;
+  background: var(--color-primary);
+  transition: width 0.3s ease, left 0.3s ease;
+  width: 0;
+}
+
+.site-header__nav-link:hover::after,
+.site-header__nav-btn:hover::after {
+  width: 100%;
+  left: 0;
 }
 
 .site-header__nav-link:hover,
 .site-header__nav-btn:hover {
-  color: var(--color-primary);
+  color: var(--color-secondary);
 }
 
 .site-header__nav-link--active {
   color: var(--color-primary);
+}
+
+.site-header__nav-link--active::after {
+  content: "";
+  width: 100%;
+  left: 0;
 }
 
 /* Desktop Auth Buttons */

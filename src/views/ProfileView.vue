@@ -43,6 +43,7 @@ const companionReviews = ref<any[]>([])
 const isLoadingReviews = ref(false)
 const showReviewModal = ref(false)
 const selectedSessionForReview = ref<any>(null)
+const activeReviewsTab = ref<'your' | 'about'>('your')
 
 // Initialize with current user data
 const userProfile = computed(() => {
@@ -929,6 +930,24 @@ watch(
           <div class="profile-section">
             <h2 class="profile-section__title">Мои отзывы</h2>
 
+            <!-- Reviews Tabs -->
+            <div v-if="currentUser?.role === 'companion'" class="reviews-tabs">
+              <button
+                class="reviews-tab"
+                :class="{ 'reviews-tab--active': activeReviewsTab === 'your' }"
+                @click="activeReviewsTab = 'your'"
+              >
+                Ваши отзывы
+              </button>
+              <button
+                class="reviews-tab"
+                :class="{ 'reviews-tab--active': activeReviewsTab === 'about' }"
+                @click="activeReviewsTab = 'about'"
+              >
+                Отзывы на вас
+              </button>
+            </div>
+
             <!-- Loading State -->
             <div v-if="isLoadingReviews" class="profile-loading-container">
               <AsyncLoader type="rings" size="md" />
@@ -936,18 +955,20 @@ watch(
             </div>
 
             <!-- Reviews List -->
-            <div v-else-if="userReviews.length > 0" class="profile-reviews-list">
-              <div v-for="review in userReviews" :key="review.id" class="profile-review-item">
+            <div v-else-if="(activeReviewsTab === 'your' ? userReviews : companionReviews).length > 0" class="profile-reviews-list">
+              <div v-for="review in (activeReviewsTab === 'your' ? userReviews : companionReviews)" :key="review.id" class="profile-review-item">
                 <div class="profile-review-item__header">
                   <div class="profile-review-item__companion-info">
                     <img
-                      v-if="review.companions?.image"
-                      :src="review.companions.image"
-                      :alt="review.companions.name"
+                      v-if="activeReviewsTab === 'your' ? review.companions?.image : review.users?.image"
+                      :src="activeReviewsTab === 'your' ? review.companions.image : review.users.image"
+                      :alt="activeReviewsTab === 'your' ? review.companions?.name : review.users?.name"
                       class="profile-review-item__companion-image"
                     />
                     <div class="profile-review-item__companion-details">
-                      <h3 class="profile-review-item__companion-name">{{ review.companions?.name || 'Неизвестный спутник' }}</h3>
+                      <h3 class="profile-review-item__companion-name">
+                        {{ activeReviewsTab === 'your' ? (review.companions?.name || 'Неизвестный спутник') : (review.users?.name || 'Неизвестный пользователь') }}
+                      </h3>
                       <p class="profile-review-item__date">{{ new Date(review.created_at).toLocaleDateString('ru-RU') }}</p>
                       <p v-if="review.is_anonymous" class="profile-review-item__anonymous">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px; vertical-align: middle;">
@@ -988,8 +1009,9 @@ watch(
 
             <!-- Empty State -->
             <div v-else class="profile-empty-reviews">
-              <p>У вас пока нет отзывов</p>
-              <p class="profile-empty-reviews__hint">После завершения сессии с спутником вы сможете оставить отзыв</p>
+              <p v-if="activeReviewsTab === 'your'">У вас пока нет отзывов</p>
+              <p v-else>На вас пока нет отзывов</p>
+              <p v-if="activeReviewsTab === 'your'" class="profile-empty-reviews__hint">После завершения сессии с спутником вы сможете оставить отзыв</p>
             </div>
           </div>
         </div>
@@ -1784,9 +1806,9 @@ watch(
 
 .profile-review-item {
   padding: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-white);
   transition: box-shadow 0.2s;
 }
 
@@ -1823,22 +1845,25 @@ watch(
 .profile-review-item__companion-name {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-secondary);
   margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__date {
   font-size: 12px;
-  color: #999;
+  color: var(--color-secondary-60);
   margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__anonymous {
   font-size: 12px;
-  color: #666;
+  color: var(--color-secondary-70);
   margin: 0;
   display: flex;
   align-items: center;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__rating {
@@ -1860,15 +1885,17 @@ watch(
 .profile-review-item__title {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-secondary);
   margin: 8px 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__comment {
   font-size: 13px;
-  color: #666;
+  color: var(--color-secondary-70);
   line-height: 1.5;
   margin: 0 0 12px 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-review-item__actions {
@@ -1904,13 +1931,15 @@ watch(
 .profile-empty-reviews {
   padding: 32px 16px;
   text-align: center;
-  color: #999;
+  color: var(--color-secondary-60);
+  font-family: 'Inter', sans-serif;
 }
 
 .profile-empty-reviews__hint {
   font-size: 13px;
-  color: #bbb;
+  color: var(--color-secondary-60);
   margin-top: 8px;
+  font-family: 'Inter', sans-serif;
 }
 
 .reviews-loading {
@@ -1974,5 +2003,35 @@ watch(
   opacity: 0.6;
   cursor: not-allowed;
   background: linear-gradient(90deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.reviews-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.reviews-tab {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary-70);
+  font-weight: var(--font-weight-medium);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.reviews-tab:hover {
+  color: var(--color-secondary);
+}
+
+.reviews-tab--active {
+  color: var(--color-secondary);
+  border-bottom-color: var(--color-primary);
 }
 </style>

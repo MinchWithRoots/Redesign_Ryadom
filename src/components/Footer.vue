@@ -146,11 +146,25 @@ const scrollToSection = (sectionId: string) => {
   line-height: 20px;
   cursor: pointer;
   text-align: left;
-  transition: opacity 0.2s;
+  transition: color 0.3s ease;
+  position: relative;
+  display: inline-block;
 }
 
-.footer__nav-link:hover {
-  opacity: 0.7;
+.footer__nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  height: 2px;
+  background: #fff;
+  transition: width 0.3s ease, left 0.3s ease;
+  width: 0;
+}
+
+.footer__nav-link:hover::after {
+  width: 100%;
+  left: 0;
 }
 
 .footer__contact-col {
@@ -171,11 +185,25 @@ const scrollToSection = (sectionId: string) => {
   font-weight: 500;
   line-height: 20px;
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: color 0.3s ease;
+  position: relative;
+  display: inline-block;
 }
 
-.footer__contact-link:hover {
-  opacity: 0.7;
+.footer__contact-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  height: 2px;
+  background: #fff;
+  transition: width 0.3s ease, left 0.3s ease;
+  width: 0;
+}
+
+.footer__contact-link:hover::after {
+  width: 100%;
+  left: 0;
 }
 
 .footer__divider {
