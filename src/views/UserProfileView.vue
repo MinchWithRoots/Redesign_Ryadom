@@ -279,7 +279,7 @@ watch(currentCompanion, (newVal) => {
 
             <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" @reviews-loaded="handleReviewsLoaded" />
 
-            <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
+            <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" @request-approved="handleRequestApproved" />
 
             <div class="profile-how-it-works">
               <h2 class="profile-how-it-works__title">Как это работает</h2>

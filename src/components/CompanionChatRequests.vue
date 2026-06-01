@@ -190,6 +190,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'request-approved': []
+}>()
 
 const isLoading = ref(false)
 const notification = ref('')
@@ -241,6 +244,8 @@ const handleApprove = async (requestId: string) => {
     }, 3000)
     // Reload requests
     await loadChatRequests(props.companionId, 'all')
+    // Emit event to notify parent that request was approved
+    emit('request-approved')
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
     console.error('Error approving request:', {
