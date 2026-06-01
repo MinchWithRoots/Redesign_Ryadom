@@ -575,7 +575,8 @@
   padding: 5rem 1rem;
   background: linear-gradient(to bottom, var(--color-white), var(--color-light-bg));
   position: relative;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 @media (min-width: 1024px) {
