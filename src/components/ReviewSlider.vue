@@ -314,7 +314,6 @@ const navigateToCompanion = (companionId?: string) => {
 
 .swiper-wrapper {
   overflow: visible !important;
-  height: auto;
 }
 
 .swiper-slide {
@@ -397,8 +396,8 @@ const navigateToCompanion = (companionId?: string) => {
 .emotions-slider-item__content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px 20px;
+  gap: 12px;
+  padding: 20px 20px;
   color: var(--color-text);
 }
 
@@ -478,9 +477,9 @@ const navigateToCompanion = (companionId?: string) => {
 
 .emotions-slider-item__title {
   font-weight: 600;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.3;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--color-text);
 }
 
@@ -488,7 +487,7 @@ const navigateToCompanion = (companionId?: string) => {
   font-size: 12px;
   color: var(--color-primary);
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .emotions-slider-item__text {
@@ -497,14 +496,17 @@ const navigateToCompanion = (companionId?: string) => {
   line-height: 1.5;
   opacity: 0.75;
   color: var(--color-secondary);
-  max-height: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
   transition: max-height 0.6s ease-in;
 }
 
 /* Hide text for non-active slides to maintain consistent card height */
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
-  max-height: 0;
+  -webkit-line-clamp: 2;
 }
 
 .emotions-slider-item__companion {
