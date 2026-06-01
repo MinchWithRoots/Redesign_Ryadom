@@ -516,11 +516,16 @@ export const getCompanionById = async (id: string) => {
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('image, bio, age, gender, topics')
+          .select('image, bio, age, gender, topics, sessions')
           .eq('id', data.user_id)
           .maybeSingle()
 
         if (!userError && userData) {
+          // Always use sessions from users table (source of truth)
+          if (userData.sessions !== undefined) {
+            data.sessions = userData.sessions
+          }
+
           // Check if any critical profile data differs
           const needsSync =
             userData.image !== data.image ||
@@ -570,6 +575,7 @@ export const getCompanionById = async (id: string) => {
                 age: data.age,
                 gender: data.gender,
                 topics: data.topics || [],
+                sessions: data.sessions,
                 updated_at: new Date().toISOString()
               })
               .eq('id', companionId)
@@ -752,7 +758,7 @@ export const loadCompanions = async () => {
     if (userIds.length > 0) {
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, image, bio, age, gender, name, topics')
+        .select('id, image, bio, age, gender, name, topics, sessions')
         .in('id', userIds)
 
       if (!userError && userData) {
@@ -795,6 +801,7 @@ export const loadCompanions = async () => {
             gender: userData.gender,
             name: userData.name,
             topics: userTopicIds,
+            sessions: userData.sessions,
             updated_at: new Date().toISOString()
           })
           .eq('id', companion.id)
@@ -808,10 +815,19 @@ export const loadCompanions = async () => {
       companionsWithData.map(async (companion: any) => {
         try {
           const { averageRating, reviewCount } = await getCompanionRatingStats(companion.id.toString())
+          // Get sessions from user data (source of truth)
+          let companionSessions = companion.sessions || 0
+          if (companion.user_id && userMap.has(companion.user_id)) {
+            const userData = userMap.get(companion.user_id)
+            if (userData?.sessions !== undefined) {
+              companionSessions = userData.sessions
+            }
+          }
           return {
             ...companion,
             average_rating: averageRating,
-            reviews_count: reviewCount
+            reviews_count: reviewCount,
+            sessions: companionSessions
           }
         } catch (err) {
           return {
@@ -1957,34 +1973,65 @@ export const incrementCompanionSessions = async (companionId: string | number) =
   try {
     const companionIdStr = companionId.toString()
 
-    // Get current session count
-    const { data: companion, error: fetchError } = await supabase
+    // First, get the companion's user_id
+    const { data: companion, error: companionError } = await supabase
       .from('companions')
-      .select('sessions')
+      .select('user_id')
       .eq('id', parseInt(companionIdStr))
-      .maybeSingle()
+      .single()
 
-    if (fetchError) {
-      console.error('Error fetching companion sessions:', fetchError)
+    if (companionError || !companion?.user_id) {
+      console.error('Error fetching companion user_id:', companionError)
       return
     }
 
-    const currentSessions = companion?.sessions || 0
+    // Get current session count from users table (source of truth)
+    const { data: userData, error: userFetchError } = await supabase
+      .from('users')
+      .select('sessions')
+      .eq('id', companion.user_id)
+      .single()
+
+    if (userFetchError) {
+      console.error('Error fetching user sessions:', userFetchError)
+      return
+    }
+
+    const currentSessions = userData?.sessions || 0
     const newSessions = currentSessions + 1
 
-    // Update session count
-    const { error: updateError } = await supabase
+    // Update user sessions (source of truth)
+    const { error: userUpdateError } = await supabase
+      .from('users')
+      .update({ sessions: newSessions })
+      .eq('id', companion.user_id)
+
+    if (userUpdateError) {
+      console.error('Error updating user sessions:', {
+        message: userUpdateError.message,
+        code: (userUpdateError as any).code,
+        hint: (userUpdateError as any).hint,
+        details: (userUpdateError as any).details,
+        status: (userUpdateError as any).status,
+        userId: companion.user_id,
+        newSessions,
+      })
+      return
+    }
+
+    // Also update companion sessions for consistency
+    const { error: companionUpdateError } = await supabase
       .from('companions')
       .update({ sessions: newSessions })
       .eq('id', parseInt(companionIdStr))
 
-    if (updateError) {
-      console.error('Error updating companion sessions on increment:', {
-        message: updateError.message,
-        code: (updateError as any).code,
-        hint: (updateError as any).hint,
-        details: (updateError as any).details,
-        status: (updateError as any).status,
+    if (companionUpdateError) {
+      console.error('Error updating companion sessions:', {
+        message: companionUpdateError.message,
+        code: (companionUpdateError as any).code,
+        hint: (companionUpdateError as any).hint,
+        details: (companionUpdateError as any).details,
+        status: (companionUpdateError as any).status,
         companionId: companionIdStr,
         newSessions,
       })
@@ -2000,7 +2047,7 @@ export const incrementCompanionSessions = async (companionId: string | number) =
       }
     }
 
-    console.log(`Sessions incremented for companion ${companionIdStr}: ${newSessions}`)
+    console.log(`Sessions incremented for companion ${companionIdStr} (user ${companion.user_id}): ${newSessions}`)
   } catch (err) {
     console.error('Error in incrementCompanionSessions:', err)
   }
@@ -2080,21 +2127,37 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     const companionIdStr = companionId.toString()
     const companionIdNum = parseInt(companionIdStr)
 
-    // Use RPC function to count chats (bypasses RLS restrictions)
-    const { data: companionSessionCount, error: rpcError } = await supabase
-      .rpc('get_companion_session_count', { companion_id: companionIdNum })
+    // First, get the companion to find its user_id
+    const { data: companionData, error: companionError } = await supabase
+      .from('companions')
+      .select('user_id')
+      .eq('id', companionIdNum)
+      .single()
 
-    if (rpcError) {
-      console.error('Error fetching companion session count via RPC:', {
-        companionId: companionIdStr,
-        error: rpcError,
-        message: rpcError?.message
-      })
+    if (companionError) {
+      console.error('Error fetching companion user_id:', companionError)
       return
     }
 
-    const sessionCount = companionSessionCount || 0
-    console.log(`Counted ${sessionCount} chats for companion ${companionIdStr}`)
+    if (!companionData?.user_id) {
+      console.warn(`No user_id found for companion ${companionIdStr}`)
+      return
+    }
+
+    // Get sessions count from users table (source of truth)
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('sessions')
+      .eq('id', companionData.user_id)
+      .single()
+
+    if (userError) {
+      console.error('Error fetching user sessions:', userError)
+      return
+    }
+
+    const sessionCount = userData?.sessions || 0
+    console.log(`Fetched ${sessionCount} sessions for companion ${companionIdStr} from user ${companionData.user_id}`)
 
     // Update companion sessions
     const { error: updateError } = await supabase
