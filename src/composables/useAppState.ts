@@ -1890,6 +1890,83 @@ export const getCompanionReviews = async (companionId: string): Promise<Review[]
   }
 }
 
+export const getReviewsFromCompanion = async (companionId: string): Promise<Review[]> => {
+  try {
+    // Get the companion's user_id
+    const { data: companionData, error: companionError } = await supabase
+      .from('companions')
+      .select('user_id')
+      .eq('id', parseInt(companionId))
+      .single()
+
+    if (companionError || !companionData?.user_id) {
+      console.error('Error fetching companion user_id:', companionError)
+      return []
+    }
+
+    // Fetch reviews written by this companion (where user_id = companion's user_id)
+    const { data: reviews, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('user_id', companionData.user_id)
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    const reviewsWithUsers = await Promise.all(
+      (reviews || []).map(async (review: any) => {
+        try {
+          // Get the companion being reviewed (whose profile the review is about)
+          const { data: companionReviewedData } = await supabase
+            .from('companions')
+            .select('name')
+            .eq('id', review.companion_id)
+            .single()
+
+          let chatCreatedAt = null
+          if (review.chat_id) {
+            try {
+              const { data: chatData } = await supabase
+                .from('chats')
+                .select('created_at')
+                .eq('id', review.chat_id)
+                .single()
+              chatCreatedAt = chatData?.created_at || null
+            } catch (chatErr) {
+              console.error(`Error fetching chat info for review ${review.id}:`, chatErr)
+            }
+          }
+
+          return {
+            ...review,
+            user_name: currentUser.value?.name || 'Unknown',
+            user_image: currentUser.value?.image,
+            chat_created_at: chatCreatedAt,
+            is_anonymous: false,
+            companion_name: companionReviewedData?.name || 'Unknown'
+          }
+        } catch (err) {
+          console.error(`Error processing review ${review.id}:`, err)
+          return {
+            ...review,
+            user_name: currentUser.value?.name || 'Unknown',
+            user_image: currentUser.value?.image,
+            chat_created_at: null,
+            is_anonymous: false
+          }
+        }
+      })
+    )
+
+    return reviewsWithUsers
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to load reviews from companion'
+    console.error('Error loading reviews from companion:', errorMessage)
+    return []
+  }
+}
+
 export const getCompanionRatingStats = async (companionId: string): Promise<{ averageRating: number; reviewCount: number }> => {
   try {
     const { data: reviews, error } = await supabase
