@@ -33,7 +33,6 @@
             <!-- User Info -->
             <div class="review-item__user-details">
               <p class="review-item__user-name">{{ review.is_anonymous ? 'Анонимный пользователь' : review.user_name }}</p>
-              <p class="review-item__date">{{ formatSessionDate(review.chat_created_at) }}</p>
             </div>
           </div>
           <!-- Rating -->
@@ -72,21 +71,6 @@ const allReviewsAbout = ref<Review[]>([])
 const reviewsAboutComputed = computed(() => {
   return allReviewsAbout.value
 })
-
-const formatSessionDate = (dateString: string | null | undefined) => {
-  if (!dateString) return 'Дата сессии неизвестна'
-
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ru-RU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  } catch {
-    return 'Дата сессии неизвестна'
-  }
-}
 
 const loadReviews = async () => {
   isLoading.value = true
