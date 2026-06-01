@@ -233,6 +233,10 @@ const navigateToCompanion = (companionId?: string) => {
   .emotions-slider__slide {
     min-height: 550px;
   }
+
+  .emotions-slider__slide.swiper-slide-active {
+    transform: scale(1);
+  }
 }
 
 @media screen and (max-width: 767.9px) {
@@ -245,6 +249,10 @@ const navigateToCompanion = (companionId?: string) => {
 
   .emotions-slider__slide {
     min-height: 480px;
+  }
+
+  .emotions-slider__slide.swiper-slide-active {
+    transform: scale(1);
   }
 }
 
