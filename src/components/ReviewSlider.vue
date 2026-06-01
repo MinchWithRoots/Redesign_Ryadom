@@ -170,8 +170,7 @@ const navigateToCompanion = (companionId?: string) => {
 <style scoped>
 /* Override default Swiper styles that break layout */
 :deep(.swiper) {
-  overflow-x: visible !important;
-  overflow-y: auto !important;
+  overflow: visible !important;
 }
 
 :deep(.swiper-wrapper) {
@@ -452,6 +451,11 @@ const navigateToCompanion = (companionId?: string) => {
   gap: 4px;
 }
 
+/* Hide rating in non-active slides */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__rating {
+  display: none;
+}
+
 .emotions-slider-item__star {
   width: 16px;
   height: 16px;
@@ -538,8 +542,8 @@ const navigateToCompanion = (companionId?: string) => {
 /* Non-active slides show more text lines for better visibility */
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
   -webkit-line-clamp: 4;
-  margin-bottom: 8px;
-  padding: 0 4px;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
 
 .emotions-slider-item__companion {
