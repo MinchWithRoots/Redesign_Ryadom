@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
+import { ref, computed } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
+const hoveredLink = ref<string | null>(null)
 
 const navigate = (path: string) => {
   router.push(path)
-  window.scrollTo(0, 0)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const scrollToSection = (sectionId: string) => {
@@ -19,6 +21,25 @@ const scrollToSection = (sectionId: string) => {
   } else {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
   }
+}
+
+const getLongestWordWidth = (text: string): string => {
+  const words = text.split(' ')
+  const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '')
+
+  const tempSpan = document.createElement('span')
+  tempSpan.style.position = 'absolute'
+  tempSpan.style.visibility = 'hidden'
+  tempSpan.style.fontFamily = 'Inter, sans-serif'
+  tempSpan.style.fontSize = '14px'
+  tempSpan.style.fontWeight = '500'
+  tempSpan.textContent = longestWord
+
+  document.body.appendChild(tempSpan)
+  const width = tempSpan.offsetWidth
+  document.body.removeChild(tempSpan)
+
+  return `${width}px`
 }
 </script>
 
@@ -43,10 +64,42 @@ const scrollToSection = (sectionId: string) => {
         <div class="footer__nav-col">
           <h3 class="footer__col-title">Навигация</h3>
           <nav class="footer__nav">
-            <button @click="navigate('/')" class="footer__nav-link">Главная</button>
-            <button @click="scrollToSection('about')" class="footer__nav-link">О нас</button>
-            <button @click="scrollToSection('reviews')" class="footer__nav-link">Отзывы</button>
-            <button @click="scrollToSection('contacts')" class="footer__nav-link">Контакты</button>
+            <button
+              @click="navigate('/')"
+              @mouseenter="hoveredLink = 'home'"
+              @mouseleave="hoveredLink = null"
+              class="footer__nav-link"
+              :style="hoveredLink === 'home' ? { '--underline-width': getLongestWordWidth('Главная') } : {}"
+            >
+              Главная
+            </button>
+            <button
+              @click="scrollToSection('about')"
+              @mouseenter="hoveredLink = 'about'"
+              @mouseleave="hoveredLink = null"
+              class="footer__nav-link"
+              :style="hoveredLink === 'about' ? { '--underline-width': getLongestWordWidth('О нас') } : {}"
+            >
+              О нас
+            </button>
+            <button
+              @click="scrollToSection('reviews')"
+              @mouseenter="hoveredLink = 'reviews'"
+              @mouseleave="hoveredLink = null"
+              class="footer__nav-link"
+              :style="hoveredLink === 'reviews' ? { '--underline-width': getLongestWordWidth('Отзывы') } : {}"
+            >
+              Отзывы
+            </button>
+            <button
+              @click="scrollToSection('contacts')"
+              @mouseenter="hoveredLink = 'contacts'"
+              @mouseleave="hoveredLink = null"
+              class="footer__nav-link"
+              :style="hoveredLink === 'contacts' ? { '--underline-width': getLongestWordWidth('Контакты') } : {}"
+            >
+              Контакты
+            </button>
           </nav>
         </div>
 
@@ -149,22 +202,18 @@ const scrollToSection = (sectionId: string) => {
   transition: color 0.3s ease;
   position: relative;
   display: inline-block;
+  --underline-width: 0px;
 }
 
 .footer__nav-link::after {
   content: "";
   position: absolute;
   bottom: -2px;
-  left: 50%;
+  left: 0;
   height: 2px;
   background: #fff;
-  transition: width 0.3s ease, left 0.3s ease;
-  width: 0;
-}
-
-.footer__nav-link:hover::after {
-  width: 100%;
-  left: 0;
+  transition: width 0.3s ease;
+  width: var(--underline-width);
 }
 
 .footer__contact-col {

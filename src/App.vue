@@ -1,6 +1,35 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+
+const handleAnchorClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const link = target.closest('a[href*="#"]') as HTMLAnchorElement | null
+
+  if (!link) return
+
+  const href = link.getAttribute('href')
+  if (!href || href === '#' || href === '#0') return
+
+  const hash = href.split('#')[1]
+  if (!hash) return
+
+  const element = document.getElementById(hash)
+
+  if (element) {
+    event.preventDefault()
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleAnchorClick, true)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleAnchorClick, true)
+})
 </script>
 
 <template>
