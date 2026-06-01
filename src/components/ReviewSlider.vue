@@ -170,7 +170,8 @@ const navigateToCompanion = (companionId?: string) => {
 <style scoped>
 /* Override default Swiper styles that break layout */
 :deep(.swiper) {
-  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
 }
 
 :deep(.swiper-wrapper) {
@@ -537,6 +538,8 @@ const navigateToCompanion = (companionId?: string) => {
 /* Non-active slides show more text lines for better visibility */
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
   -webkit-line-clamp: 4;
+  margin-bottom: 8px;
+  padding: 0 4px;
 }
 
 .emotions-slider-item__companion {
