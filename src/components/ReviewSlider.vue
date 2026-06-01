@@ -170,8 +170,7 @@ const navigateToCompanion = (companionId?: string) => {
 <style scoped>
 /* Override default Swiper styles that break layout */
 :deep(.swiper) {
-  overflow-x: hidden !important;
-  overflow-y: visible !important;
+  overflow: visible !important;
 }
 
 :deep(.swiper-wrapper) {
@@ -194,7 +193,8 @@ const navigateToCompanion = (companionId?: string) => {
 
   padding-inline: 0;
   position: relative;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .emotions-slider__slide {
