@@ -414,7 +414,7 @@ const navigateToCompanion = (companionId?: string) => {
 
 .emotions-slider-item__image {
   aspect-ratio: 400 / 270;
-  overflow: visible;
+  overflow: hidden;
   background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
   display: flex;
   align-items: center;
