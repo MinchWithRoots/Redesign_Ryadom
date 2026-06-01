@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser, syncCompanionSessionCounts } from '../composables/useAppState'
+import { companions, currentUser, currentCompanion, getCompanionById, sendConnectionRequest, loadCurrentUser, syncCompanionSessionCounts } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'
@@ -29,7 +29,7 @@ const isCurrentUserCompanion = computed(() => {
 })
 
 const companionSessions = computed(() => {
-  return companion.value?.sessions || 0
+  return currentCompanion.value?.sessions || 0
 })
 
 const companionId = computed(() => {
@@ -53,6 +53,7 @@ onMounted(async () => {
         reviews_count: comp.reviews_count
       })
       companion.value = comp
+      currentCompanion.value = comp
 
     } else {
       console.error('Companion not found with ID:', companionId.value)
@@ -114,6 +115,7 @@ const handleReviewsLoaded = async (reviews: any[]) => {
     const refreshedCompanion = await getCompanionById(companion.value.id.toString())
     if (refreshedCompanion) {
       companion.value = refreshedCompanion
+      currentCompanion.value = refreshedCompanion
     }
 
     // Sync companion session counts only if user is logged in
@@ -127,6 +129,7 @@ const handleReviewsLoaded = async (reviews: any[]) => {
       const reloadedCompanion = await getCompanionById(companion.value.id.toString())
       if (reloadedCompanion) {
         companion.value = reloadedCompanion
+        currentCompanion.value = reloadedCompanion
       }
     }
   }
@@ -137,6 +140,13 @@ watch(companion, async (newVal, oldVal) => {
   if (newVal && reviewsListRef.value && (!oldVal || oldVal.id !== newVal.id)) {
     await nextTick()
     reviewsListRef.value.loadReviews()
+  }
+})
+
+watch(currentCompanion, (newVal) => {
+  // Sync currentCompanion to local companion for template access
+  if (newVal) {
+    companion.value = newVal
   }
 })
 
@@ -269,7 +279,7 @@ watch(companion, async (newVal, oldVal) => {
 
             <ReviewsList v-if="companion" ref="reviewsListRef" :companion-id="companion.id" @reviews-loaded="handleReviewsLoaded" />
 
-            <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" />
+            <CompanionChatRequests v-if="isCurrentUserCompanion && companion" :companion-id="companion.id" @request-approved="handleRequestApproved" />
 
             <div class="profile-how-it-works">
               <h2 class="profile-how-it-works__title">Как это работает</h2>

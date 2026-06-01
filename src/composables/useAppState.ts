@@ -105,6 +105,7 @@ export interface Review {
 // Global state
 export const currentUser = ref<User | null>(null)
 export const companions = ref<Companion[]>([])
+export const currentCompanion = ref<Companion | null>(null)
 export const chats = ref<Chat[]>([])
 export const messages = ref<Message[]>([])
 export const currentChatId = ref<string | null>(null)
@@ -2127,6 +2128,14 @@ export const incrementCompanionSessions = async (companionId: string | number) =
       }
     }
 
+    // Update currentCompanion if it's the one being incremented
+    if (currentCompanion.value && currentCompanion.value.id.toString() === companionIdStr) {
+      currentCompanion.value = {
+        ...currentCompanion.value,
+        sessions: newSessions,
+      }
+    }
+
     console.log(`Sessions incremented for companion ${companionIdStr} (user ${companion.user_id}): ${newSessions}`)
   } catch (err) {
     console.error('Error in incrementCompanionSessions:', err)
@@ -2243,6 +2252,14 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     if (index !== -1) {
       companions.value[index] = {
         ...companions.value[index],
+        sessions: sessionCount,
+      }
+    }
+
+    // Update currentCompanion if it's the one being synced
+    if (currentCompanion.value && Number(currentCompanion.value.id) === companionIdNum) {
+      currentCompanion.value = {
+        ...currentCompanion.value,
         sessions: sessionCount,
       }
     }
