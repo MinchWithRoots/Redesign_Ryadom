@@ -84,6 +84,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { addReview } from '@/services/supabaseService'
+import { cacheManager } from '@/utils/cacheManager'
 
 interface Props {
   isOpen: boolean
@@ -156,6 +157,9 @@ const submitReview = async () => {
     if (!result) {
       throw new Error('Failed to save review')
     }
+
+    // Clear the reviews cache on home page so new review appears immediately
+    cacheManager.clear('reviews_home')
 
     resetForm()
     emit('success')

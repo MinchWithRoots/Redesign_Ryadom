@@ -351,8 +351,20 @@ const loadCompanionReviews = async () => {
   }
 }
 
+// Check if a review already exists for a companion
+const hasExistingReview = (companionId: string | number) => {
+  return userReviews.value.some(review =>
+    review.companion_id === companionId ||
+    review.companions?.id === companionId
+  )
+}
+
 // Open review modal for session
 const openReviewModal = (session: any) => {
+  // Don't allow opening modal if review already exists
+  if (hasExistingReview(session.companionId)) {
+    return
+  }
   selectedSessionForReview.value = session
   showReviewModal.value = true
 }
@@ -521,9 +533,7 @@ watch(
                   activeTab === 'companion-requests' && 'profile-menu__item--active'
                 ]"
               >
-                <svg class="profile-menu__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m0 0h6m0 0l-6-6m0 0l6 6" />
-                </svg>
+                <img src="../images/send.svg" alt="Requests" class="profile-menu__icon" />
                 Мои заявки
               </button>
 
@@ -899,9 +909,11 @@ watch(
                 </div>
                 <button
                   @click="openReviewModal(session)"
+                  :disabled="hasExistingReview(session.companionId)"
                   class="profile-history-item__review-btn"
+                  :title="hasExistingReview(session.companionId) ? 'Отзыв для этого спутника уже существует' : ''"
                 >
-                  Оставить отзыв
+                  {{ hasExistingReview(session.companionId) ? 'Отзыв уже оставлен' : 'Оставить отзыв' }}
                 </button>
               </div>
             </div>
@@ -1865,22 +1877,28 @@ watch(
 }
 
 .profile-review-item__delete-btn {
-  padding: 6px 12px;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 4px;
-  color: #c33;
-  font-size: 12px;
-  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid #ef4444;
+  background: var(--color-white);
+  color: #ef4444;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
   gap: 6px;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .profile-review-item__delete-btn:hover {
-  background: #fdd;
-  border-color: #fbb;
+  background: #fee;
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
 .profile-empty-reviews {
@@ -1929,18 +1947,32 @@ watch(
 }
 
 .profile-history-item__review-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
+  border-radius: var(--radius-full);
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
+  background: linear-gradient(90deg, var(--color-accent-orange) 0%, var(--color-accent-red) 100%);
+  box-shadow: var(--shadow-gradient);
+  color: var(--color-white);
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
+  font-size: 13px;
+  line-height: 20px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-.profile-history-item__review-btn:hover {
-  background: #2563eb;
+.profile-history-item__review-btn:hover:not(:disabled) {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.profile-history-item__review-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(90deg, #9ca3af 0%, #6b7280 100%);
 }
 </style>

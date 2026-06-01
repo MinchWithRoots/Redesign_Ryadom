@@ -176,6 +176,7 @@ const navigateToCompanion = (companionId?: string) => {
 
   padding-inline: 0;
   position: relative;
+  overflow: visible;
 }
 
 .emotions-slider__slide {
@@ -197,17 +198,20 @@ const navigateToCompanion = (companionId?: string) => {
   }
 
   .emotions-slider__slide {
-    min-height: 590px;
+    min-height: 620px;
   }
 }
 
-@media screen and (max-width: 1023px) {
+@media screen and (min-width: 768px) and (max-width: 1023px) {
   .emotions-slider {
     padding-inline: 0;
+    /* Add fade effect at edges for partially visible slides */
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   }
 
   .emotions-slider__slide {
-    min-height: 480px;
+    min-height: 550px;
   }
 }
 
@@ -218,7 +222,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 
   .emotions-slider__slide {
-    min-height: 400px;
+    min-height: 480px;
   }
 }
 
@@ -311,12 +315,19 @@ const navigateToCompanion = (companionId?: string) => {
 
 /* Slider Item */
 
+.swiper-wrapper {
+  overflow: visible !important;
+  align-items: center;
+  justify-content: center;
+}
+
 .swiper-slide {
   width: auto;
   height: auto;
   display: flex !important;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .emotions-slider-item {
@@ -328,9 +339,11 @@ const navigateToCompanion = (companionId?: string) => {
   border: none;
   border-radius: var(--border-radius);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 114, 94, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 @media screen and (min-width: 1024px) {
@@ -359,11 +372,12 @@ const navigateToCompanion = (companionId?: string) => {
 
 .emotions-slider-item__image {
   aspect-ratio: 400 / 270;
-  overflow: hidden;
+  overflow: visible;
   background: linear-gradient(135deg, #f3e7f5 0%, #e0f2fe 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .emotions-slider-item__image img {
@@ -371,6 +385,7 @@ const navigateToCompanion = (companionId?: string) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .emotions-slider-item__image-fallback {
@@ -390,15 +405,15 @@ const navigateToCompanion = (companionId?: string) => {
 .emotions-slider-item__content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px 20px;
+  gap: 12px;
+  padding: 20px 20px;
   color: var(--color-text);
 }
 
 .emotions-slider-item__header,
 .emotions-slider-item__footer {
   max-height: 60px;
-  overflow: hidden;
+  overflow: visible;
   transition: max-height 0.6s ease-in;
 }
 
@@ -471,9 +486,9 @@ const navigateToCompanion = (companionId?: string) => {
 
 .emotions-slider-item__title {
   font-weight: 600;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.3;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--color-text);
 }
 
@@ -481,7 +496,7 @@ const navigateToCompanion = (companionId?: string) => {
   font-size: 12px;
   color: var(--color-primary);
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .emotions-slider-item__text {
@@ -490,6 +505,17 @@ const navigateToCompanion = (companionId?: string) => {
   line-height: 1.5;
   opacity: 0.75;
   color: var(--color-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: max-height 0.6s ease-in;
+}
+
+/* Hide text for non-active slides to maintain consistent card height */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
+  -webkit-line-clamp: 2;
 }
 
 .emotions-slider-item__companion {
@@ -587,22 +613,22 @@ const navigateToCompanion = (companionId?: string) => {
 }
 
 /* Responsive adjustments */
-@media screen and (max-width: 1023px) {
+@media screen and (min-width: 768px) and (max-width: 1023px) {
   .emotions-slider-item__content {
-    gap: 16px;
-    padding: 20px 16px;
+    gap: 12px;
+    padding: 18px 16px;
   }
 
   .emotions-slider-item__title {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .emotions-slider-item__text {
     font-size: 13px;
+    line-height: 1.4;
+    -webkit-line-clamp: 3;
   }
-}
 
-@media screen and (max-width: 1023px) {
   .emotions-slider__slider {
     display: flex;
     justify-content: center;
@@ -612,19 +638,35 @@ const navigateToCompanion = (companionId?: string) => {
     justify-content: center;
   }
 
-  .emotions-slider-item__content {
-    gap: 14px;
-    padding: 18px 16px;
-  }
-
   .emotions-slider-item__star {
     width: 14px;
     height: 14px;
   }
+}
+
+@media screen and (max-width: 767.9px) {
+  .emotions-slider-item__content {
+    gap: 10px;
+    padding: 16px 14px;
+  }
+
+  .emotions-slider-item__title {
+    font-size: 14px;
+  }
 
   .emotions-slider-item__text {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.4;
+    -webkit-line-clamp: 3;
+  }
+
+  .emotions-slider-item__star {
+    width: 13px;
+    height: 13px;
+  }
+
+  .emotions-slider-item__image {
+    aspect-ratio: 400 / 240;
   }
 }
 </style>
