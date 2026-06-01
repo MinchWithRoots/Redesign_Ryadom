@@ -169,14 +169,20 @@ const navigateToCompanion = (companionId?: string) => {
 
 <style scoped>
 /* Override default Swiper styles that break layout */
+:deep(.swiper) {
+  overflow: visible !important;
+}
+
 :deep(.swiper-wrapper) {
   overflow: visible !important;
   align-items: stretch !important;
+  height: auto !important;
 }
 
 :deep(.swiper-slide) {
   overflow: visible !important;
   height: auto !important;
+  display: flex !important;
 }
 
 .emotions-slider {
@@ -355,6 +361,7 @@ const navigateToCompanion = (companionId?: string) => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 114, 94, 0.1);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 @media screen and (min-width: 1024px) {
@@ -419,6 +426,9 @@ const navigateToCompanion = (companionId?: string) => {
   gap: 12px;
   padding: 20px 20px;
   color: var(--color-text);
+  flex: 1;
+  min-height: 0;
+  justify-content: flex-start;
 }
 
 .emotions-slider-item__header,
