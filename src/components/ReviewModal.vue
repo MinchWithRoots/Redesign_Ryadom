@@ -329,11 +329,13 @@ const submitReview = async () => {
 
 .rating__stars {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   position: relative;
   padding-top: 0.5rem;
   padding-bottom: 1.5rem;
+  gap: 0.5rem;
 }
 
 .rating__display {
@@ -341,7 +343,7 @@ const submitReview = async () => {
   font-weight: 500;
   min-height: 1.25em;
   position: absolute;
-  top: 4rem;
+  top: 3.5rem;
   width: 100%;
   text-align: center;
   color: var(--color-secondary);
