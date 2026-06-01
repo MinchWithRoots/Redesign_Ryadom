@@ -49,7 +49,7 @@ const chat = computed(() => {
 const chatMessages = computed(() => messages.value)
 
 const isBlocked = computed(() => {
-  const status = chat.value?.status
+  const status = chat.value?.status as string  // расширяем тип
   return status === 'blocked' || status === 'offline'
 })
 
@@ -478,8 +478,8 @@ const handleReportUser = async () => {
     openDialog({
       title: 'Заполните все поля',
       message: 'Пожалуйста, выберите причину и опишите ситуацию',
-      confirmText: '✓ OK',
-      cancelText: '✕ Отмена',
+      confirmText: 'OK',
+      cancelText: 'Отмена',
     })
     return
   }
@@ -491,8 +491,8 @@ const handleReportUser = async () => {
       openDialog({
         title: 'Ошибка',
         message: 'Чат не найден',
-        confirmText: '✓ OK',
-        cancelText: '✕ Отмена',
+        confirmText: 'OK',
+        cancelText: 'Отмена',
       })
       return
     }
