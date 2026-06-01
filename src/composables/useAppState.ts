@@ -2207,37 +2207,19 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     const companionIdStr = companionId.toString()
     const companionIdNum = parseInt(companionIdStr)
 
-    // First, get the companion to find its user_id
-    const { data: companionData, error: companionError } = await supabase
-      .from('companions')
-      .select('user_id')
-      .eq('id', companionIdNum)
-      .single()
+    // Count chats where companion_id equals this companion
+    const { data: chats, error: chatsError } = await supabase
+      .from('chats')
+      .select('id', { count: 'exact' })
+      .eq('companion_id', companionIdNum)
 
-    if (companionError) {
-      console.error('Error fetching companion user_id:', companionError)
+    if (chatsError) {
+      console.error('Error fetching companion chats count:', chatsError)
       return
     }
 
-    if (!companionData?.user_id) {
-      console.warn(`No user_id found for companion ${companionIdStr}`)
-      return
-    }
-
-    // Get sessions count from users table (source of truth)
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('sessions')
-      .eq('id', companionData.user_id)
-      .single()
-
-    if (userError) {
-      console.error('Error fetching user sessions:', userError)
-      return
-    }
-
-    const sessionCount = userData?.sessions || 0
-    console.log(`Fetched ${sessionCount} sessions for companion ${companionIdStr} from user ${companionData.user_id}`)
+    const sessionCount = chats?.length || 0
+    console.log(`Fetched ${sessionCount} sessions (chats) for companion ${companionIdStr}`)
 
     // Update companion sessions
     const { error: updateError } = await supabase

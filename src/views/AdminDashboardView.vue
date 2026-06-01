@@ -233,7 +233,7 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, chats(user_id, companion_id), reporter:users(name, email)')
+      .select('*, chats(user_id, companion_id, companions(name)), reporter:users(name, email)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -775,13 +775,6 @@ const handleRejectApplication = async (applicationId: string | number) => {
           Отзывы ({{ reviews.length }})
         </button>
         <button
-          @click="activeTab = 'chats'"
-          :class="['tab-btn', activeTab === 'chats' ? 'tab-btn--active' : '']"
-        >
-          <img src="../images/message-add-alt.svg" alt="Chats" class="tab-btn__icon" />
-          Чаты ({{ chats.length }})
-        </button>
-        <button
           @click="activeTab = 'applications'"
           :class="['tab-btn', activeTab === 'applications' ? 'tab-btn--active' : '']"
         >
@@ -975,61 +968,6 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
       </div>
 
-      <!-- Chats Tab -->
-      <div v-if="activeTab === 'chats'" class="space-y-4">
-        <h2 class="text-2xl font-bold text-secondary mb-6">Чаты ({{ chats.length }})</h2>
-
-        <div v-if="loadingStates.chats" class="loading-state">
-          <LoaderAnimation type="gradient" size="md" />
-          <div class="loading-state__text">Загрузка чатов...</div>
-        </div>
-
-        <div v-else-if="chats.length > 0" class="card-table">
-          <div style="overflow-x: auto;">
-            <table class="w-full">
-              <thead>
-                <tr class="border-b border-border bg-light-bg">
-                  <th class="table-th">ID</th>
-                  <th class="table-th">Пользователь</th>
-                  <th class="table-th">Консультант</th>
-                  <th class="table-th">Статус</th>
-                  <th class="table-th">Жалобы</th>
-                  <th class="table-th">Дата</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="chat in chats" :key="chat.id" class="table-tr">
-                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.id }}</td>
-                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.user?.name || chat.user_id }}</td>
-                  <td class="px-4 py-4 text-secondary text-sm">{{ chat.companion?.name || chat.companion_id }}</td>
-                  <td class="px-4 py-4">
-                    <span class="status-badge" :class="[chat.status === 'active' ? 'status-badge--active' : 'status-badge--inactive']">
-                      {{ chat.status === 'active' ? 'Активен' : 'Завершен' }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-4 text-secondary text-sm">
-                    <span
-                      v-if="reports.filter((r: any) => r.chat_id === chat.id).length > 0"
-                      style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background-color: rgba(239, 68, 68, 0.1); color: #dc2626; border-radius: 9999px; font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);"
-                    >
-                      🚩 {{ reports.filter((r: any) => r.chat_id === chat.id).length }}
-                    </span>
-                    <span v-else style="color: var(--color-secondary-30);">—</span>
-                  </td>
-                  <td class="px-4 py-4 text-secondary text-sm">
-                    {{ new Date(chat.created_at).toLocaleDateString('ru-RU') }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div v-else class="empty-state">
-          <div class="empty-state__text">Чатов не найдено</div>
-        </div>
-      </div>
-
       <!-- Applications Tab -->
       <div v-if="activeTab === 'applications'" class="space-y-4">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
@@ -1176,11 +1114,11 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <!-- От кого и На кого -->
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 0.75rem; background-color: var(--color-light-bg); border-radius: var(--radius-md);">
                     <div class="report-card__field">
-                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Companion" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого (спутник):</span>
-                      <span class="report-card__field-value">{{ report.chats?.companion_id || 'N/A' }}</span>
+                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Companion" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого:</span>
+                      <span class="report-card__field-value">{{ report.chats?.companions?.name || report.chats?.companion_id || 'N/A' }}</span>
                     </div>
                     <div class="report-card__field">
-                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reporter" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />От кого (жалобщик):</span>
+                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reporter" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />От кого:</span>
                       <span class="report-card__field-value">{{ report.reporter?.name || 'Анонимно' }} ({{ report.reporter?.email || 'нет email' }})</span>
                     </div>
                   </div>
@@ -1287,5 +1225,12 @@ const handleRejectApplication = async (applicationId: string | number) => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+@media (max-width: 769px) {
+  :deep(.admin-header__icon),
+  :deep(.stat-card__icon) {
+    display: none !important;
+  }
 }
 </style>
