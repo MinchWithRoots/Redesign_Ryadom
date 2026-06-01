@@ -19,7 +19,12 @@ const handleAnchorClick = (event: MouseEvent) => {
 
   if (element) {
     event.preventDefault()
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const headerHeight = 80
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+    window.scrollTo({
+      top: elementPosition,
+      behavior: 'smooth'
+    })
   }
 }
 

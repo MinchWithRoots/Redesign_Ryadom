@@ -17,20 +17,24 @@ const navigate = (path: string, query?: Record<string, string>) => {
 }
 
 const scrollToSection = (sectionId: string) => {
-  if (route.path !== '/') {
-    router.push('/').then(() => {
-      setTimeout(() => {
-        const element = document.getElementById(sectionId)
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      }, 100)
-    })
-  } else {
+  const scrollToElement = () => {
     const element = document.getElementById(sectionId)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const headerHeight = 80
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      })
     }
+  }
+
+  if (route.path !== '/') {
+    router.push('/').then(() => {
+      setTimeout(scrollToElement, 100)
+    })
+  } else {
+    scrollToElement()
   }
   isMobileMenuOpen.value = false
 }

@@ -12,14 +12,24 @@ const navigate = (path: string) => {
 }
 
 const scrollToSection = (sectionId: string) => {
+  const scrollToElement = () => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const headerHeight = 80
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      })
+    }
+  }
+
   if (route.path !== '/') {
     router.push('/').then(() => {
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
+      setTimeout(scrollToElement, 100)
     })
   } else {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+    scrollToElement()
   }
 }
 
