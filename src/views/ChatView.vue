@@ -50,7 +50,7 @@ const chatMessages = computed(() => messages.value)
 
 const isBlocked = computed(() => {
   const status = chat.value?.status
-  return status === 'offline'
+  return status === 'offline' || status === 'blocked'
 })
 
 const currentCompanion = computed(() => {
