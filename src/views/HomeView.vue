@@ -45,6 +45,7 @@ const fetchReviews = async () => {
           avatar: review.users?.image || getPlaceholderAvatar(review.users?.name || 'User'),
           companionId: review.companion_id,
           companionName: review.companions?.name || 'Спутник',
+          is_anonymous: review.is_anonymous || false,
         }))
 
         // Cache the reviews

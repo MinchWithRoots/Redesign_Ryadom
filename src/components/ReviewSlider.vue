@@ -15,6 +15,7 @@ interface Review {
   avatar: string
   companionId?: string
   companionName?: string
+  is_anonymous?: boolean
 }
 
 defineProps<{
@@ -90,15 +91,22 @@ const navigateToCompanion = (companionId?: string) => {
         <div class="emotions-slider__item emotions-slider-item">
           <!-- Avatar as Image -->
           <div class="emotions-slider-item__image">
-            <img
-              v-if="!imageLoadErrors.has(review.id)"
-              :src="review.avatar"
-              :alt="review.name"
-              @error="handleImageError(review.id)"
-            />
-            <div v-else class="emotions-slider-item__image-fallback">
-              <img src="../images/gallery.svg" alt="Gallery" class="emotions-slider-item__image-icon" />
-            </div>
+            <template v-if="review.is_anonymous">
+              <div class="emotions-slider-item__anonymous-placeholder">
+                <div class="emotions-slider-item__anonymous-icon">?</div>
+              </div>
+            </template>
+            <template v-else>
+              <img
+                v-if="!imageLoadErrors.has(review.id)"
+                :src="review.avatar"
+                :alt="review.name"
+                @error="handleImageError(review.id)"
+              />
+              <div v-else class="emotions-slider-item__image-fallback">
+                <img src="../images/gallery.svg" alt="Gallery" class="emotions-slider-item__image-icon" />
+              </div>
+            </template>
           </div>
 
           <!-- Content -->
@@ -112,7 +120,10 @@ const navigateToCompanion = (companionId?: string) => {
                 </div>
                 <!-- Author -->
                 <div class="emotions-slider-item__author">
-                  <div class="emotions-slider-item__author-image">
+                  <div v-if="review.is_anonymous" class="emotions-slider-item__author-image emotions-slider-item__author-image--anonymous">
+                    <div class="emotions-slider-item__author-anonymous-icon">?</div>
+                  </div>
+                  <div v-else class="emotions-slider-item__author-image">
                     <img
                       v-if="!imageLoadErrors.has(review.id)"
                       :src="review.avatar"
@@ -124,7 +135,7 @@ const navigateToCompanion = (companionId?: string) => {
                     </div>
                   </div>
                   <div class="emotions-slider-item__author-name">
-                    {{ review.name }}
+                    {{ review.is_anonymous ? 'Аноним' : review.name }}
                   </div>
                 </div>
               </div>
@@ -133,7 +144,7 @@ const navigateToCompanion = (companionId?: string) => {
             <!-- Info -->
             <div class="emotions-slider-item__info">
               <h2 class="emotions-slider-item__title">
-                {{ review.name }}
+                {{ review.is_anonymous ? 'Аноним' : review.name }}
               </h2>
               <div class="emotions-slider-item__subtitle">
                 {{ review.title }}
@@ -433,6 +444,23 @@ const navigateToCompanion = (companionId?: string) => {
   opacity: 0.6;
 }
 
+.emotions-slider-item__anonymous-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.emotions-slider-item__anonymous-icon {
+  font-size: 120px;
+  font-weight: 700;
+  color: white;
+  opacity: 0.8;
+  line-height: 1;
+}
+
 .emotions-slider-item__content {
   display: flex;
   flex-direction: column;
@@ -498,6 +526,10 @@ const navigateToCompanion = (companionId?: string) => {
   justify-content: center;
 }
 
+.emotions-slider-item__author-image--anonymous {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
 .emotions-slider-item__author-image img {
   display: block;
   width: 100%;
@@ -518,6 +550,14 @@ const navigateToCompanion = (companionId?: string) => {
   width: 18px;
   height: 18px;
   opacity: 0.6;
+}
+
+.emotions-slider-item__author-anonymous-icon {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  opacity: 0.8;
+  line-height: 1;
 }
 
 .emotions-slider-item__author-name {
