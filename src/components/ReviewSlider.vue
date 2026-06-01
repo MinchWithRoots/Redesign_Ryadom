@@ -168,6 +168,17 @@ const navigateToCompanion = (companionId?: string) => {
 </template>
 
 <style scoped>
+/* Override default Swiper styles that break layout */
+:deep(.swiper-wrapper) {
+  overflow: visible !important;
+  align-items: stretch !important;
+}
+
+:deep(.swiper-slide) {
+  overflow: visible !important;
+  height: auto !important;
+}
+
 .emotions-slider {
   --color-primary: #FF725E;
   --color-secondary: #6b7280;
@@ -513,9 +524,9 @@ const navigateToCompanion = (companionId?: string) => {
   transition: max-height 0.6s ease-in;
 }
 
-/* Hide text for non-active slides to maintain consistent card height */
+/* Non-active slides show more text lines for better visibility */
 .emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__text {
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
 }
 
 .emotions-slider-item__companion {
