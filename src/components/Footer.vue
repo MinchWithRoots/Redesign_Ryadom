@@ -7,26 +7,29 @@ const route = useRoute()
 const hoveredLink = ref<string | null>(null)
 
 const navigate = (path: string) => {
-  router.push(path)
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  router.push(path).then(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 const scrollToSection = (sectionId: string) => {
   const scrollToElement = () => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      const headerHeight = 80
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
-      window.scrollTo({
-        top: elementPosition,
-        behavior: 'smooth'
-      })
-    }
+    requestAnimationFrame(() => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        const headerHeight = 80
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+        window.scrollTo({
+          top: elementPosition,
+          behavior: 'smooth'
+        })
+      }
+    })
   }
 
   if (route.path !== '/') {
     router.push('/').then(() => {
-      setTimeout(scrollToElement, 100)
+      setTimeout(scrollToElement, 150)
     })
   } else {
     scrollToElement()
