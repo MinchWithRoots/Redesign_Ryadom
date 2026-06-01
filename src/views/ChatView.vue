@@ -571,6 +571,17 @@ const handleUnblockUser = async () => {
 
   isBlockingUser.value = true
   try {
+    // Check if current user is the one who blocked
+    if (chat.value.blocked_by !== currentUser.value?.id) {
+      openDialog({
+        title: 'Нет прав',
+        message: 'Только пользователь, который заблокировал чат, может его разблокировать.',
+        confirmText: '✓ OK',
+        cancelText: '✕ Отмена',
+      })
+      return
+    }
+
     const { error } = await supabase
       .from('chats')
       .update({ status: 'active' })

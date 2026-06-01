@@ -197,6 +197,18 @@ const handleUnblockChat = async (chatId: string | number, event: Event) => {
   event.stopPropagation()
 
   try {
+    // Find the chat to check who blocked it
+    const chatToUnblock = chats.value.find(c => c.id === chatId)
+
+    // Check if current user is the one who blocked
+    if (chatToUnblock?.blocked_by !== currentUser.value?.id) {
+      errorMessage.value = 'Только пользователь, который заблокировал чат, может его разблокировать.'
+      setTimeout(() => {
+        errorMessage.value = ''
+      }, 3000)
+      return
+    }
+
     const { error } = await supabase
       .from('chats')
       .update({ status: 'active' })
