@@ -438,6 +438,11 @@ const navigateToCompanion = (companionId?: string) => {
   transition: max-height 0.6s ease-in;
 }
 
+/* Add space under button in non-active slides */
+.emotions-slider__slide:not(.swiper-slide-active) .emotions-slider-item__footer {
+  margin-bottom: 8px;
+}
+
 .emotions-slider-item__header-inner {
   display: flex;
   align-items: center;
