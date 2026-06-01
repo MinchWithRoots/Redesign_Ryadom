@@ -122,12 +122,6 @@
   color: var(--color-primary);
 }
 
-.site-header__nav-link--active::after {
-  content: "";
-  width: 100%;
-  left: 0;
-}
-
 /* Desktop Auth Buttons */
 .site-header__actions {
   display: none;

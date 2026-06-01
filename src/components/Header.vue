@@ -12,19 +12,35 @@ const { logout } = useAuth()
 const isActive = (path: string) => route.path === path
 
 const navigate = (path: string, query?: Record<string, string>) => {
-  router.push({ path, query })
+  router.push({ path, query }).then(() => {
+    if (path === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  })
   isMobileMenuOpen.value = false
 }
 
 const scrollToSection = (sectionId: string) => {
+  const scrollToElement = () => {
+    requestAnimationFrame(() => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        const headerHeight = 80
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+        window.scrollTo({
+          top: elementPosition,
+          behavior: 'smooth'
+        })
+      }
+    })
+  }
+
   if (route.path !== '/') {
     router.push('/').then(() => {
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
+      setTimeout(scrollToElement, 150)
     })
   } else {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+    scrollToElement()
   }
   isMobileMenuOpen.value = false
 }

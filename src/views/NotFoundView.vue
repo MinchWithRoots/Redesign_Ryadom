@@ -249,6 +249,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
+declare const particlesJS: (elementId: string, options: any, callback?: () => void) => void
+
 onMounted(() => {
   if (typeof particlesJS !== 'undefined') {
     const particles = {
