@@ -48,11 +48,12 @@ export interface Chat {
   time: string
   unread_count: number
   image: string
-  status: 'active' | 'offline'
+  status: 'active' | 'offline' | 'blocked'
   companion_id: string
   user_id: string
   created_at: string
   updated_at: string
+  blocked_by?: string | null
 }
 
 export interface ChatRequest {
@@ -1024,6 +1025,7 @@ export const loadChats = async () => {
             user_id: chat.user_id,
             created_at: chat.created_at,
             updated_at: chat.updated_at,
+            blocked_by: chat.blocked_by || null,
           }
         } catch (err) {
           console.error(`Error fetching info for chat ${chat.id}:`, err)
@@ -1039,6 +1041,7 @@ export const loadChats = async () => {
             user_id: chat.user_id,
             created_at: chat.created_at,
             updated_at: chat.updated_at,
+            blocked_by: chat.blocked_by || null,
           }
         }
       })

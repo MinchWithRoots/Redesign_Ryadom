@@ -37,14 +37,17 @@
                 class="rating__star"
                 width="48"
                 height="48"
-                viewBox="0 0 63 63"
+                viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <circle class="rating__star-ring" cx="31.5" cy="31.5" r="8" stroke="currentColor" stroke-width="2" />
-                <path class="rating__star-fill" d="M33.8113 14.5386C35.1297 13.4124 37.1947 14.0214 37.6911 15.6828L40.2341 24.1939C40.4048 24.7655 40.7861 25.2544 41.3021 25.564L48.9864 30.1728C50.4863 31.0724 50.553 33.198 49.1118 34.1666L41.728 39.1284C41.232 39.4617 40.8821 39.9677 40.7475 40.5466L38.7421 49.1643C38.3508 50.8464 36.3271 51.5511 34.94 50.4885L27.8336 45.0439C27.3563 44.6781 26.7588 44.5019 26.1595 44.5502L17.2359 45.2675C15.4941 45.4074 14.1767 43.7174 14.7606 42.092L17.7524 33.7653C17.9533 33.2059 17.934 32.591 17.6983 32.0419L14.1885 23.8676C13.5034 22.2719 14.7128 20.5227 16.4609 20.5809L25.4163 20.8792C26.0178 20.8992 26.6033 20.6953 27.0569 20.3079L33.8113 14.5386Z" fill="currentColor" />
-                <path class="rating__star-line" d="M10.3102 7.79341L6.02942 11.9968L5.19705 6.86597L0 5.66929L4.75639 4.01387L4.23179 1.50582L7.55427 2.84212L10.4431 0L11.863 3.72966L16.2627 3.48035L13.5487 5.74907L16.2766 9.11475L10.3102 7.79341Z" stroke="currentColor" fill="none" />
-                <circle class="rating__star-stroke" cx="31.5" cy="31.5" r="15" stroke="currentColor" stroke-width="1" fill="none" />
+                <path
+                  class="rating__star-path"
+                  d="M12 2L15.09 10.26H24L17.55 15.74L20.64 24L12 18.52L3.36 24L6.45 15.74L0 10.26H8.91L12 2Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="0.5"
+                />
               </svg>
             </label>
             <div
@@ -433,7 +436,7 @@ const submitReview = async () => {
   transition: stroke 0.3s;
 }
 
-/* Hover states */
+/* Hover states - smooth fill animation */
 .rating__input-1:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
 .rating__input-2:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
 .rating__input-2:hover ~ .rating__label:nth-of-type(2) .rating__star-stroke,
@@ -450,38 +453,78 @@ const submitReview = async () => {
 .rating__input-5:hover ~ .rating__label:nth-of-type(4) .rating__star-stroke,
 .rating__input-5:hover ~ .rating__label:nth-of-type(5) .rating__star-stroke {
   stroke: var(--color-primary-star);
+  stroke-width: 2;
+  transition: stroke 0.3s cubic-bezier(0.42, 0, 0.58, 1);
+}
+
+.rating__input-1:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-2:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-2:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-3:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-3:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-3:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
+.rating__input-4:hover ~ .rating__label:nth-of-type(4) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(4) .rating__star-fill,
+.rating__input-5:hover ~ .rating__label:nth-of-type(5) .rating__star-fill {
   transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 /* Checked states - trigger animations */
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star,
+.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
+.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star,
 .rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star,
+.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
+.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star,
 .rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
+.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star,
 .rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star,
+.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-ring,
+.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 .rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star,
 .rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star,
 .rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star,
 .rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-ring {
-  animation-name: starRing;
+.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star,
+.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-ring,
+.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star {
+  animation-name: starRing, starBounce;
+  animation-duration: 1s, 0.5s;
 }
 
 /* Stroke animations */
@@ -617,6 +660,24 @@ const submitReview = async () => {
     transform: scale(0.9);
   }
   to {
+    transform: scale(1);
+  }
+}
+
+@keyframes starBounce {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.15);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
     transform: scale(1);
   }
 }
