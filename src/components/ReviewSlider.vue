@@ -202,13 +202,16 @@ const navigateToCompanion = (companionId?: string) => {
   }
 }
 
-@media screen and (max-width: 1023px) {
+@media screen and (min-width: 768px) and (max-width: 1023px) {
   .emotions-slider {
     padding-inline: 0;
+    /* Add fade effect at edges for partially visible slides */
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   }
 
   .emotions-slider__slide {
-    min-height: 510px;
+    min-height: 550px;
   }
 }
 
@@ -219,7 +222,7 @@ const navigateToCompanion = (companionId?: string) => {
   }
 
   .emotions-slider__slide {
-    min-height: 430px;
+    min-height: 480px;
   }
 }
 
@@ -314,6 +317,8 @@ const navigateToCompanion = (companionId?: string) => {
 
 .swiper-wrapper {
   overflow: visible !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .swiper-slide {
@@ -604,22 +609,22 @@ const navigateToCompanion = (companionId?: string) => {
 }
 
 /* Responsive adjustments */
-@media screen and (max-width: 1023px) {
+@media screen and (min-width: 768px) and (max-width: 1023px) {
   .emotions-slider-item__content {
-    gap: 16px;
-    padding: 20px 16px;
+    gap: 12px;
+    padding: 18px 16px;
   }
 
   .emotions-slider-item__title {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .emotions-slider-item__text {
     font-size: 13px;
+    line-height: 1.4;
+    -webkit-line-clamp: 3;
   }
-}
 
-@media screen and (max-width: 1023px) {
   .emotions-slider__slider {
     display: flex;
     justify-content: center;
@@ -629,19 +634,35 @@ const navigateToCompanion = (companionId?: string) => {
     justify-content: center;
   }
 
-  .emotions-slider-item__content {
-    gap: 14px;
-    padding: 18px 16px;
-  }
-
   .emotions-slider-item__star {
     width: 14px;
     height: 14px;
   }
+}
+
+@media screen and (max-width: 767.9px) {
+  .emotions-slider-item__content {
+    gap: 10px;
+    padding: 16px 14px;
+  }
+
+  .emotions-slider-item__title {
+    font-size: 14px;
+  }
 
   .emotions-slider-item__text {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.4;
+    -webkit-line-clamp: 3;
+  }
+
+  .emotions-slider-item__star {
+    width: 13px;
+    height: 13px;
+  }
+
+  .emotions-slider-item__image {
+    aspect-ratio: 400 / 240;
   }
 }
 </style>
