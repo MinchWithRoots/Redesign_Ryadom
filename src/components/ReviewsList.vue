@@ -2,6 +2,24 @@
   <div class="reviews-section">
     <h2 class="reviews-section__title">Отзывы ({{ reviews.length }})</h2>
 
+    <!-- Tabs for companions -->
+    <div v-if="isCompanionProfile && showTabs" class="reviews-tabs">
+      <button
+        class="reviews-tab"
+        :class="{ 'reviews-tab--active': activeTab === 'about' }"
+        @click="activeTab = 'about'"
+      >
+        Об этом спутнике
+      </button>
+      <button
+        class="reviews-tab"
+        :class="{ 'reviews-tab--active': activeTab === 'from' }"
+        @click="activeTab = 'from'"
+      >
+        От этого спутника
+      </button>
+    </div>
+
     <!-- Loading State -->
     <div v-if="isLoading" class="reviews-loading">
       <div class="reviews-loading__spinner"></div>
@@ -17,7 +35,7 @@
 
     <!-- Reviews List -->
     <div v-else class="reviews-list">
-      <div v-for="review in reviews" :key="review.id" class="review-item">
+      <div v-for="review in reviewsAboutComputed" :key="review.id" class="review-item">
         <!-- Header -->
         <div class="review-item__header">
           <div class="review-item__user-info">
@@ -52,8 +70,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { getCompanionReviews, type Review } from '@/composables/useAppState'
+import { ref, onMounted, computed, watch } from 'vue'
+import { getCompanionReviews, getReviewsFromCompanion, type Review, currentUser } from '@/composables/useAppState'
 import '@/assets/profile.css'
 
 const props = defineProps<{
@@ -66,6 +84,25 @@ const emit = defineEmits<{
 
 const reviews = ref<Review[]>([])
 const isLoading = ref(true)
+const activeTab = ref<'about' | 'from'>('about')
+const allReviewsAbout = ref<Review[]>([])
+const allReviewsFrom = ref<Review[]>([])
+
+const isCompanionProfile = computed(() => {
+  return currentUser.value?.role === 'companion'
+})
+
+const showTabs = computed(() => {
+  return allReviewsAbout.value.length > 0 || allReviewsFrom.value.length > 0
+})
+
+const reviewsAboutComputed = computed(() => {
+  if (activeTab.value === 'about') {
+    return allReviewsAbout.value
+  } else {
+    return allReviewsFrom.value
+  }
+})
 
 const formatSessionDate = (dateString: string | null | undefined) => {
   if (!dateString) return 'Дата сессии неизвестна'
@@ -86,7 +123,17 @@ const loadReviews = async () => {
   isLoading.value = true
   try {
     const companionIdStr = typeof props.companionId === 'string' ? props.companionId : props.companionId.toString()
-    reviews.value = await getCompanionReviews(companionIdStr)
+
+    // Load reviews ABOUT this companion
+    allReviewsAbout.value = await getCompanionReviews(companionIdStr)
+
+    // If current user is a companion, also load reviews FROM this companion
+    if (isCompanionProfile.value) {
+      allReviewsFrom.value = await getReviewsFromCompanion(companionIdStr)
+    }
+
+    // Set default reviews based on which tab is active
+    reviews.value = activeTab.value === 'about' ? allReviewsAbout.value : allReviewsFrom.value
     emit('reviewsLoaded', reviews.value)
   } catch (err) {
     console.error('Error loading reviews:', err)
@@ -94,6 +141,10 @@ const loadReviews = async () => {
     isLoading.value = false
   }
 }
+
+watch(activeTab, () => {
+  reviews.value = activeTab.value === 'about' ? allReviewsAbout.value : allReviewsFrom.value
+})
 
 onMounted(async () => {
   await loadReviews()
@@ -103,3 +154,34 @@ defineExpose({
   loadReviews
 })
 </script>
+
+<style scoped>
+.reviews-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+}
+
+.reviews-tab {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-secondary, #64748b);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.reviews-tab:hover {
+  color: var(--color-primary, #3b82f6);
+}
+
+.reviews-tab--active {
+  color: var(--color-primary, #3b82f6);
+  border-bottom-color: var(--color-primary, #3b82f6);
+}
+</style>
