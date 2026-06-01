@@ -451,14 +451,18 @@ const navigateToCompanion = (companionId?: string) => {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .emotions-slider-item__anonymous-icon {
-  font-size: 120px;
+  font-size: 100px;
   font-weight: 700;
   color: white;
-  opacity: 0.8;
+  opacity: 0.85;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .emotions-slider-item__content {
