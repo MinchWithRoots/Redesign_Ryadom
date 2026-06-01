@@ -712,6 +712,13 @@
   object-fit: contain;
 }
 
+/* Hide planet on screens smaller than 1300px */
+@media (max-width: 1299px) {
+  .reviews-planet {
+    display: none;
+  }
+}
+
 /* Hide on small screens */
 @media (max-width: 1024px) {
   .reviews-left-wave,
