@@ -314,6 +314,7 @@ const navigateToCompanion = (companionId?: string) => {
 
 .swiper-wrapper {
   overflow: visible !important;
+  height: auto;
 }
 
 .swiper-slide {
