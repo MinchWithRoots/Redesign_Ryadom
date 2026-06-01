@@ -16,40 +16,23 @@
         <div class="form-group">
           <label class="form-label">Оценка</label>
           <div class="rating__stars">
-            <input
+            <button
               v-for="i in 5"
               :key="`rating-${i}`"
-              :id="`rating-${i}`"
-              v-model.number="formData.rating"
-              type="radio"
-              :value="i"
-              name="rating"
-              class="rating__input"
-              :class="`rating__input-${i}`"
-            />
-            <label
-              v-for="i in 5"
-              :key="`label-${i}`"
-              :for="`rating-${i}`"
-              class="rating__label"
+              type="button"
+              class="rating__star-btn"
+              :class="{ 'rating__star-btn--active': formData.rating >= i }"
+              @click="formData.rating = i"
+              @mouseenter="hoveredRating = i"
+              @mouseleave="hoveredRating = 0"
             >
-              <svg
-                class="rating__star"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  class="rating__star-path"
-                  d="M12 2L15.09 10.26H24L17.55 15.74L20.64 24L12 18.52L3.36 24L6.45 15.74L0 10.26H8.91L12 2Z"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  stroke-width="0.5"
-                />
-              </svg>
-            </label>
+              <img
+                src="@/images/star.svg"
+                :alt="`Star ${i}`"
+                class="rating__star-icon"
+                :style="{ opacity: hoveredRating >= i || formData.rating >= i ? 1 : 0.3 }"
+              />
+            </button>
             <div
               class="rating__display"
               role="status"
@@ -137,7 +120,7 @@ const emit = defineEmits<Emits>()
 const reviewForm = ref<HTMLFormElement | null>(null)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-const prevRatingID = ref(0)
+const hoveredRating = ref(0)
 
 const ratingNames = ['Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично']
 
@@ -146,33 +129,6 @@ const formData = ref({
   title: '',
   comment: '',
   isAnonymous: false,
-})
-
-const updateRatingAnimation = () => {
-  if (!reviewForm.value) return
-
-  // Clear animation delays
-  Array.from(reviewForm.value.querySelectorAll('[for*="rating"]')).forEach((el: Element) => {
-    el.className = 'rating__label'
-  })
-
-  let delay = 0
-  const ratingLabels = reviewForm.value.querySelectorAll('[for*="rating"]')
-
-  ratingLabels.forEach((label: Element, index: number) => {
-    const id = index + 1
-    // Add delays for stars that are being filled
-    if (id > prevRatingID.value + 1 && id <= formData.value.rating) {
-      ++delay
-      label.classList.add(`rating__label--delay${delay}`)
-    }
-  })
-
-  prevRatingID.value = formData.value.rating
-}
-
-watch(() => formData.value.rating, () => {
-  updateRatingAnimation()
 })
 
 const closeModal = () => {
@@ -187,15 +143,8 @@ const resetForm = () => {
     comment: '',
     isAnonymous: false,
   }
-  prevRatingID.value = 0
+  hoveredRating.value = 0
   errorMessage.value = ''
-
-  // Clear animation delays
-  if (reviewForm.value) {
-    Array.from(reviewForm.value.querySelectorAll('[for*="rating"]')).forEach((el: Element) => {
-      el.className = 'rating__label'
-    })
-  }
 }
 
 const submitReview = async () => {
@@ -206,9 +155,6 @@ const submitReview = async () => {
     errorMessage.value = 'Пожалуйста, выберите оценку'
     return
   }
-
-  // Trigger animation update on submit if needed
-  updateRatingAnimation()
 
   if (!formData.value.comment.trim()) {
     errorMessage.value = 'Пожалуйста, напишите комментарий'
@@ -352,357 +298,51 @@ const submitReview = async () => {
   color: var(--color-secondary);
 }
 
-.rating__stars > :last-child > span {
-  animation-duration: 1s;
-}
-
-.rating__input {
-  position: absolute;
-  -webkit-appearance: none;
-  appearance: none;
-  pointer-events: none;
-}
-
-.rating__label {
+.rating__star-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
   cursor: pointer;
-  padding: 0.125em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
 }
 
-/* Star Animation Delays */
-.rating__label--delay1 .rating__star-ring,
-.rating__label--delay1 .rating__star-fill,
-.rating__label--delay1 .rating__star-line,
-.rating__label--delay1 .rating__star-stroke {
-  animation-delay: 0.05s;
+.rating__star-btn:hover {
+  transform: scale(1.15);
 }
 
-.rating__label--delay2 .rating__star-ring,
-.rating__label--delay2 .rating__star-fill,
-.rating__label--delay2 .rating__star-line,
-.rating__label--delay2 .rating__star-stroke {
-  animation-delay: 0.1s;
-}
-
-.rating__label--delay3 .rating__star-ring,
-.rating__label--delay3 .rating__star-fill,
-.rating__label--delay3 .rating__star-line,
-.rating__label--delay3 .rating__star-stroke {
-  animation-delay: 0.15s;
-}
-
-.rating__label--delay4 .rating__star-ring,
-.rating__label--delay4 .rating__star-fill,
-.rating__label--delay4 .rating__star-line,
-.rating__label--delay4 .rating__star-stroke {
-  animation-delay: 0.2s;
-}
-
-.rating__star {
+.rating__star-icon {
   width: 3rem;
   height: 3rem;
-  color: var(--color-primary-star);
-  transition: transform 0.3s ease;
+  transition: opacity 0.3s cubic-bezier(0.42, 0, 0.58, 1), filter 0.3s cubic-bezier(0.42, 0, 0.58, 1);
+  filter: saturate(0.3);
 }
 
-.rating__label:hover .rating__star {
-  transform: scale(1.1);
+.rating__star-btn--active .rating__star-icon {
+  filter: saturate(1);
 }
 
-.rating__star-ring,
-.rating__star-fill,
-.rating__star-line,
-.rating__star-stroke {
-  animation-duration: 1s;
-  animation-timing-function: ease-in-out;
-  animation-fill-mode: forwards;
-}
-
-.rating__star-fill {
-  fill: var(--color-primary-star);
-  transform: scale(0);
-  transition: fill 0.3s cubic-bezier(0.42, 0, 0.58, 1), transform 0.3s cubic-bezier(0.42, 0, 0.58, 1);
-}
-
-.rating__star-line {
-  stroke-dasharray: 12 13;
-  stroke-dashoffset: -13;
-}
-
-.rating__star-stroke {
-  stroke: hsl(0, 0%, 80%);
-  transition: stroke 0.3s;
-}
-
-/* Hover states - smooth fill animation */
-.rating__input-1:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-2:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-2:hover ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-3:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-3:hover ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-3:hover ~ .rating__label:nth-of-type(3) .rating__star-stroke,
-.rating__input-4:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-4:hover ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-4:hover ~ .rating__label:nth-of-type(3) .rating__star-stroke,
-.rating__input-4:hover ~ .rating__label:nth-of-type(4) .rating__star-stroke,
-.rating__input-5:hover ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-5:hover ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-5:hover ~ .rating__label:nth-of-type(3) .rating__star-stroke,
-.rating__input-5:hover ~ .rating__label:nth-of-type(4) .rating__star-stroke,
-.rating__input-5:hover ~ .rating__label:nth-of-type(5) .rating__star-stroke {
-  stroke: var(--color-primary-star);
-  stroke-width: 2;
-  transition: stroke 0.3s cubic-bezier(0.42, 0, 0.58, 1);
-}
-
-.rating__input-1:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-2:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-2:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-3:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-3:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-3:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
-.rating__input-4:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-4:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-4:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
-.rating__input-4:hover ~ .rating__label:nth-of-type(4) .rating__star-fill,
-.rating__input-5:hover ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-5:hover ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-5:hover ~ .rating__label:nth-of-type(3) .rating__star-fill,
-.rating__input-5:hover ~ .rating__label:nth-of-type(4) .rating__star-fill,
-.rating__input-5:hover ~ .rating__label:nth-of-type(5) .rating__star-fill {
-  transform: scale(1);
-  transition: transform 0.3s cubic-bezier(0.42, 0, 0.58, 1);
-}
-
-/* Checked states - trigger animations */
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star {
-  animation-name: starRing, starBounce;
-  animation-duration: 1s, 0.5s;
-}
-
-.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star {
-  animation-name: starRing, starBounce;
-  animation-duration: 1s, 0.5s;
-}
-
-.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star,
-.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
-.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star {
-  animation-name: starRing, starBounce;
-  animation-duration: 1s, 0.5s;
-}
-
-.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star,
-.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
-.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star,
-.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
-.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-ring,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star {
-  animation-name: starRing, starBounce;
-  animation-duration: 1s, 0.5s;
-}
-
-.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star,
-.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star,
-.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star,
-.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-ring,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star {
-  animation-name: starRing, starBounce;
-  animation-duration: 1s, 0.5s;
-}
-
-/* Stroke animations */
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-stroke {
-  animation-name: starStroke;
-}
-
-.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-stroke {
-  animation-name: starStroke;
-}
-
-.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-stroke {
-  animation-name: starStroke;
-}
-
-.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star-stroke,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-stroke {
-  animation-name: starStroke;
-}
-
-.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star-stroke,
-.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star-stroke,
-.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star-stroke,
-.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star-stroke,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-stroke {
-  animation-name: starStroke;
-}
-
-/* Line animations */
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-line {
-  animation-name: starLine;
-}
-
-.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star-line,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-line {
-  animation-name: starLine;
-}
-
-.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star-line,
-.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star-line,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-line {
-  animation-name: starLine;
-}
-
-.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star-line,
-.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star-line,
-.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star-line,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-line {
-  animation-name: starLine;
-}
-
-.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star-line,
-.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star-line,
-.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star-line,
-.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star-line,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-line {
-  animation-name: starLine;
-}
-
-/* Fill animations */
-.rating__input-1:checked ~ .rating__label:nth-of-type(1) .rating__star-fill {
-  animation-name: starFill;
-}
-
-.rating__input-2:checked ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-2:checked ~ .rating__label:nth-of-type(2) .rating__star-fill {
-  animation-name: starFill;
-}
-
-.rating__input-3:checked ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-3:checked ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-3:checked ~ .rating__label:nth-of-type(3) .rating__star-fill {
-  animation-name: starFill;
-}
-
-.rating__input-4:checked ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-4:checked ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-4:checked ~ .rating__label:nth-of-type(3) .rating__star-fill,
-.rating__input-4:checked ~ .rating__label:nth-of-type(4) .rating__star-fill {
-  animation-name: starFill;
-}
-
-.rating__input-5:checked ~ .rating__label:nth-of-type(1) .rating__star-fill,
-.rating__input-5:checked ~ .rating__label:nth-of-type(2) .rating__star-fill,
-.rating__input-5:checked ~ .rating__label:nth-of-type(3) .rating__star-fill,
-.rating__input-5:checked ~ .rating__label:nth-of-type(4) .rating__star-fill,
-.rating__input-5:checked ~ .rating__label:nth-of-type(5) .rating__star-fill {
-  animation-name: starFill;
-}
-
-/* Animations */
-@keyframes starRing {
-  from,
-  20% {
-    animation-timing-function: ease-in;
-    opacity: 1;
-    r: 8px;
-    stroke-width: 16px;
-    transform: scale(0);
-  }
-  35% {
-    animation-timing-function: ease-out;
-    opacity: 0.5;
-    r: 8px;
-    stroke-width: 16px;
-    transform: scale(1);
-  }
-  50%,
-  to {
-    opacity: 0;
-    r: 16px;
-    stroke-width: 0;
-    transform: scale(1);
-  }
-}
-
-@keyframes starFill {
-  from,
-  40% {
-    animation-timing-function: ease-out;
-    transform: scale(0);
-  }
-  60% {
-    animation-timing-function: ease-in-out;
-    transform: scale(1.2);
-  }
-  80% {
-    transform: scale(0.9);
-  }
-  to {
-    transform: scale(1);
-  }
+.rating__star-btn--active .rating__star-icon {
+  animation: starBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes starBounce {
   0% {
     transform: scale(1);
   }
-  25% {
-    transform: scale(1.15);
+  30% {
+    transform: scale(1.2);
   }
   50% {
-    transform: scale(0.95);
+    transform: scale(0.9);
   }
-  75% {
-    transform: scale(1.1);
+  70% {
+    transform: scale(1.15);
   }
   100% {
     transform: scale(1);
-  }
-}
-
-@keyframes starStroke {
-  from {
-    transform: scale(1);
-  }
-  20%,
-  to {
-    transform: scale(0);
-  }
-}
-
-@keyframes starLine {
-  from,
-  40% {
-    animation-timing-function: ease-out;
-    stroke-dasharray: 1 23;
-    stroke-dashoffset: 1;
-  }
-  60%,
-  to {
-    stroke-dasharray: 12 13;
-    stroke-dashoffset: -13;
   }
 }
 

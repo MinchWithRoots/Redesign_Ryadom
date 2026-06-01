@@ -435,6 +435,7 @@ export async function getPublishedReviewsForHome(limit: number = 6) {
         comment,
         created_at,
         companion_id,
+        is_anonymous,
         companions (id, name),
         users (name, image)
       `)

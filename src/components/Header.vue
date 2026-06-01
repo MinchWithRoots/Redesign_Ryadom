@@ -21,27 +21,33 @@ const navigate = (path: string, query?: Record<string, string>) => {
 }
 
 const scrollToSection = (sectionId: string) => {
-  const scrollToElement = () => {
-    requestAnimationFrame(() => {
-      const element = document.getElementById(sectionId)
-      if (element) {
-        const headerHeight = 80
-        const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
-        window.scrollTo({
-          top: elementPosition,
-          behavior: 'smooth'
-        })
-      }
-    })
+  const performScroll = () => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const headerHeight = 80
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+
+      // Use smooth scroll
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      })
+    }
   }
 
   if (route.path !== '/') {
+    // Navigate to home first, then scroll
     router.push('/').then(() => {
-      setTimeout(scrollToElement, 150)
+      // Wait for page to render before scrolling
+      requestAnimationFrame(() => {
+        setTimeout(performScroll, 100)
+      })
     })
   } else {
-    scrollToElement()
+    // Already on home page, scroll directly
+    performScroll()
   }
+
   isMobileMenuOpen.value = false
 }
 

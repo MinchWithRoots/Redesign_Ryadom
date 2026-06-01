@@ -12,6 +12,16 @@ const handleAnchorClick = (event: MouseEvent) => {
   const href = link.getAttribute('href')
   if (!href || href === '#' || href === '#0') return
 
+  // Only handle same-page anchors
+  const linkPath = link.pathname
+  const currentPath = window.location.pathname
+  const linkOrigin = link.origin
+  const currentOrigin = window.location.origin
+
+  if (linkOrigin !== currentOrigin || linkPath !== currentPath) {
+    return
+  }
+
   const hash = href.split('#')[1]
   if (!hash) return
 
@@ -19,14 +29,20 @@ const handleAnchorClick = (event: MouseEvent) => {
 
   if (element) {
     event.preventDefault()
-    requestAnimationFrame(() => {
-      const headerHeight = 80
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
-      window.scrollTo({
-        top: elementPosition,
-        behavior: 'smooth'
-      })
+
+    const headerHeight = 80
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY - headerHeight
+
+    // Use smooth scroll behavior
+    window.scrollTo({
+      top: elementPosition,
+      behavior: 'smooth'
     })
+
+    // Set focus for accessibility
+    setTimeout(() => {
+      element.focus({ preventScroll: true })
+    }, 500)
   }
 }
 
