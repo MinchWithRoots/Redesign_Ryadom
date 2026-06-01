@@ -689,6 +689,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: float-star 3s ease-in-out infinite;
 }
 
 .reviews-star-right {
@@ -701,6 +702,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: float-star 3.5s ease-in-out infinite;
 }
 
 /* Planet */
@@ -1176,4 +1178,15 @@ footer {
   font-size: var(--font-size-base);
   color: var(--color-secondary-70);
   margin: 0;
+}
+
+/* ===== STAR ANIMATION ===== */
+
+@keyframes float-star {
+  0%, 100% {
+    transform: translateY(0) rotate(inherit);
+  }
+  50% {
+    transform: translateY(-12px) rotate(inherit);
+  }
 }
