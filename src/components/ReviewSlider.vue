@@ -176,6 +176,7 @@ const navigateToCompanion = (companionId?: string) => {
 
   padding-inline: 0;
   position: relative;
+  overflow: visible;
 }
 
 .emotions-slider__slide {
@@ -311,12 +312,17 @@ const navigateToCompanion = (companionId?: string) => {
 
 /* Slider Item */
 
+.swiper-wrapper {
+  overflow: visible !important;
+}
+
 .swiper-slide {
   width: auto;
   height: auto;
   display: flex !important;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .emotions-slider-item {
