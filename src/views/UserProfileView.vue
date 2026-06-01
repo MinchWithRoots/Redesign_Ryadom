@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser } from '../composables/useAppState'
+import { companions, currentUser, getCompanionById, sendConnectionRequest, loadCurrentUser, syncCompanionSessionCounts } from '../composables/useAppState'
 import AuthRequiredModal from '../components/AuthRequiredModal.vue'
 import ImageWithFallback from '../components/ImageWithFallback.vue'
 import CompanionChatRequests from '../components/CompanionChatRequests.vue'

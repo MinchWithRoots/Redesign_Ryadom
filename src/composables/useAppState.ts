@@ -2254,7 +2254,7 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     }
 
     // Update local state in companions array
-    const index = companions.value.findIndex(c => c.id === companionIdNum)
+    const index = companions.value.findIndex(c => Number(c.id) === companionIdNum)
     if (index !== -1) {
       companions.value[index] = {
         ...companions.value[index],
