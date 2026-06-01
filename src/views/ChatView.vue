@@ -1221,7 +1221,7 @@ onBeforeUnmount(() => {
 
         <!-- Info -->
         <p class="chat-input-info" :class="{ 'chat-input-info--blocked': isBlocked }">
-          <span v-if="isBlocked">🔒 Чат заблокирован</span>
+          <span v-if="isBlocked">Чат заблокирован</span>
           <span v-else>💬 Сессия активна</span>
         </p>
       </div>
