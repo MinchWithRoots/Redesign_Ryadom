@@ -233,16 +233,20 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, chats(user_id, companion_id), reporter:users!reports_user_id_fkey(id, name, email), reported_user:users!reports_reported_user_id_fkey(id, name, email), reported_companion:companions!reports_reported_companion_id_fkey(id, name)')
+      .select('*, chats(user_id, companion_id), reporter:user_id(id, name, email), reported_user:reported_user_id(id, name, email), reported_companion:reported_companion_id(id, name)')
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error loading reports:', error)
+      console.error('Error loading reports:', error, error.message, error.hint, error.code)
+      errorMessage.value = `Ошибка загрузки жалоб: ${error.message || 'Неизвестная ошибка'}`
+      setTimeout(() => (errorMessage.value = ''), 5000)
       return
     }
     reports.value = data || []
   } catch (err) {
     console.error('Failed to fetch reports:', err)
+    errorMessage.value = `Ошибка подключения: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 5000)
   } finally {
     loadingStates.value.reports = false
   }
