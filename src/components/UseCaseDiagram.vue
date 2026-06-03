@@ -1,0 +1,434 @@
+<template>
+  <div class="use-case-container">
+    <h1>📊 Use Case диаграмма платформы "Рядом"</h1>
+    
+    <svg viewBox="0 0 1400 900" class="diagram-svg">
+      <!-- Background -->
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#666" />
+        </marker>
+        <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
+        </marker>
+        <marker id="arrowhead-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#3b82f6" />
+        </marker>
+        <marker id="arrowhead-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#10b981" />
+        </marker>
+        <marker id="arrowhead-purple" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#a855f7" />
+        </marker>
+      </defs>
+
+      <!-- Actors (левая сторона) -->
+      <!-- Гость -->
+      <rect x="20" y="150" width="120" height="60" rx="8" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+      <text x="80" y="180" text-anchor="middle" font-size="14" font-weight="bold">👤 Гость</text>
+      <text x="80" y="200" text-anchor="middle" font-size="11" fill="#666">(не авторизован)</text>
+
+      <!-- Пользователь -->
+      <rect x="20" y="290" width="120" height="60" rx="8" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="80" y="320" text-anchor="middle" font-size="14" font-weight="bold">👥 Пользователь</text>
+      <text x="80" y="340" text-anchor="middle" font-size="11" fill="#0284c7">(User)</text>
+
+      <!-- Компаньон -->
+      <rect x="20" y="430" width="120" height="60" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="80" y="460" text-anchor="middle" font-size="14" font-weight="bold">🤝 Компаньон</text>
+      <text x="80" y="480" text-anchor="middle" font-size="11" fill="#059669">(Companion)</text>
+
+      <!-- Админ -->
+      <rect x="20" y="570" width="120" height="60" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="80" y="600" text-anchor="middle" font-size="14" font-weight="bold">🔐 Админ</text>
+      <text x="80" y="620" text-anchor="middle" font-size="11" fill="#db2777">(Admin)</text>
+
+      <!-- СИСТЕМА (центр) -->
+      <circle cx="700" cy="450" r="350" fill="none" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="5,5"/>
+      <text x="700" y="830" text-anchor="middle" font-size="12" fill="#9ca3af">Система "Рядом"</text>
+
+      <!-- Use Cases (правая сторона и центр) -->
+      
+      <!-- Доступные для Гостя -->
+      <rect x="280" y="120" width="140" height="50" rx="25" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+      <text x="350" y="150" text-anchor="middle" font-size="12">Просмотр главной</text>
+
+      <rect x="470" y="120" width="140" height="50" rx="25" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+      <text x="540" y="150" text-anchor="middle" font-size="12">Отзывы компаньонов</text>
+
+      <rect x="660" y="60" width="140" height="50" rx="25" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+      <text x="730" y="90" text-anchor="middle" font-size="12">Условия & Политика</text>
+
+      <!-- Доступные для Пользователя (синие) -->
+      <rect x="280" y="280" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="350" y="310" text-anchor="middle" font-size="12" font-weight="500">Регистрация/Вход</text>
+
+      <rect x="470" y="280" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="540" y="310" text-anchor="middle" font-size="12" font-weight="500">Редакт. профиля</text>
+
+      <rect x="280" y="360" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="350" y="390" text-anchor="middle" font-size="12" font-weight="500">Поиск компаньонов</text>
+
+      <rect x="470" y="360" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="540" y="390" text-anchor="middle" font-size="12" font-weight="500">Просмотр профиля</text>
+
+      <rect x="660" y="280" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="730" y="310" text-anchor="middle" font-size="12" font-weight="500">Отправить запрос</text>
+
+      <rect x="850" y="280" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="920" y="310" text-anchor="middle" font-size="12" font-weight="500">Просмотр статуса</text>
+
+      <rect x="660" y="360" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="730" y="390" text-anchor="middle" font-size="12" font-weight="500">Отправить/Получить</text>
+      <text x="730" y="403" text-anchor="middle" font-size="11" fill="#0284c7">сообщение в чате</text>
+
+      <rect x="850" y="360" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="920" y="385" text-anchor="middle" font-size="12" font-weight="500">Оставить отзыв</text>
+      <text x="920" y="400" text-anchor="middle" font-size="11" fill="#0284c7">о компаньоне</text>
+
+      <rect x="1040" y="360" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="1110" y="390" text-anchor="middle" font-size="12" font-weight="500">Пожаловаться на</text>
+      <text x="1110" y="403" text-anchor="middle" font-size="11" fill="#0284c7">нарушение</text>
+
+      <rect x="1040" y="280" width="140" height="50" rx="25" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+      <text x="1110" y="310" text-anchor="middle" font-size="12" font-weight="500">Заблокировать</text>
+
+      <!-- Доступные для Компаньона (зелёные) -->
+      <rect x="280" y="480" width="140" height="50" rx="25" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="350" y="510" text-anchor="middle" font-size="12" font-weight="500">Входящие запросы</text>
+
+      <rect x="470" y="480" width="140" height="50" rx="25" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="540" y="505" text-anchor="middle" font-size="12" font-weight="500">Одобрить/Отклонить</text>
+      <text x="540" y="520" text-anchor="middle" font-size="11" fill="#059669">запрос</text>
+
+      <rect x="660" y="480" width="140" height="50" rx="25" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="730" y="510" text-anchor="middle" font-size="12" font-weight="500">Писать пользователю</text>
+
+      <rect x="850" y="480" width="140" height="50" rx="25" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="920" y="505" text-anchor="middle" font-size="12" font-weight="500">Писать другому</text>
+      <text x="920" y="520" text-anchor="middle" font-size="11" fill="#059669">компаньону</text>
+
+      <rect x="1040" y="480" width="140" height="50" rx="25" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="1110" y="505" text-anchor="middle" font-size="12" font-weight="500">Просмотр своего</text>
+      <text x="1110" y="520" text-anchor="middle" font-size="11" fill="#059669">рейтинга/отзывов</text>
+
+      <rect x="280" y="560" width="140" height="50" rx="25" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+      <text x="350" y="585" text-anchor="middle" font-size="12" font-weight="500">Заявка на</text>
+      <text x="350" y="600" text-anchor="middle" font-size="11" fill="#059669">компаньона</text>
+
+      <!-- Доступные для Админ (фиолетовые) -->
+      <rect x="280" y="680" width="130" height="50" rx="25" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="345" y="710" text-anchor="middle" font-size="12" font-weight="500">Управление</text>
+      <text x="345" y="725" text-anchor="middle" font-size="11" fill="#db2777">пользователями</text>
+
+      <rect x="430" y="680" width="130" height="50" rx="25" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="495" y="710" text-anchor="middle" font-size="12" font-weight="500">Управление</text>
+      <text x="495" y="725" text-anchor="middle" font-size="11" fill="#db2777">компаньонами</text>
+
+      <rect x="580" y="680" width="130" height="50" rx="25" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="645" y="710" text-anchor="middle" font-size="12" font-weight="500">Модерация</text>
+      <text x="645" y="725" text-anchor="middle" font-size="11" fill="#db2777">заявок</text>
+
+      <rect x="730" y="680" width="130" height="50" rx="25" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="795" y="710" text-anchor="middle" font-size="12" font-weight="500">Модерация</text>
+      <text x="795" y="725" text-anchor="middle" font-size="11" fill="#db2777">отзывов</text>
+
+      <rect x="880" y="680" width="130" height="50" rx="25" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="945" y="710" text-anchor="middle" font-size="12" font-weight="500">Просмотр</text>
+      <text x="945" y="725" text-anchor="middle" font-size="11" fill="#db2777">всех чатов</text>
+
+      <rect x="1030" y="680" width="130" height="50" rx="25" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="1095" y="710" text-anchor="middle" font-size="12" font-weight="500">Обработка</text>
+      <text x="1095" y="725" text-anchor="middle" font-size="11" fill="#db2777">жалоб</text>
+
+      <!-- Стрелки от Гостя -->
+      <line x1="140" y1="180" x2="280" y2="145" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="140" y1="180" x2="470" y2="145" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="140" y1="180" x2="660" y2="85" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+      <!-- Стрелки от Пользователя (синие) -->
+      <line x1="140" y1="320" x2="280" y2="305" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="320" x2="470" y2="305" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="330" x2="280" y2="385" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="330" x2="470" y2="385" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="340" x2="660" y2="305" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="340" x2="850" y2="305" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="350" x2="660" y2="385" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="350" x2="850" y2="385" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="350" x2="1040" y2="385" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+      <line x1="140" y1="340" x2="1040" y2="305" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead-blue)"/>
+
+      <!-- Стрелки от Компаньона (зелёные) -->
+      <line x1="140" y1="460" x2="280" y2="505" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowhead-green)"/>
+      <line x1="140" y1="470" x2="470" y2="505" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowhead-green)"/>
+      <line x1="140" y1="480" x2="660" y2="505" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowhead-green)"/>
+      <line x1="140" y1="480" x2="850" y2="505" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowhead-green)"/>
+      <line x1="140" y1="490" x2="1040" y2="505" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowhead-green)"/>
+      <line x1="140" y1="500" x2="280" y2="585" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowhead-green)"/>
+      <!-- Компаньон наследует всё от Пользователя -->
+      <line x1="140" y1="460" x2="280" y2="305" stroke="#059669" stroke-width="1.5" stroke-dasharray="5,5" marker-end="url(#arrowhead-green)"/>
+      <text x="180" y="380" font-size="10" fill="#059669" font-style="italic">наследует</text>
+
+      <!-- Стрелки от Админ (фиолетовые) -->
+      <line x1="140" y1="600" x2="345" y2="680" stroke="#db2777" stroke-width="2.5" marker-end="url(#arrowhead-purple)"/>
+      <line x1="140" y1="600" x2="495" y2="680" stroke="#db2777" stroke-width="2.5" marker-end="url(#arrowhead-purple)"/>
+      <line x1="140" y1="600" x2="645" y2="680" stroke="#db2777" stroke-width="2.5" marker-end="url(#arrowhead-purple)"/>
+      <line x1="140" y1="600" x2="795" y2="680" stroke="#db2777" stroke-width="2.5" marker-end="url(#arrowhead-purple)"/>
+      <line x1="140" y1="600" x2="945" y2="680" stroke="#db2777" stroke-width="2.5" marker-end="url(#arrowhead-purple)"/>
+      <line x1="140" y1="600" x2="1095" y2="680" stroke="#db2777" stroke-width="2.5" marker-end="url(#arrowhead-purple)"/>
+      <!-- Админ наследует всё от Пользователя -->
+      <line x1="140" y1="590" x2="280" y2="305" stroke="#db2777" stroke-width="1.5" stroke-dasharray="5,5" marker-end="url(#arrowhead-purple)"/>
+      <text x="180" y="450" font-size="10" fill="#db2777" font-style="italic">наследует</text>
+    </svg>
+
+    <div class="legend">
+      <h2>📝 Легенда</h2>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <div class="legend-color" style="background: #f3f4f6; border: 2px solid #9ca3af;"></div>
+          <span>Гость — доступ без авторизации</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #dbeafe; border: 2px solid #0284c7;"></div>
+          <span>Пользователь — базовый функционал</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #d1fae5; border: 2px solid #059669;"></div>
+          <span>Компаньон — расширенный функционал</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #fce7f3; border: 2px solid #db2777;"></div>
+          <span>Админ — полный контроль</span>
+        </div>
+        <div class="legend-item">
+          <span style="font-style: italic; color: #666;">─ ─ ─</span>
+          <span>Наследование функционала от предыдущей роли</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <h2>📊 Сводка по ролям</h2>
+      <div class="summary-grid">
+        <div class="summary-card guest">
+          <h3>👤 Гость</h3>
+          <p><strong>Функций: 3</strong></p>
+          <ul>
+            <li>Просмотр главной</li>
+            <li>Чтение отзывов</li>
+            <li>Условия & политика</li>
+          </ul>
+        </div>
+
+        <div class="summary-card user">
+          <h3>👥 Пользователь</h3>
+          <p><strong>Функций: 10</strong></p>
+          <ul>
+            <li>Регистрация/Вход</li>
+            <li>Редактирование профиля</li>
+            <li>Поиск компаньонов</li>
+            <li>Отправка запросов</li>
+            <li>Чаты и сообщения</li>
+            <li>Отзывы</li>
+            <li>Жалобы</li>
+            <li>Блокировка</li>
+            <li>+ всё как гость</li>
+          </ul>
+        </div>
+
+        <div class="summary-card companion">
+          <h3>🤝 Компаньон</h3>
+          <p><strong>Функций: 15+</strong></p>
+          <ul>
+            <li>Входящие запросы</li>
+            <li>Одобрение/отклонение</li>
+            <li>Писать пользователям</li>
+            <li>Писать компаньонам</li>
+            <li>Просмотр рейтинга</li>
+            <li>Заявка на компаньона</li>
+            <li>+ всё как пользователь</li>
+          </ul>
+        </div>
+
+        <div class="summary-card admin">
+          <h3>🔐 Админ</h3>
+          <p><strong>Функций: 25+</strong></p>
+          <ul>
+            <li>Управление пользователями</li>
+            <li>Управление компаньонами</li>
+            <li>Модерация заявок</li>
+            <li>Модерация отзывов</li>
+            <li>Просмотр всех чатов</li>
+            <li>Обработка жалоб</li>
+            <li>+ всё как компаньон</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// Component logic
+</script>
+
+<style scoped>
+.use-case-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #1f2937;
+  margin-bottom: 40px;
+  font-weight: 700;
+}
+
+.diagram-svg {
+  width: 100%;
+  height: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.legend {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+.legend h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.legend-color {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.summary {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+.summary h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  padding: 24px;
+  border-left: 5px solid;
+}
+
+.summary-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.summary-card p {
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.summary-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.summary-card li {
+  padding: 6px 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.summary-card li:before {
+  content: "✓ ";
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.guest {
+  background: #f3f4f6;
+  border-left-color: #9ca3af;
+}
+
+.user {
+  background: #dbeafe;
+  border-left-color: #0284c7;
+}
+
+.companion {
+  background: #d1fae5;
+  border-left-color: #059669;
+}
+
+.admin {
+  background: #fce7f3;
+  border-left-color: #db2777;
+}
+
+@media (max-width: 768px) {
+  .use-case-container {
+    padding: 20px 10px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .diagram-svg {
+    padding: 10px;
+  }
+
+  .legend-grid,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

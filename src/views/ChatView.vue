@@ -498,10 +498,19 @@ const handleReportUser = async () => {
     }
 
     // Submit report to Supabase
+    // Determine who is reporting (current user) and who is being reported
+    const reporterId = currentUser.value?.id
+    const isCurrentUserCompanion = currentUser.value?.role === 'companion'
+
+    // If companion reports, user is being reported; if user reports, companion is being reported
+    const reportedCompanionId = isCurrentUserCompanion ? null : chatData.companion_id
+    const reportedUserId = isCurrentUserCompanion ? chatData.user_id : null
+
     await supabaseService.submitReport(
       chatId.value,
-      chatData.user_id,
-      chatData.companion_id,
+      reporterId,
+      reportedUserId,
+      reportedCompanionId,
       reportReason.value,
       reportMessage.value
     )

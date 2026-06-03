@@ -498,8 +498,9 @@ export async function deleteReview(reviewId: string) {
 // ============ REPORTS (Отчеты о нарушениях) ============
 export async function submitReport(
   chatId: string,
-  userId: string,
-  companionId: string,
+  reporterId: string,
+  reportedUserId: string | null,
+  reportedCompanionId: string | null,
   reason: string,
   message: string
 ) {
@@ -509,8 +510,8 @@ export async function submitReport(
       .insert([
         {
           chat_id: chatId,
-          user_id: userId,
-          companion_id: companionId,
+          user_id: reporterId,
+          companion_id: reportedCompanionId || reportedUserId,
           reason,
           message,
           status: 'pending',
