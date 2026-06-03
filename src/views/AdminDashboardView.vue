@@ -233,7 +233,7 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, chats(user_id, companion_id), companion:companions(id, name), reporter:users!reports_user_id_fkey(name, email)')
+      .select('*, chats(user_id, companion_id), reporter:users!reports_user_id_fkey(id, name, email), reported_user:users!companion_id(id, name, email), reported_companion:companions(id, name)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -1115,11 +1115,11 @@ const handleRejectApplication = async (applicationId: string | number) => {
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 0.75rem; background-color: var(--color-light-bg); border-radius: var(--radius-md);">
                     <div class="report-card__field">
                       <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reporter" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />От кого:</span>
-                      <span class="report-card__field-value">{{ report.reporter?.name || 'Анонимно' }} ({{ report.reporter?.email || 'нет email' }})</span>
+                      <span class="report-card__field-value">{{ report.reporter?.name || 'Неизвестно' }} ({{ report.reporter?.email || 'нет email' }})</span>
                     </div>
                     <div class="report-card__field">
-                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Companion" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого:</span>
-                      <span class="report-card__field-value">{{ report.companion?.name || report.companion_id || 'N/A' }}</span>
+                      <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reported" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого:</span>
+                      <span class="report-card__field-value">{{ report.reported_companion?.name || report.reported_user?.name || 'Неизвестно' }}</span>
                     </div>
                   </div>
 
