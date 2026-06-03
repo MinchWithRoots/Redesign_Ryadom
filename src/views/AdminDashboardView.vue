@@ -233,7 +233,7 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, chats(user_id, companion_id), reporter:users!reports_user_id_fkey(id, name, email), reported_user:users!companion_id(id, name, email), reported_companion:companions(id, name)')
+      .select('*, chats(user_id, companion_id), reporter:users!reports_user_id_fkey(id, name, email), reported_user:users!reports_reported_user_id_fkey(id, name, email), reported_companion:companions!reports_reported_companion_id_fkey(id, name)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -1158,7 +1158,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 Отметить как обработанную
               </button>
               <button
-                @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
+                @click="report.chats?.companion_id && handleBlockCompanion(report.chats.companion_id, 'спутника')"
                 v-if="report.chats?.companion_id"
                 class="btn btn-large btn-block flex-1"
                 style="background-color: #ef4444; color: white;"
@@ -1176,7 +1176,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
             </div>
             <div v-else style="border-top: 1px solid var(--color-border); padding-top: 1rem; display: flex; gap: 1rem;">
               <button
-                @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
+                @click="report.chats?.companion_id && handleBlockCompanion(report.chats.companion_id, 'спутника')"
                 v-if="report.chats?.companion_id"
                 class="btn btn-large btn-block flex-1"
                 style="background-color: #ef4444; color: white;"
