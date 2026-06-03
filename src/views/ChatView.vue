@@ -507,8 +507,8 @@ const handleReportUser = async () => {
     const reportedUserId = isCurrentUserCompanion ? chatData.user_id : null
 
     await supabaseService.submitReport(
-      chatId.value,
-      reporterId,
+      chatId.value as string,
+      reporterId as string,
       reportedUserId,
       reportedCompanionId,
       reportReason.value,
