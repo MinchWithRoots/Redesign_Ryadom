@@ -941,7 +941,6 @@ onBeforeUnmount(() => {
             fallbackClass="chat-avatar-fallback"
             iconClass="chat-avatar-icon"
           />
-          <div v-if="currentCompanion?.status === 'Онлайн'" class="chat-avatar-online"></div>
 
           <!-- Info -->
           <div class="chat-header-user-info">
