@@ -233,7 +233,7 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, chats(user_id, companion_id), reporter:user_id(id, name, email), reported_user:reported_user_id(id, name, email), reported_companion:reported_companion_id(id, name)')
+      .select('*, reporter:user_id(id, name, email)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -242,7 +242,46 @@ const loadReports = async () => {
       setTimeout(() => (errorMessage.value = ''), 5000)
       return
     }
-    reports.value = data || []
+
+    // Enrich reports with reported user/companion details
+    const enrichedReports = await Promise.all((data || []).map(async (report: any) => {
+      let reported_user = null
+      let reported_companion = null
+
+      // Fetch the reported entity (could be user or companion)
+      if (report.companion_id) {
+        try {
+          // Try companion first
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('id, name')
+            .eq('id', report.companion_id)
+            .single()
+
+          if (companionData) {
+            reported_companion = companionData
+          } else {
+            // If not a companion, try as user
+            const { data: userData } = await supabase
+              .from('users')
+              .select('id, name, email')
+              .eq('id', report.companion_id)
+              .single()
+            reported_user = userData
+          }
+        } catch (err) {
+          console.warn('Could not fetch reported entity:', err)
+        }
+      }
+
+      return {
+        ...report,
+        reported_companion,
+        reported_user
+      }
+    }))
+
+    reports.value = enrichedReports
   } catch (err) {
     console.error('Failed to fetch reports:', err)
     errorMessage.value = `Ошибка подключения: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
