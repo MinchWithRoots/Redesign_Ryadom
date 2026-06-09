@@ -519,16 +519,17 @@ export async function submitReport(
       status: 'pending',
     }
 
-    // Set companion_id for backward compatibility (use reported companion if exists, else null)
-    reportData.companion_id = reportedCompanionId ? parseInt(reportedCompanionId) : null
-
-    // Set reported user/companion IDs based on type
-    if (reportedType === 'user' && reportedUserId) {
-      reportData.reported_user_id = reportedUserId
-      reportData.reported_companion_id = null
-    } else if (reportedType === 'companion' && reportedCompanionId) {
+    // Set companion_id:
+    // - For user->companion: companion_id = companion id (for backward compat)
+    // - For companion->user: companion_id = null (companion not involved as target)
+    if (reportedType === 'companion' && reportedCompanionId) {
+      reportData.companion_id = parseInt(reportedCompanionId)
       reportData.reported_companion_id = parseInt(reportedCompanionId)
       reportData.reported_user_id = null
+    } else if (reportedType === 'user' && reportedUserId) {
+      reportData.companion_id = null
+      reportData.reported_user_id = reportedUserId
+      reportData.reported_companion_id = null
     }
 
     console.log('Submitting report with data:', reportData)
