@@ -506,14 +506,19 @@ const handleReportUser = async () => {
     const reportedCompanionId = isCurrentUserCompanion ? null : chatData.companion_id
     const reportedUserId = isCurrentUserCompanion ? chatData.user_id : null
 
-    await supabaseService.submitReport(
-      chatId.value,
-      reporterId,
+    const result = await supabaseService.submitReport(
+      chatId.value as string,
+      reporterId as string,
       reportedUserId,
       reportedCompanionId,
+      isCurrentUserCompanion ? 'companion' : 'user',
       reportReason.value,
       reportMessage.value
     )
+
+    if (!result) {
+      throw new Error('Не удалось сохранить жалобу. Проверьте логи для деталей.')
+    }
 
     reportSuccess.value = 'Спасибо за отчёт. Наша команда проверит это.'
     setTimeout(() => {
@@ -524,9 +529,10 @@ const handleReportUser = async () => {
     }, 2000)
   } catch (err) {
     console.error('Error submitting report:', err)
+    const errorMsg = err instanceof Error ? err.message : 'Неизвестная ошибка'
     openDialog({
       title: 'Ошибка при отправке',
-      message: 'Ошибка при отправке отчёта. Пожалуйста, попробуйте позже.',
+      message: `Ошибка при отправке отчёта: ${errorMsg}. Пожалуйста, попробуйте позже.`,
       confirmText: '✓ OK',
       cancelText: '✕ Отмена',
     })
@@ -941,7 +947,6 @@ onBeforeUnmount(() => {
             fallbackClass="chat-avatar-fallback"
             iconClass="chat-avatar-icon"
           />
-          <div v-if="currentCompanion?.status === 'Онлайн'" class="chat-avatar-online"></div>
 
           <!-- Info -->
           <div class="chat-header-user-info">

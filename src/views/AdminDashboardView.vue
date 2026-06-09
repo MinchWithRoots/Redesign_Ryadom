@@ -233,16 +233,77 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, chats(user_id, companion_id), reporter:users!reports_user_id_fkey(id, name, email), reported_user:users!companion_id(id, name, email), reported_companion:companions(id, name)')
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error loading reports:', error)
+      console.error('Error loading reports:', error, error.message, error.hint, error.code)
+      errorMessage.value = `Ошибка загрузки жалоб: ${error.message || 'Неизвестная ошибка'}`
+      setTimeout(() => (errorMessage.value = ''), 5000)
       return
     }
-    reports.value = data || []
+
+    // Enrich reports with reporter and reported user/companion details
+    const enrichedReports = await Promise.all((data || []).map(async (report: any) => {
+      let reporter = null
+      let reported_user = null
+      let reported_companion = null
+
+      // Fetch reporter (could be user or companion)
+      try {
+        if (report.reporter_type === 'user') {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, name, email')
+            .eq('id', report.user_id)
+            .single()
+          reporter = userData
+        } else if (report.reporter_type === 'companion') {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('id, name')
+            .eq('id', report.user_id)
+            .single()
+          reporter = companionData
+        }
+      } catch (err) {
+        console.warn('Could not fetch reporter:', err)
+      }
+
+      // Fetch reported entity
+      try {
+        if (report.reported_type === 'user' && report.reported_user_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, name, email')
+            .eq('id', report.reported_user_id)
+            .single()
+          reported_user = userData
+        } else if (report.reported_type === 'companion' && report.reported_companion_id) {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('id, name')
+            .eq('id', report.reported_companion_id)
+            .single()
+          reported_companion = companionData
+        }
+      } catch (err) {
+        console.warn('Could not fetch reported entity:', err)
+      }
+
+      return {
+        ...report,
+        reporter,
+        reported_user,
+        reported_companion
+      }
+    }))
+
+    reports.value = enrichedReports
   } catch (err) {
     console.error('Failed to fetch reports:', err)
+    errorMessage.value = `Ошибка подключения: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
+    setTimeout(() => (errorMessage.value = ''), 5000)
   } finally {
     loadingStates.value.reports = false
   }
@@ -1158,7 +1219,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                 Отметить как обработанную
               </button>
               <button
-                @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
+                @click="report.chats?.companion_id && handleBlockCompanion(report.chats.companion_id, 'спутника')"
                 v-if="report.chats?.companion_id"
                 class="btn btn-large btn-block flex-1"
                 style="background-color: #ef4444; color: white;"
@@ -1176,7 +1237,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
             </div>
             <div v-else style="border-top: 1px solid var(--color-border); padding-top: 1rem; display: flex; gap: 1rem;">
               <button
-                @click="handleBlockCompanion(report.chats?.companion_id, 'спутника')"
+                @click="report.chats?.companion_id && handleBlockCompanion(report.chats.companion_id, 'спутника')"
                 v-if="report.chats?.companion_id"
                 class="btn btn-large btn-block flex-1"
                 style="background-color: #ef4444; color: white;"

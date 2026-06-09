@@ -1493,6 +1493,13 @@ watch(
   opacity: 1;
 }
 
+/* Mobile: Always show action buttons */
+@media (max-width: 768px) {
+  .profile-chat-item__actions {
+    opacity: 1;
+  }
+}
+
 .profile-chat-item__action-btn {
   padding: 0.5rem;
   border-radius: 0.5rem;

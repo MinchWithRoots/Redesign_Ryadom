@@ -501,29 +501,54 @@ export async function submitReport(
   reporterId: string,
   reportedUserId: string | null,
   reportedCompanionId: string | null,
+  reporterType: 'user' | 'companion',
   reason: string,
   message: string
 ) {
   try {
+    // Determine reported type and set the correct field
+    const reportedType = reportedCompanionId ? 'companion' : 'user'
+
+    const reportData: any = {
+      chat_id: parseInt(chatId),
+      user_id: reporterId,
+      reporter_type: reporterType,
+      reported_type: reportedType,
+      reason,
+      message,
+      status: 'pending',
+    }
+
+    // Set companion_id:
+    // - For user->companion: companion_id = companion id (for backward compat)
+    // - For companion->user: companion_id = null (companion not involved as target)
+    if (reportedType === 'companion' && reportedCompanionId) {
+      reportData.companion_id = parseInt(reportedCompanionId)
+      reportData.reported_companion_id = parseInt(reportedCompanionId)
+      reportData.reported_user_id = null
+    } else if (reportedType === 'user' && reportedUserId) {
+      reportData.companion_id = null
+      reportData.reported_user_id = reportedUserId
+      reportData.reported_companion_id = null
+    }
+
+    console.log('Submitting report with data:', reportData)
+
     const { data, error } = await supabase
       .from('reports')
-      .insert([
-        {
-          chat_id: chatId,
-          user_id: reporterId,
-          companion_id: reportedCompanionId || reportedUserId,
-          reason,
-          message,
-          status: 'pending',
-        }
-      ])
+      .insert([reportData])
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error submitting report:', error, error.message, error.hint, error.code)
+      throw error
+    }
+
+    console.log('Report submitted successfully:', data)
     return data
   } catch (error) {
-    console.error('Error submitting report:', error)
+    console.error('Error submitting report:', error, 'Details:', error instanceof Error ? error.message : JSON.stringify(error))
     return null
   }
 }
