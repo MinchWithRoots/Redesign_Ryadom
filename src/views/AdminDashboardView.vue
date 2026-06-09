@@ -264,7 +264,15 @@ const loadReports = async () => {
             .select('id, name')
             .eq('user_id', report.user_id)
             .single()
-          reporter = companionData
+          // Get the companion's user email
+          if (companionData) {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', report.user_id)
+              .single()
+            reporter = { ...companionData, email: userData?.email }
+          }
         }
       } catch (err) {
         console.warn('Could not fetch reporter:', err)
@@ -285,7 +293,17 @@ const loadReports = async () => {
             .select('id, name')
             .eq('id', report.reported_companion_id)
             .single()
-          reported_companion = companionData
+          // Get the companion's user email
+          if (companionData) {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', companionData.user_id)
+              .single()
+            reported_companion = { ...companionData, email: userData?.email }
+          } else {
+            reported_companion = companionData
+          }
         }
       } catch (err) {
         console.warn('Could not fetch reported entity:', err)
@@ -1180,7 +1198,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                     </div>
                     <div class="report-card__field">
                       <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reported" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого:</span>
-                      <span class="report-card__field-value">{{ report.reported_companion?.name || report.reported_user?.name || 'Неизвестно' }}</span>
+                      <span class="report-card__field-value">{{ report.reported_companion?.name || report.reported_user?.name || 'Неизвестно' }} ({{ report.reported_companion?.email || report.reported_user?.email || 'нет email' }})</span>
                     </div>
                   </div>
 

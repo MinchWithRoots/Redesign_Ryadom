@@ -1079,11 +1079,11 @@ onBeforeUnmount(() => {
                   class="chat-form-select"
                 >
                   <option value="">Выберите причину...</option>
-                  <option value="harassment">Оскорбления/Harassing</option>
-                  <option value="inappropriate">Неадекватное поведение</option>
-                  <option value="explicit">Оскорбительный контент</option>
-                  <option value="danger">Ощущение опасности</option>
-                  <option value="other">Другое</option>
+                  <option value="Оскорбления">Оскорбления</option>
+                  <option value="Неадекватное поведение">Неадекватное поведение</option>
+                  <option value="Оскорбительный контент">Оскорбительный контент</option>
+                  <option value="Ощущение опасности">Ощущение опасности</option>
+                  <option value="Другое">Другое</option>
                 </select>
               </div>
 
