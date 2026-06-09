@@ -792,20 +792,6 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
         <div class="stat-card group">
           <div class="stat-card__header">
-            <div class="stat-card__value">{{ stats.totalChats }}</div>
-            <img src="../images/message-add-alt.svg" alt="Chats" class="stat-card__icon group-hover:opacity-100" />
-          </div>
-          <p class="stat-card__label">Всего чатов</p>
-        </div>
-        <div class="stat-card group">
-          <div class="stat-card__header">
-            <div class="stat-card__value" style="color: #576445">{{ stats.activeChats }}</div>
-            <img src="../images/shield-tick.svg" alt="Active" class="stat-card__icon group-hover:opacity-100" />
-          </div>
-          <p class="stat-card__label">Активных чатов</p>
-        </div>
-        <div class="stat-card group">
-          <div class="stat-card__header">
             <div class="stat-card__value">{{ stats.totalReviews }}</div>
             <img src="../images/smile.svg" alt="Reviews" class="stat-card__icon group-hover:opacity-100" />
           </div>
