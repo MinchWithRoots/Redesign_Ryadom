@@ -262,9 +262,17 @@ const loadReports = async () => {
           const { data: companionData } = await supabase
             .from('companions')
             .select('id, name')
-            .eq('id', report.user_id)
+            .eq('user_id', report.user_id)
             .single()
-          reporter = companionData
+          // Get the companion's user email
+          if (companionData) {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', report.user_id)
+              .single()
+            reporter = { ...companionData, email: userData?.email }
+          }
         }
       } catch (err) {
         console.warn('Could not fetch reporter:', err)
@@ -282,10 +290,20 @@ const loadReports = async () => {
         } else if (report.reported_type === 'companion' && report.reported_companion_id) {
           const { data: companionData } = await supabase
             .from('companions')
-            .select('id, name')
+            .select('id, name, user_id')
             .eq('id', report.reported_companion_id)
             .single()
-          reported_companion = companionData
+          // Get the companion's user email
+          if (companionData && companionData.user_id) {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', companionData.user_id)
+              .single()
+            reported_companion = { ...companionData, email: userData?.email }
+          } else {
+            reported_companion = companionData
+          }
         }
       } catch (err) {
         console.warn('Could not fetch reported entity:', err)
@@ -774,20 +792,6 @@ const handleRejectApplication = async (applicationId: string | number) => {
         </div>
         <div class="stat-card group">
           <div class="stat-card__header">
-            <div class="stat-card__value">{{ stats.totalChats }}</div>
-            <img src="../images/message-add-alt.svg" alt="Chats" class="stat-card__icon group-hover:opacity-100" />
-          </div>
-          <p class="stat-card__label">Всего чатов</p>
-        </div>
-        <div class="stat-card group">
-          <div class="stat-card__header">
-            <div class="stat-card__value" style="color: #576445">{{ stats.activeChats }}</div>
-            <img src="../images/shield-tick.svg" alt="Active" class="stat-card__icon group-hover:opacity-100" />
-          </div>
-          <p class="stat-card__label">Активных чатов</p>
-        </div>
-        <div class="stat-card group">
-          <div class="stat-card__header">
             <div class="stat-card__value">{{ stats.totalReviews }}</div>
             <img src="../images/smile.svg" alt="Reviews" class="stat-card__icon group-hover:opacity-100" />
           </div>
@@ -1180,7 +1184,7 @@ const handleRejectApplication = async (applicationId: string | number) => {
                     </div>
                     <div class="report-card__field">
                       <span class="report-card__field-label"><img src="/src/images/user.svg" alt="Reported" style="width: 0.875rem; height: 0.875rem; display: inline-block; margin-right: 0.375rem;" />На кого:</span>
-                      <span class="report-card__field-value">{{ report.reported_companion?.name || report.reported_user?.name || 'Неизвестно' }}</span>
+                      <span class="report-card__field-value">{{ report.reported_companion?.name || report.reported_user?.name || 'Неизвестно' }} ({{ report.reported_companion?.email || report.reported_user?.email || 'нет email' }})</span>
                     </div>
                   </div>
 
