@@ -233,7 +233,7 @@ const loadReports = async () => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('*, reporter:user_id(id, name, email)')
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -243,41 +243,59 @@ const loadReports = async () => {
       return
     }
 
-    // Enrich reports with reported user/companion details
+    // Enrich reports with reporter and reported user/companion details
     const enrichedReports = await Promise.all((data || []).map(async (report: any) => {
+      let reporter = null
       let reported_user = null
       let reported_companion = null
 
-      // Fetch the reported entity (could be user or companion)
-      if (report.companion_id) {
-        try {
-          // Try companion first
+      // Fetch reporter (could be user or companion)
+      try {
+        if (report.reporter_type === 'user') {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, name, email')
+            .eq('id', report.user_id)
+            .single()
+          reporter = userData
+        } else if (report.reporter_type === 'companion') {
           const { data: companionData } = await supabase
             .from('companions')
             .select('id, name')
-            .eq('id', report.companion_id)
+            .eq('id', report.user_id)
             .single()
-
-          if (companionData) {
-            reported_companion = companionData
-          } else {
-            // If not a companion, try as user
-            const { data: userData } = await supabase
-              .from('users')
-              .select('id, name, email')
-              .eq('id', report.companion_id)
-              .single()
-            reported_user = userData
-          }
-        } catch (err) {
-          console.warn('Could not fetch reported entity:', err)
+          reporter = companionData
         }
+      } catch (err) {
+        console.warn('Could not fetch reporter:', err)
+      }
+
+      // Fetch reported entity
+      try {
+        if (report.reported_type === 'user' && report.reported_user_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, name, email')
+            .eq('id', report.reported_user_id)
+            .single()
+          reported_user = userData
+        } else if (report.reported_type === 'companion' && report.reported_companion_id) {
+          const { data: companionData } = await supabase
+            .from('companions')
+            .select('id, name')
+            .eq('id', report.reported_companion_id)
+            .single()
+          reported_companion = companionData
+        }
+      } catch (err) {
+        console.warn('Could not fetch reported entity:', err)
       }
 
       return {
         ...report,
-        reported_companion,
-        reported_user
+        reporter,
+        reported_user,
+        reported_companion
       }
     }))
 

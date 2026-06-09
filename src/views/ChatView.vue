@@ -511,6 +511,7 @@ const handleReportUser = async () => {
       reporterId as string,
       reportedUserId,
       reportedCompanionId,
+      isCurrentUserCompanion ? 'companion' : 'user',
       reportReason.value,
       reportMessage.value
     )

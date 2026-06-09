@@ -501,17 +501,24 @@ export async function submitReport(
   reporterId: string,
   reportedUserId: string | null,
   reportedCompanionId: string | null,
+  reporterType: 'user' | 'companion',
   reason: string,
   message: string
 ) {
   try {
+    const reportedType = reportedCompanionId ? 'companion' : 'user'
+
     const { data, error } = await supabase
       .from('reports')
       .insert([
         {
           chat_id: chatId,
           user_id: reporterId,
-          companion_id: reportedCompanionId || reportedUserId,
+          companion_id: reportedCompanionId || null,
+          reporter_type: reporterType,
+          reported_type: reportedType,
+          reported_user_id: reportedUserId,
+          reported_companion_id: reportedCompanionId,
           reason,
           message,
           status: 'pending',
