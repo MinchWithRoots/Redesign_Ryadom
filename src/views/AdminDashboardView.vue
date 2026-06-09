@@ -290,11 +290,11 @@ const loadReports = async () => {
         } else if (report.reported_type === 'companion' && report.reported_companion_id) {
           const { data: companionData } = await supabase
             .from('companions')
-            .select('id, name')
+            .select('id, name, user_id')
             .eq('id', report.reported_companion_id)
             .single()
           // Get the companion's user email
-          if (companionData) {
+          if (companionData && companionData.user_id) {
             const { data: userData } = await supabase
               .from('users')
               .select('email')
