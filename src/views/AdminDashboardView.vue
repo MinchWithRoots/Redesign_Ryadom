@@ -262,7 +262,7 @@ const loadReports = async () => {
           const { data: companionData } = await supabase
             .from('companions')
             .select('id, name')
-            .eq('id', report.user_id)
+            .eq('user_id', report.user_id)
             .single()
           reporter = companionData
         }
