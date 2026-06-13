@@ -362,13 +362,15 @@ const loadSessionHistory = async () => {
     }
 
     // Transform the data for display
+    if (!currentUser.value) return
+
     sessionHistory.value = (completedChats || []).map((chat: any) => ({
       id: chat.id,
       companionId: chat.companion_id,
-      companionName: currentUser.value.role === 'companion'
+      companionName: currentUser.value!.role === 'companion'
         ? chat.users?.name || 'Unknown'
         : chat.companions?.name || 'Unknown',
-      companionImage: currentUser.value.role === 'companion'
+      companionImage: currentUser.value!.role === 'companion'
         ? chat.users?.image
         : chat.companions?.image,
       topic: '', // We don't have topic info in the chat yet
@@ -960,8 +962,8 @@ watch(
                 </div>
               </div>
 
-              <!-- Rating and Actions -->
-              <div class="profile-history-item__footer">
+              <!-- Rating and Actions (only for users) -->
+              <div v-if="currentUser?.role === 'user'" class="profile-history-item__footer">
                 <div class="profile-history-item__rating">
                   <span class="profile-history-item__rating-label">Ваша оценка:</span>
                   <div class="profile-history-item__stars">
