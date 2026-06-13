@@ -100,6 +100,7 @@
 import { ref, watch } from 'vue'
 import { addReview } from '@/services/supabaseService'
 import { cacheManager } from '@/utils/cacheManager'
+import { currentUser } from '@/composables/useAppState'
 
 interface Props {
   isOpen: boolean
@@ -149,6 +150,12 @@ const resetForm = () => {
 
 const submitReview = async () => {
   errorMessage.value = ''
+
+  // Only users and companions can leave reviews, not on other users (only on companions)
+  if (!currentUser.value) {
+    errorMessage.value = 'Вы должны быть авторизованы'
+    return
+  }
 
   // Validation
   if (formData.value.rating === 0) {
