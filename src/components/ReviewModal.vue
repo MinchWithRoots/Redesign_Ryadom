@@ -151,9 +151,14 @@ const resetForm = () => {
 const submitReview = async () => {
   errorMessage.value = ''
 
-  // Only users and companions can leave reviews, not on other users (only on companions)
   if (!currentUser.value) {
     errorMessage.value = 'Вы должны быть авторизованы'
+    return
+  }
+
+  // Only users can leave reviews, not companions
+  if (currentUser.value.role === 'companion') {
+    errorMessage.value = 'Спутники не могут оставлять отзывы'
     return
   }
 

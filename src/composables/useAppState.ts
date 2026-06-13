@@ -2233,11 +2233,12 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     const companionIdStr = companionId.toString()
     const companionIdNum = parseInt(companionIdStr)
 
-    // Count chats where companion_id equals this companion
+    // Count only completed chats (status = 'offline') where companion_id equals this companion
     const { data: chats, error: chatsError } = await supabase
       .from('chats')
       .select('id', { count: 'exact' })
       .eq('companion_id', companionIdNum)
+      .eq('status', 'offline')
 
     if (chatsError) {
       console.error('Error fetching companion chats count:', chatsError)
@@ -2245,7 +2246,7 @@ export const syncCompanionSessionCounts = async (companionId: string | number) =
     }
 
     const sessionCount = chats?.length || 0
-    console.log(`Fetched ${sessionCount} sessions (chats) for companion ${companionIdStr}`)
+    console.log(`Fetched ${sessionCount} completed sessions (chats) for companion ${companionIdStr}`)
 
     // Update companion sessions
     const { error: updateError } = await supabase

@@ -440,12 +440,12 @@ const handleEndSession = async () => {
     return
   }
 
-  if (!chat.value) {
+  if (!chat.value || !chatId.value) {
     console.error('Chat not found')
     return
   }
 
-  const companionId = chat.value.companion_id as string
+  const companionId = chat.value.companion_id
   if (!companionId) {
     console.error('Companion ID missing')
     return
@@ -453,10 +453,18 @@ const handleEndSession = async () => {
 
   isEndingSession.value = true
   try {
-    await endSessionAsCompanion(chatId.value, companionId)
+    const companionIdStr = String(companionId)
+    await endSessionAsCompanion(chatId.value, companionIdStr)
 
     sessionEnded.value = true
-    showReviewModal.value = true
+    // Refresh companion data to update session count
+    await refreshCompanionData(companionIdStr)
+    await loadCurrentUser()
+
+    // Redirect to profile after showing session ended message
+    setTimeout(() => {
+      router.push('/profile')
+    }, 2000)
   } catch (err) {
     console.error('Error ending session:', err)
   } finally {

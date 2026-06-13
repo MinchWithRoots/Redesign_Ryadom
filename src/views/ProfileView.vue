@@ -276,53 +276,101 @@ const loadSessionHistory = async () => {
   try {
     if (!currentUser.value) return
 
-    // Only show chats where current user was the user (not the companion)
-    const { data: completedChats, error } = await supabase
-      .from('chats')
-      .select(`
-        id,
-        user_id,
-        companion_id,
-        status,
-        created_at,
-        updated_at,
-        companions (id, name, image)
-      `)
-      .eq('user_id', currentUser.value.id)
-      .eq('status', 'offline')
-      .order('updated_at', { ascending: false })
+    let completedChats
+    let error
+
+    if (currentUser.value.role === 'companion') {
+      // For companions: show chats where they are the companion
+      const result = await supabase
+        .from('chats')
+        .select(`
+          id,
+          user_id,
+          companion_id,
+          status,
+          created_at,
+          updated_at,
+          users (id, name, image)
+        `)
+        .eq('companion_id', companionId.value || currentUser.value.id)
+        .eq('status', 'offline')
+        .order('updated_at', { ascending: false })
+
+      completedChats = result.data
+      error = result.error
+    } else {
+      // For users: show chats where they are the user
+      const result = await supabase
+        .from('chats')
+        .select(`
+          id,
+          user_id,
+          companion_id,
+          status,
+          created_at,
+          updated_at,
+          companions (id, name, image)
+        `)
+        .eq('user_id', currentUser.value.id)
+        .eq('status', 'offline')
+        .order('updated_at', { ascending: false })
+
+      completedChats = result.data
+      error = result.error
+    }
 
     if (error) {
       console.error('Error loading session history:', error)
       return
     }
 
-    // Load ratings from reviews for each completed chat
-    const { data: reviews, error: reviewsError } = await supabase
-      .from('reviews')
-      .select('chat_id, rating')
-      .eq('user_id', currentUser.value.id)
+    // Load ratings from reviews
+    let ratingMap = new Map<string | number, number>()
 
-    if (reviewsError) {
-      console.error('Error loading reviews for ratings:', reviewsError)
-    }
+    if (currentUser.value.role === 'companion') {
+      // For companions: get reviews about the users they had sessions with
+      const { data: reviews, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('chat_id, rating')
+        .in('chat_id', (completedChats || []).map((c: any) => c.id))
 
-    // Create a map of chat_id -> rating for quick lookup
-    const ratingMap = new Map<string | number, number>()
-    if (reviews) {
-      reviews.forEach((review: any) => {
-        if (review.chat_id) {
-          ratingMap.set(review.chat_id, review.rating)
-        }
-      })
+      if (reviewsError) {
+        console.error('Error loading reviews for ratings:', reviewsError)
+      } else if (reviews) {
+        reviews.forEach((review: any) => {
+          if (review.chat_id) {
+            ratingMap.set(review.chat_id, review.rating)
+          }
+        })
+      }
+    } else {
+      // For users: get their own reviews
+      const { data: reviews, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('chat_id, rating')
+        .eq('user_id', currentUser.value.id)
+
+      if (reviewsError) {
+        console.error('Error loading reviews for ratings:', reviewsError)
+      } else if (reviews) {
+        reviews.forEach((review: any) => {
+          if (review.chat_id) {
+            ratingMap.set(review.chat_id, review.rating)
+          }
+        })
+      }
     }
 
     // Transform the data for display
     sessionHistory.value = (completedChats || []).map((chat: any) => ({
       id: chat.id,
       companionId: chat.companion_id,
-      companionName: chat.companions?.name || 'Unknown',
-      companionImage: chat.companions?.image,
+      companionName: currentUser.value.role === 'companion'
+        ? chat.users?.name || 'Unknown'
+        : chat.companions?.name || 'Unknown',
+      companionImage: currentUser.value.role === 'companion'
+        ? chat.users?.image
+        : chat.companions?.image,
       topic: '', // We don't have topic info in the chat yet
       date: new Date(chat.updated_at).toLocaleDateString('ru-RU'),
       duration: '—', // Calculate duration if needed
@@ -424,6 +472,17 @@ onMounted(async () => {
       await loadCurrentUser()
     }
 
+    // If user is a companion, load companion ID early
+    if (currentUser.value?.role === 'companion') {
+      try {
+        const id = await getCurrentCompanionId()
+        companionId.value = id
+        console.log('Companion ID loaded:', id)
+      } catch (err) {
+        console.error('Error loading companion data:', err)
+      }
+    }
+
     await loadChats()
   } finally {
     isLoadingChats.value = false
@@ -433,17 +492,12 @@ onMounted(async () => {
   await loadSessionHistory()
   await loadUserReviews()
 
-  // If user is a companion, load companion ID and reviews for that companion
-  if (currentUser.value?.role === 'companion') {
+  // If user is a companion, load reviews for that companion
+  if (currentUser.value?.role === 'companion' && companionId.value) {
     try {
-      const id = await getCurrentCompanionId()
-      companionId.value = id
-      console.log('Companion ID loaded:', id)
-      if (id) {
-        await loadCompanionReviews()
-      }
+      await loadCompanionReviews()
     } catch (err) {
-      console.error('Error loading companion data:', err)
+      console.error('Error loading companion reviews:', err)
     }
   }
 })
