@@ -1373,6 +1373,23 @@ export const endSession = async (chatId: string) => {
   }
 }
 
+// End session by companion (marks as offline and updates completed sessions count)
+export const endSessionAsCompanion = async (chatId: string, companionId: string | number) => {
+  try {
+    // First, end the session
+    await endSession(chatId)
+
+    // Then sync companion session counts to update completed sessions
+    await syncCompanionSessionCounts(companionId)
+
+    console.log('Session ended by companion:', chatId)
+    return true
+  } catch (err) {
+    console.error('Error ending session as companion:', err)
+    throw err
+  }
+}
+
 // Chat Requests operations
 export const loadChatRequests = async (companionId: string | number, statusFilter: string = 'pending') => {
   try {

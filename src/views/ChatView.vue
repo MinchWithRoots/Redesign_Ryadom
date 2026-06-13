@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser } from '../composables/useAppState'
+import { currentUser, messages, getChatById, endSession, loadChats, chats as globalChats, refreshCompanionData, loadCurrentUser, endSessionAsCompanion } from '../composables/useAppState'
 import { useConfirmDialog } from '../composables/useConfirmDialog'
 import { supabase } from '@/utils/supabase'
 import * as supabaseService from '../services/supabaseService'
@@ -434,17 +434,26 @@ const sendMessage = async () => {
 }
 
 const handleEndSession = async () => {
+  // Only companion can end session
+  if (!currentUser.value || currentUser.value.role !== 'companion') {
+    console.error('Only companions can end sessions')
+    return
+  }
+
+  if (!chat.value) {
+    console.error('Chat not found')
+    return
+  }
+
+  const companionId = chat.value.companion_id as string
+  if (!companionId) {
+    console.error('Companion ID missing')
+    return
+  }
+
   isEndingSession.value = true
   try {
-    const { error } = await supabase
-      .from('chats')
-      .update({ status: 'offline' })
-      .eq('id', chatId.value)
-
-    if (error) {
-      console.error('Error ending session:', error)
-      return
-    }
+    await endSessionAsCompanion(chatId.value, companionId)
 
     sessionEnded.value = true
     showReviewModal.value = true

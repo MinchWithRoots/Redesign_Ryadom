@@ -271,11 +271,12 @@ const handleSaveSettings = async () => {
   }
 }
 
-// Load session history (completed chats)
+// Load session history (completed chats where user was a participant, not a companion)
 const loadSessionHistory = async () => {
   try {
     if (!currentUser.value) return
 
+    // Only show chats where current user was the user (not the companion)
     const { data: completedChats, error } = await supabase
       .from('chats')
       .select(`
@@ -285,7 +286,7 @@ const loadSessionHistory = async () => {
         status,
         created_at,
         updated_at,
-        companions (name, image)
+        companions (id, name, image)
       `)
       .eq('user_id', currentUser.value.id)
       .eq('status', 'offline')
